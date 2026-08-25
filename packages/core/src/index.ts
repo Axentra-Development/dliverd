@@ -5,3 +5,4 @@ export * from './rules/address.js';
 export * from './rules/pricing.js';
 export * from './rules/authz.js';
 export * from './ledger/chain.js';
+export * from './domain/id.js';

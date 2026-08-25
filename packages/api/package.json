@@ -1,0 +1,14 @@
+{
+  "name": "@custode/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@custode/core": "*",
+    "fastify": "^4.28.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0"
+  }
+}
