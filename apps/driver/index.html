@@ -110,8 +110,8 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .btn.sm{min-height:44px;font-size:13.5px}
 .btn:disabled{opacity:.4;pointer-events:none}
 .actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-.actions.row{flex-direction:row;align-items:stretch}
-.actions.row>.btn{flex:1 1 0;width:auto;min-width:0}
+.actions.row{display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
+.actions.row>.btn{width:100%;min-width:0;flex:none}
 .dock{flex:0 0 auto;padding:10px 12px 8px;background:rgba(255,255,255,.94);
   backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
   border-top:1px solid var(--line-mid);display:flex;flex-direction:column;gap:8px}
