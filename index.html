@@ -1,0 +1,793 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Custode Driver — demo</title>
+<style>
+:root{
+  --paper:#F3F6F4;--surface:#FFFFFF;--raise:#FAFBFA;--sunk:#EDF1EF;
+  --ink:#111917;--body:#2B3733;--muted:#65726E;--faint:#8B9793;
+  --line:#DCE1DE;--line-mid:#C3CBC7;
+  --acc:#0F6455;--acc-ink:#0B4E42;--acc-soft:#E3EFEB;--acc-line:#9FC9BE;
+  --risk:#93301F;--risk-soft:#F8E9E5;--risk-line:#DFB6AC;
+  --warn:#7C5A0E;--warn-soft:#F6EEDC;
+  --dark:#0C1211;--dark2:#141C1A;--dkl:#31403C;--dkm:#8B9994;--dka:#54C1A6;--dka2:#7FD5BF;
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#E4EAE7}
+body{max-width:430px;margin:0 auto;min-height:100vh;background:var(--paper);color:var(--body);
+  font-family:var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;
+  line-height:1.45;box-shadow:0 0 40px rgba(14,22,20,.15);display:flex;flex-direction:column}
+button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
+input{font-family:inherit;font-size:15px;color:var(--ink);border:1.5px solid var(--line-mid);
+  border-radius:6px;padding:12px;background:var(--surface);width:100%}
+input:focus{outline:2px solid var(--acc);outline-offset:1px}
+.mono{font-family:var(--mono)}
+.sp{flex:1 1 auto}
+.bar{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line-mid)}
+.bar .r1{display:flex;align-items:center;gap:10px;padding:12px 15px}
+.brand{font-weight:800;font-size:13.5px;letter-spacing:.16em;color:var(--ink)}
+.sub{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint)}
+.chip-on{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;
+  padding:8px 14px;border-radius:20px;background:var(--acc);color:#fff}
+.chip-on.off{background:var(--sunk);color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:#7FD5BF;animation:pulse 1.6s infinite}
+.chip-on.off .dot{background:var(--faint);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.main{flex:1 1 auto;padding:12px 12px 90px}
+.card{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;
+  margin-bottom:12px;overflow:hidden}
+.card .hd{display:flex;align-items:center;gap:9px;padding:12px 15px;background:var(--raise);
+  border-bottom:1px solid var(--line);font-weight:800;color:var(--ink);font-size:14px}
+.card .bd{padding:13px 15px}
+.pill{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 7px;border:1px solid var(--line-mid);border-radius:3px;
+  color:var(--muted);background:var(--surface);white-space:nowrap}
+.pill.acc{color:var(--acc-ink);border-color:var(--acc-line);background:var(--acc-soft)}
+.pill.risk{color:var(--risk);border-color:var(--risk-line);background:var(--risk-soft)}
+.pill.warn{color:var(--warn);border-color:#DDC386;background:var(--warn-soft)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:50px;border-radius:8px;background:var(--acc);color:#fff;font-size:15.5px;font-weight:800}
+.btn:active{transform:scale(.99)}
+.btn.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-mid);font-weight:700}
+.btn.danger{background:var(--surface);color:var(--risk);border:1.5px solid var(--risk-line);font-weight:700}
+.btn.ghost{background:none;color:var(--muted);min-height:40px;font-weight:600;font-size:13px}
+.btn.sm{min-height:40px;font-size:13px;border-radius:7px}
+.note{display:flex;gap:9px;padding:11px 13px;font-size:12.5px;line-height:1.5;border-radius:8px;margin-bottom:12px}
+.note.acc{background:var(--acc-soft);color:var(--acc-ink);border:1px solid var(--acc-line)}
+.note.risk{background:var(--risk-soft);color:var(--risk);border:1px solid var(--risk-line)}
+.note.warn{background:var(--warn-soft);color:var(--warn);border:1px solid #DDC386}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted)} .kv .v{color:var(--ink);font-weight:700;text-align:right}
+.label{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);margin:14px 2px 7px}
+/* dashboard tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;padding:13px 14px}
+.tile .v{font-family:var(--mono);font-size:23px;font-weight:800;color:var(--ink);line-height:1}
+.tile .v.acc{color:var(--acc)} .tile .v.risk{color:var(--risk)}
+.tile .k{font-size:10.5px;color:var(--muted);margin-top:5px}
+.hero{background:var(--dark);border-radius:12px;color:#C0CCC7;padding:16px;margin-bottom:12px}
+.hero .eyeb{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--dka)}
+.hero h2{color:#fff;font-size:18px;font-weight:800;margin-top:6px;line-height:1.25}
+.hero .m{font-size:12px;color:var(--dkm);margin-top:4px}
+.hero .row{display:flex;gap:8px;margin-top:13px}
+.hero .b1{flex:1 1 auto;min-height:44px;border-radius:7px;background:var(--dka);color:var(--dark);
+  font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:7px}
+.hero .b2{min-height:44px;border-radius:7px;border:1px solid var(--dkl);color:#C0CCC7;
+  font-weight:700;font-size:13px;padding:0 14px;display:flex;align-items:center}
+/* stops */
+.stop{display:flex;gap:0;width:100%;text-align:left;background:var(--surface);
+  border-bottom:1px solid var(--line);padding:0 14px 0 0}
+.stop:last-child{border-bottom:0}
+.stop:active{background:var(--raise)}
+.rail{width:44px;flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding-top:14px}
+.node{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;font-weight:700;flex:0 0 auto;
+  border:2px solid var(--line-mid);background:var(--surface);color:var(--muted)}
+.stop.done .node{background:var(--acc);border-color:var(--acc);color:#fff}
+.stop.now .node{border-color:var(--acc);color:var(--acc-ink);box-shadow:0 0 0 4px var(--acc-soft)}
+.stop.blocked .node{border-color:var(--risk-line);color:var(--risk)}
+.railline{flex:1 1 auto;width:2px;background:var(--line);margin-top:4px}
+.stop.done .railline{background:var(--acc-line)}
+.scontent{flex:1 1 auto;min-width:0;padding:12px 0}
+.shead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.stype{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--acc-ink);font-weight:700}
+.stype.rev{color:var(--warn)} .stype.pick{color:var(--ink)}
+.sname{font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.25}
+.stop.done .sname{color:var(--faint);text-decoration:line-through;text-decoration-thickness:1px}
+.saddr{font-size:11.5px;color:var(--muted);margin-top:2px}
+.smeta{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;align-items:center}
+.seta{font-family:var(--mono);font-size:10.5px;color:var(--faint);width:52px;text-align:right;
+  flex:0 0 auto;padding:14px 10px 0 0;font-weight:600}
+.stop.now .seta{color:var(--acc);font-weight:700}
+.earn{font-family:var(--mono);font-size:11px;color:var(--acc-ink);font-weight:700}
+.navrow{display:flex;gap:7px;margin-top:9px}
+.navbtn{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:38px;
+  border:1.5px solid var(--line-mid);border-radius:7px;font-size:12px;font-weight:700;color:var(--ink);
+  background:var(--surface);text-decoration:none}
+.navbtn:active{background:var(--raise)}
+.navbtn svg{width:15px;height:15px;flex:0 0 auto}
+.scontact{font-size:11.5px;color:var(--acc-ink);margin-top:3px;font-weight:600}
+.stop.done .scontact{color:var(--faint);font-weight:500}
+.map{height:120px;border-bottom:1px solid var(--line)}
+/* gps */
+.gpsline{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;
+  padding:8px 12px;border-radius:7px;margin-bottom:10px;font-weight:700}
+.gpsline.far{background:var(--risk-soft);color:var(--risk);border:1px solid var(--risk-line)}
+.gpsline.near{background:var(--acc-soft);color:var(--acc-ink);border:1px solid var(--acc-line)}
+.gpsdot{width:9px;height:9px;border-radius:50%;background:currentColor;animation:pulse 1.4s infinite}
+.lockcard{background:var(--risk-soft);border:1.5px solid var(--risk-line);border-radius:10px;
+  padding:18px 16px;text-align:center;margin-bottom:12px}
+.lockcard .big{font-size:34px}
+.lockcard h3{color:var(--risk);font-size:16px;margin-top:6px}
+.lockcard p{font-size:12.5px;color:var(--risk);margin-top:6px;line-height:1.5}
+.offbanner{background:var(--risk);color:#fff;border-radius:9px;padding:12px 14px;margin-bottom:12px;
+  font-size:12.5px;line-height:1.5;font-weight:600;animation:slidein .3s}
+/* scanner */
+.scanview{background:var(--dark);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.boxrow{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+.boxrow:last-child{border-bottom:0}
+.boxrow .bid{font-family:var(--mono);font-size:13px;font-weight:800;color:var(--ink)}
+.boxrow .bfor{font-size:11px;color:var(--muted)}
+.boxrow .scanb{margin-left:auto;min-height:36px;padding:0 14px;border-radius:7px;font-size:12px;
+  font-weight:800;background:var(--acc);color:#fff;display:flex;align-items:center;gap:6px}
+.boxrow.scanned .scanb{background:var(--acc-soft);color:var(--acc-ink);pointer-events:none}
+.bigscan{display:flex;flex-direction:column;gap:8px}
+.bigscan button{display:flex;align-items:center;gap:10px;border:1.5px solid var(--dkl);
+  border-radius:8px;background:var(--dark2);color:#EBF1EE;padding:12px 14px;text-align:left}
+.bigscan button:active{background:#1E2C29}
+.bigscan .bid2{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--dka2)}
+.bigscan .bfor2{font-size:11px;color:var(--dkm)}
+/* add-on offers */
+.offer{border:2px solid var(--acc);border-radius:12px;overflow:hidden;margin-bottom:12px;
+  animation:slidein .35s cubic-bezier(.2,1.3,.4,1);background:var(--surface)}
+@keyframes slidein{0%{transform:translateY(-14px);opacity:0}100%{transform:none;opacity:1}}
+.offer .top{display:flex;align-items:center;gap:9px;background:var(--acc);color:#fff;padding:9px 14px;
+  font-size:12px;font-weight:800;letter-spacing:.04em}
+.offer .timer{margin-left:auto;font-family:var(--mono);font-size:14px}
+.offer.quiet{border-color:var(--line-mid);animation:none}
+.offer.quiet .top{background:var(--raise);color:var(--ink);border-bottom:1px solid var(--line)}
+/* handover */
+.hand{background:var(--dark);color:#C0CCC7;border-radius:12px;padding:18px 16px}
+.hand h2{font-size:18px;font-weight:800;color:#fff;line-height:1.25}
+.hand .sb{font-size:12px;color:var(--dkm);margin-top:5px;line-height:1.5}
+.modeswitch{display:flex;border:1px solid var(--dkl);border-radius:8px;overflow:hidden;margin-top:14px}
+.modeswitch button{flex:1 1 0;padding:10px;font-size:12.5px;font-weight:700;color:var(--dkm);background:var(--dark2)}
+.modeswitch button.on{background:#12302A;color:var(--dka2)}
+.otp{display:flex;gap:7px;justify-content:center;margin-top:16px}
+.otp span{width:40px;height:50px;border:1px solid var(--dkl);border-radius:6px;background:var(--dark2);
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;
+  font-weight:700;color:#EBF1EE}
+.otp span.f{border-color:var(--dka);background:#12302A}
+.otp.err span{border-color:#A63A26;background:#2C1A16}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.pad button{height:50px;border-radius:8px;background:var(--dark2);border:1px solid var(--dkl);
+  color:#EBF1EE;font-family:var(--mono);font-size:20px}
+.pad button:active{background:#1E2C29}
+.pad .fn{font-size:11px;color:var(--dkm)}
+.hmeta{display:flex;justify-content:space-between;margin-top:10px;font-family:var(--mono);
+  font-size:10px;color:#6D7B76}
+.hmeta b{color:var(--dka)}
+.sigwrap{margin-top:14px;background:var(--dark2);border:1px dashed var(--dkl);border-radius:8px;overflow:hidden}
+.sigwrap canvas{display:block;width:100%;height:150px;touch-action:none;cursor:crosshair}
+.sighint{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:#6D7B76;text-align:center;padding:6px 0 8px}
+/* scan / grade */
+.scanrow{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+.scanrow:last-child{border-bottom:0}
+.scanrow input{width:20px;height:20px;flex:0 0 auto}
+.scanrow .n{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+.scanrow .m{font-size:11px;color:var(--muted)}
+.chips{display:flex;gap:7px;margin-top:8px}
+.chipG{flex:1 1 0;border:1.5px solid var(--line-mid);border-radius:8px;padding:9px 8px;text-align:left;background:var(--surface)}
+.chipG.on{border-color:var(--acc);background:var(--acc-soft)}
+.chipG .g{font-family:var(--mono);font-size:15px;font-weight:800;color:var(--ink)}
+.chipG .l{font-size:9.5px;color:var(--muted);margin-top:2px;line-height:1.25}
+.done-wrap{text-align:center;padding:30px 20px}
+.done-ring{width:86px;height:86px;border-radius:50%;background:var(--acc-soft);margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;color:var(--acc);
+  animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:none;opacity:1}}
+.done-wrap h2{font-size:19px;color:var(--ink)}
+.done-wrap p{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.55}
+.done-wrap .money{font-family:var(--mono);font-size:26px;font-weight:800;color:var(--acc);margin-top:10px}
+/* bottom nav */
+.nav{position:sticky;bottom:0;z-index:10;display:flex;background:var(--surface);
+  border-top:1px solid var(--line-mid);padding:7px 0 10px}
+.nav button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--faint);font-size:9px;font-weight:700;padding:4px 0;position:relative}
+.nav button.on{color:var(--acc)}
+.nav svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:-2px;right:calc(50% - 18px);min-width:16px;height:16px;border-radius:8px;
+  background:var(--risk);color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;
+  justify-content:center;padding:0 4px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:110px;padding:8px 2px 0}
+.bars>div{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.bars .b{width:100%;background:var(--acc-line);border-radius:4px 4px 0 0}
+.bars .b.hi{background:var(--acc)}
+.bars .d{font-family:var(--mono);font-size:9px;color:var(--faint)}
+.toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%) translateY(120px);
+  background:var(--ink);color:#EBF1EE;font-size:13px;font-weight:700;padding:11px 17px;
+  border-radius:8px;transition:transform .25s;z-index:60;max-width:88vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+</style></head><body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const SEAL=`<svg width="24" height="12" viewBox="0 0 26 13"><rect width="13" height="13" fill="#0F6455"/><rect x="15" y="1.6" width="9.8" height="9.8" fill="none" stroke="#0F6455" stroke-width="1.7"/></svg>`;
+const I={home:'<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>',
+ route:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H14a4 4 0 0 1 0 8H10a4 4 0 0 0 0 8h.5"/>',
+ plus:'<circle cx="12" cy="12" r="8.5"/><line x1="12" y1="8.5" x2="12" y2="15.5"/><line x1="8.5" y1="12" x2="15.5" y2="12"/>',
+ cash:'<rect x="3" y="6.5" width="18" height="11" rx="1.5"/><circle cx="12" cy="12" r="2.8"/>',
+ user:'<circle cx="12" cy="8.5" r="3.7"/><path d="M4.8 20c.7-3.7 3.7-5.6 7.2-5.6s6.5 1.9 7.2 5.6"/>',
+ nav:'<path d="M12 3 4.5 20l7.5-4 7.5 4z"/>',pin:'<path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+ phone:'<path d="M6.5 4.5h3l1.2 3-1.7 1.1a12 12 0 0 0 6.4 6.4l1.1-1.7 3 1.2v3A1.5 1.5 0 0 1 18 19 14.5 14.5 0 0 1 5 6a1.5 1.5 0 0 1 1.5-1.5z"/>',
+ sms:'<path d="M5 6.5h14v9.5H9l-3.5 3v-3H5z"/>',
+ mail:'<rect x="4" y="6.5" width="16" height="11.5" rx="1.5"/><path d="m4.5 7.5 7.5 6 7.5-6"/>'};
+const ic=n=>`<svg viewBox="0 0 24 24">${I[n]}</svg>`;
+const DEMO_CODE='417826';
+let toastT;
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.background=bad?'#93301F':'';
+ t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
+
+/* ── state ── */
+const S={
+ tab:'dash', view:null, online:true, otp:'', otpErr:false, codeOk:false, grade:'B', phase:'scan',
+ routeAccepted:false, custody:0, earned:0, sigDrawn:false, car:[], loaded:[], boxOk:false,
+ gps:{dist:450, offKm:0, thresholdKm:2, alerted:false},
+ stops:[
+  {id:1,type:'PICKUP',eta:'07:40',name:'BMobile · entrepôt Saint-Laurent',addr:'4400 boul. Côte-Vertu, Saint-Laurent, QC',
+   pay:0,info:'Scan 4 box references · IMEIs sealed by the provider',st:'',provider:'BMobile',
+   phone:'514 334-2200',tel:'5143342200',email:'dock.stlaurent@bmobile.ca',contact:'Dock',
+   devices:[
+    {imei:'356938035643809',model:'iPhone 16 Pro 256 · Natural',declared:1449,drop:'G. Bilodeau'},
+    {imei:'490154203237518',model:'Galaxy S25+ 256 · Silver',declared:1299,drop:'G. Pensato'},
+    {imei:'352099001761481',model:'iPhone 16e 128 · White',declared:829,drop:'S. Duchesneau'},
+    {imei:'358241077331855',model:'Pixel 10 Pro 128 · Obsidian',declared:1149,drop:'S. Duchesneau'},
+    {imei:'354009221884170',model:'iPhone 16 128 · Ultramarine',declared:1079,drop:'Cellcom Anjou'}]},
+  {id:2,type:'DELIVER',eta:'08:45',name:'Geneviève Bilodeau',addr:'6321 rue Beaubien E, Montréal, QC',
+   pay:10.75,info:'Client · BMobile order BM-1042 · 1 device · $1,449',st:'',n:1,provider:'BMobile',box:'BX-1042',
+   phone:'514 328-4419',tel:'5143284419',email:'g.bilodeau@icloud.com',contact:'Client'},
+  {id:3,type:'DELIVER',eta:'09:50',name:'Gino Pensato',addr:'1600 boul. Le Corbusier, app. 407, Laval, QC',
+   pay:21.50,info:'Client · Cellcom order CE-8815 · 1 device · $1,299',st:'',n:1,deadline:'10:30',provider:'Cellcom',box:'BX-8815',
+   phone:'450 681-2274',tel:'4506812274',email:'gino.pensato@gmail.com',contact:'Client'},
+  {id:4,type:'REPRISE',eta:'09:55',name:'Gino Pensato — trade-in',addr:'Same visit · buyback for Cellcom',
+   pay:13.25,info:'iPhone 14 Pro trade-in · grade, verify & seal',st:'',provider:'Cellcom',
+   phone:'450 681-2274',tel:'4506812274',email:'gino.pensato@gmail.com',contact:'Client'},
+  {id:5,type:'DELIVER',eta:'11:20',name:'Samuel Duchesneau',addr:'380 rue Saint-Paul O, app. 12, Montréal, QC',
+   pay:15.50,info:'Client · BMobile order BM-1049 · 2 devices · by 12:00',st:'',n:2,deadline:'12:00',provider:'BMobile',box:'BX-1049',
+   phone:'514 907-1183',tel:'5149071183',email:'samuel.duchesneau@proton.me',contact:'Client'},
+  {id:6,type:'DELIVER',eta:'13:40',name:'Cellcom Anjou (store restock)',addr:"7999 boul. des Galeries d'Anjou, Anjou, QC",
+   pay:13.25,info:'Provider store · 1 device restock · Zone B',st:'',n:1,provider:'Cellcom',box:'BX-ANJ0',
+   phone:'514 355-8800',tel:'5143558800',email:'anjou@cellcom.ca',contact:'Store'}],
+ addons:[
+  {id:'A1',name:'Boutique Sainte-Catherine',addr:'1201 rue Sainte-Catherine O, Montréal, QC',
+   pay:9.75,info:'1 trade-in pickup · 4 min off your route · slots after stop 5',left:null,state:'open',hot:false,
+   phone:'514 844-0912',tel:'5148440912',email:'ste-catherine@boutique.ca',contact:'Store'},
+  {id:'A2',name:'Cellcom Carrefour Laval',addr:'3035 boul. le Carrefour, Laval, QC',
+   pay:12.50,info:'2 devices · urgent restock · fits between stops 4 and 5',left:30,state:'open',hot:true,
+   phone:'450 681-4400',tel:'4506814400',email:'laval@cellcom.ca',contact:'Store'},
+  {id:'A3',name:'MobiClinique Plateau',addr:'4210 rue Saint-Denis, Montréal, QC',
+   pay:11.00,info:'1 RMA return · flexible window',left:null,state:'open',hot:false,
+   phone:'514 522-7730',tel:'5145227730',email:'plateau@mobiclinique.ca',contact:'Store'}],
+ week:[['Mon',118],['Tue',134],['Wed',96],['Thu',148],['Fri',162],['Sat',74],['Today',0]],
+};
+const routePay=()=>S.stops.reduce((a,s)=>a+s.pay,0);
+const curStop=()=>S.stops.find(s=>!s.st);
+const openAddons=()=>S.addons.filter(a=>a.state==='open');
+
+const GEOFENCE_M=100;
+function gpsPill(){
+ const near=S.gps.dist<=GEOFENCE_M;
+ return `<div class="gpsline ${near?'near':'far'}"><span class="gpsdot"></span>
+  GPS · ${near?S.gps.dist+' m — INSIDE THE GEOFENCE ✓':S.gps.dist+' m FROM THE ADDRESS'}</div>`;
+}
+function geoLocked(s2,onArrive){
+ return `${gpsPill()}
+  <div class="lockcard"><div class="big">🔒</div>
+   <h3>Handover locked by GPS</h3>
+   <p>You are <b>${S.gps.dist} m</b> from ${s2.name}. Scanning, codes and signatures only unlock
+   inside <b>${GEOFENCE_M} m</b> of the client's address — a delivery physically cannot be
+   completed anywhere else.</p>
+   <button class="btn sm" style="margin:10px auto 0;max-width:260px" id="simArrive">DEMO · simulate arriving at the door</button>
+  </div>`;
+}
+const SCANSVG=`<svg viewBox="0 0 400 130" style="width:100%;height:130px;display:block">
+ <rect width="400" height="130" fill="#0C1211"/>
+ <rect x="60" y="18" width="280" height="94" fill="#101A18" stroke="#1E2C29"/>
+ <g stroke="#4FBFA4" stroke-width="2.4" fill="none">
+  <polyline points="60,40 60,18 84,18"/><polyline points="316,18 340,18 340,40"/>
+  <polyline points="340,90 340,112 316,112"/><polyline points="84,112 60,112 60,90"/></g>
+ <g stroke="#E9F2EF" stroke-width="3">${[100,108,120,132,140,154,166,174,188,200,208,222,234,242,256,268,276,290].map(x=>`<line x1="${x}" y1="42" x2="${x}" y2="88"/>`).join('')}</g>
+ <line x1="60" y1="65" x2="340" y2="65" stroke="#93301F" stroke-width="1.5" opacity=".85"/>
+</svg>`;
+/* mandatory two-proof verification: code first, THEN signature — both required */
+function verifyBlock(title,sub,demo){
+ const cells=[...Array(6)].map((_,i)=>`<span class="${S.otp[i]?'f':''}">${S.otp[i]||''}</span>`).join('');
+ return `<div class="hand">
+  <h2>${title}</h2><div class="sb">${sub}</div>
+  <div class="label" style="color:var(--dka);margin-top:14px">STEP 1 · THE CODE ${S.codeOk?'— VERIFIED ✓':''}</div>
+  ${S.codeOk?`<div class="note acc" style="margin:6px 0 0;background:#12302A;border-color:#265F53;color:var(--dka2)"><div><b>Code verified.</b> Now the signature — both are required, every time.</div></div>`
+  :`<div class="otp ${S.otpErr?'err':''}">${cells}</div>
+    <div class="hmeta"><span>Expires in <b>07:42</b></span><span>Attempt <b>${S.otpErr?2:1}</b> of 5</span></div>
+    <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('')}
+     <button class="fn" data-k="clr">CLEAR</button><button data-k="0">0</button><button class="fn" data-k="del">⌫</button></div>
+    <div class="sighint" style="margin-top:8px">DEMO · THEIR APP IS SHOWING ${demo.split('').join(' ')}</div>`}
+  <div class="label" style="color:${S.codeOk?'var(--dka)':'#6D7B76'};margin-top:14px">STEP 2 · THE SIGNATURE</div>
+  ${S.codeOk?`
+   <div class="sigwrap"><canvas id="sig" width="380" height="140"></canvas>
+    <div class="sighint">SIGNS WITH A FINGER · NAME MATCHES PHOTO ID</div></div>
+   <input id="signame" placeholder="Signer's full name (photo ID)" style="margin-top:10px;background:var(--dark2);border-color:var(--dkl);color:#EBF1EE">
+   <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="btn sm" id="sigOk" style="background:var(--dka);color:var(--dark)">Confirm — transfer custody</button>
+    <button class="btn alt sm" id="sigClr" style="background:var(--dark2);color:#C0CCC7;border-color:var(--dkl)">Clear</button></div>`
+  :`<div class="sighint" style="text-align:left;padding:6px 0 2px">LOCKED UNTIL THE CODE IS VERIFIED</div>`}
+ </div>`;
+}
+function wireVerify(demo,onDone){
+ document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.k;S.otpErr=false;
+  if(k==='clr')S.otp='';else if(k==='del')S.otp=S.otp.slice(0,-1);
+  else if(S.otp.length<6)S.otp+=k;
+  if(S.otp.length===6){
+   if(S.otp===demo){S.codeOk=true;S.otp='';toast('Code verified — signature next');}
+   else{S.otpErr=true;S.otp='';toast('Wrong code · attempt logged',true);}}
+  render();});
+ if(S.codeOk){
+  const cv=$('#sig');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  ctx.strokeStyle='#7FD5BF';ctx.lineWidth=2.4;ctx.lineCap='round';ctx.lineJoin='round';
+  let down=false,last=null;
+  const pos=e=>{const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;
+   return[(t.clientX-r.left)*cv.width/r.width,(t.clientY-r.top)*cv.height/r.height];};
+  cv.addEventListener('pointerdown',e=>{down=true;last=pos(e);e.preventDefault();});
+  cv.addEventListener('pointermove',e=>{if(!down)return;const p=pos(e);ctx.beginPath();
+   ctx.moveTo(...last);ctx.lineTo(...p);ctx.stroke();last=p;S.sigDrawn=true;e.preventDefault();});
+  window.addEventListener('pointerup',()=>{down=false;});
+  $('#sigClr').onclick=()=>{ctx.clearRect(0,0,cv.width,cv.height);S.sigDrawn=false;};
+  $('#sigOk').onclick=()=>{
+   if(!S.sigDrawn)return toast('Signature required — both proofs, every time',true);
+   const nm=$('#signame').value.trim();
+   if(!nm)return toast('Name from photo ID is required',true);
+   onDone(nm);};
+ }
+}
+function resetVerify(){S.otp='';S.otpErr=false;S.codeOk=false;S.sigDrawn=false;}
+/* navigation deep links */
+function navLinks(addr){
+ const q=encodeURIComponent(addr);
+ return `<div class="navrow">
+  <a class="navbtn" target="_blank" rel="noopener" href="https://waze.com/ul?q=${q}&navigate=yes">${ic('nav')}Waze</a>
+  <a class="navbtn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${q}">${ic('pin')}Google&nbsp;Maps</a>
+  <a class="navbtn" target="_blank" rel="noopener" href="https://maps.apple.com/?daddr=${q}">${ic('pin')}Plans</a>
+ </div>`;
+}
+function contactLine(s){
+ if(!s||!(s.phone||s.email))return '';
+ return `<div class="scontact">${s.phone||''}${s.phone&&s.email?' · ':''}${s.email||''}</div>`;
+}
+function contactKvs(s){
+ if(!s||!(s.phone||s.email))return '';
+ const who=s.contact||'Contact';
+ return `${s.phone?`<div class="kv"><span class="k">${who} phone</span><span class="v"><a href="tel:+1${s.tel}" style="color:var(--acc)">${s.phone}</a></span></div>`:''}
+  ${s.email?`<div class="kv"><span class="k">${who} email</span><span class="v" style="font-weight:600;word-break:break-all"><a href="mailto:${s.email}" style="color:var(--ink)">${s.email}</a></span></div>`:''}`;
+}
+function contactLinks(s){
+ if(!s||!(s.phone||s.email))return '';
+ return `<div class="navrow">
+  ${s.phone?`<a class="navbtn" href="tel:+1${s.tel}">${ic('phone')}Call</a>
+  <a class="navbtn" href="sms:+1${s.tel}">${ic('sms')}SMS</a>`:''}
+  ${s.email?`<a class="navbtn" href="mailto:${s.email}">${ic('mail')}Email</a>`:''}
+ </div>`;
+}
+
+/* offer countdown */
+setInterval(()=>{
+ let changed=false;
+ for(const a of S.addons){
+  if(a.state==='open'&&a.left!=null){a.left--;if(a.left<=0){a.state='expired';toast(a.name+' — offer went to the next driver');}changed=true;}
+ }
+ if(changed&&(S.tab==='addons'||S.tab==='dash'))render();
+},1000);
+
+/* ── shell ── */
+function shell(inner){
+ const n=openAddons().length;
+ document.getElementById('app').innerHTML=`
+  <div class="bar"><div class="r1">${SEAL}
+    <div><div class="brand">DRIVER</div><div class="sub">Maya C. · MTL-03 · Mon 24 Aug</div></div>
+    <div class="sp"></div>
+    <button class="chip-on ${S.online?'':'off'}" id="onoff"><span class="dot"></span>${S.online?'ONLINE':'OFFLINE'}</button>
+   </div></div>
+  <div class="main">${inner}</div>
+  <div class="nav">
+   ${[['dash','home','Dashboard'],['route','route','Route'],['addons','plus','Add-ons'],
+      ['earn','cash','Earnings'],['profile','user','Profile']].map(([t,i2,l])=>
+    `<button data-tab="${t}" class="${S.tab===t?'on':''}">${ic(i2)}<span>${l}</span>
+     ${t==='addons'&&n?`<span class="badge">${n}</span>`:''}</button>`).join('')}
+  </div>`;
+ $('#onoff').onclick=()=>{S.online=!S.online;toast(S.online?'Online — dispatch can reach you':'Offline — no add-on offers');render();};
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.view=null;render();});
+}
+
+const mapSvg=`<svg viewBox="0 0 430 120" style="width:100%;height:120px;display:block" preserveAspectRatio="xMidYMid slice">
+ <rect width="430" height="120" fill="#EDF1EF"/>
+ <g stroke="#DCE1DE"><path d="M0 34H430M0 78H430"/><path d="M86 0V120M188 0V120M290 0V120M372 0V120"/></g>
+ <path d="M0 92 C100 80 200 104 300 88 C360 78 400 92 430 84" fill="none" stroke="#B9CCD6" stroke-width="9" opacity=".55"/>
+ <path d="M36 96 L110 74 L188 44 L268 40 L340 62 L402 46" fill="none" stroke="#0F6455" stroke-width="2.6" stroke-linecap="round"/>
+ <circle cx="36" cy="96" r="6" fill="#0F6455"/>
+ ${[[110,74],[188,44],[268,40],[340,62]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="#F3F6F4" stroke="#0F6455" stroke-width="2.2"/>`).join('')}
+ <circle cx="402" cy="46" r="4.5" fill="#F3F6F4" stroke="#9EA9A5" stroke-width="2"/>
+ <text x="14" y="20" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#8B9793" letter-spacing="1.2">MTL-03 · SAINT-LAURENT → ROSEMONT → LAVAL → VIEUX-PORT → ANJOU</text>
+</svg>`;
+
+/* ── 1 · DASHBOARD ── */
+function vDash(){
+ const cur=curStop(), done=S.stops.filter(s=>s.st==='done').length, hot=S.addons.find(a=>a.state==='open'&&a.hot);
+ shell(`
+  ${S.gps.alerted?`<div class="offbanner">⚠ OFF ROUTE by ${S.gps.offKm} km — dispatch alerted (threshold ${S.gps.thresholdKm} km)</div>`:''}
+  ${!S.routeAccepted?`
+   <div class="hero"><div class="eyeb">Good morning · route ready</div>
+    <h2>MTL-03 is waiting — ${S.stops.length} stops, $${routePay().toFixed(2)}</h2>
+    <div class="m">1 provider pickup · 4 client drops · 1 buyback · window 07:40–16:30</div>
+    <div class="row"><button class="b1" id="goRoute">Review & accept the route</button></div></div>`
+  :cur?`
+   <div class="hero"><div class="eyeb">Next stop · ETA ${cur.eta}${cur.deadline?` · deadline ${cur.deadline}`:''}</div>
+    <h2>${cur.name}</h2><div class="m">${cur.addr} · ${cur.info}</div>
+    ${cur.phone||cur.email?`<div class="m" style="color:var(--dka2)">${cur.contact||'Contact'} · ${[cur.phone,cur.email].filter(Boolean).join(' · ')}</div>`:''}
+    <div class="row"><button class="b1" id="workStop">${cur.type==='PICKUP'?'Arrived — scan the boxes':cur.type==='REPRISE'?'Collect buyback':'Start drop-off'}</button>
+     <button class="b2" id="goRoute">Route</button></div>
+    ${navLinks(cur.addr).replace('class="navrow"','class="navrow" style="margin-top:10px"')}
+    ${contactLinks(cur)}</div>`
+  :`<div class="hero"><div class="eyeb">Route complete</div><h2>Every device accounted for.</h2>
+    <div class="m">100% on time · ledger closed your day</div></div>`}
+  <div class="tiles">
+   <div class="tile"><div class="v">${done}/${S.stops.length}</div><div class="k">Stops closed</div></div>
+   <div class="tile"><div class="v acc">$${S.earned.toFixed(2)}</div><div class="k">Earned today</div></div>
+   <div class="tile"><div class="v">${S.custody}<span style="font-size:13px;color:var(--muted)"> / ${S.car.length} box</span></div><div class="k">Devices · boxes on board</div></div>
+   <div class="tile"><div class="v">100%</div><div class="k">On time · 7 days</div></div>
+  </div>
+  ${hot?`<div class="offer"><div class="top">ADD-ON NEARBY <span class="timer">0:${String(hot.left).padStart(2,'0')}</span></div>
+   <div class="bd"><div class="sname">${hot.name} · +$${hot.pay.toFixed(2)}</div>
+   <div class="saddr">${hot.info}</div>
+   ${contactLine(hot)}
+   ${contactLinks(hot)}
+   <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="btn sm" data-aacc="${hot.id}">Accept</button>
+    <button class="btn alt sm" data-adec="${hot.id}">Skip</button></div></div></div>`:''}
+  ${cur&&cur.deadline?`<div class="note warn"><div><b>Guarantee clock:</b> ${cur.name.split(' —')[0]} must close by ${cur.deadline} or the client's visit is automatically free.</div></div>`:''}
+  <div class="card"><div class="hd">Today at a glance</div><div class="bd">
+   <div class="kv"><span class="k">Route pay</span><span class="v">$${routePay().toFixed(2)}</span></div>
+   <div class="kv"><span class="k">Add-ons available</span><span class="v">${openAddons().length} · up to +$${openAddons().reduce((a,x)=>a+x.pay,0).toFixed(2)}</span></div>
+   <div class="kv"><span class="k">Declared value on board</span><span class="v">$${(S.custody*890).toLocaleString()} · covered</span></div>
+   <div class="kv"><span class="k">Partner on the road</span><span class="v">Rami · MTL-01 · 5/8 stops</span></div>
+  </div></div>`);
+ if($('#goRoute'))$('#goRoute').onclick=()=>{S.tab='route';render();};
+ if($('#workStop'))$('#workStop').onclick=()=>{S.tab='route';S.view='stop';render();};
+ wireAddons();
+}
+
+/* ── 2 · DAILY ROUTE ── */
+function stopRow(s,i,preview){
+ const cur=!preview&&curStop()&&curStop().id===s.id;
+ const cls=s.st==='done'?'done':s.st==='blocked'?'blocked':cur?'now':'';
+ return `<div class="stop ${cls}">
+  <div class="rail"><div class="node">${s.st==='done'?'✓':i+1}</div>
+   ${i<S.stops.length-1?'<div class="railline"></div>':''}</div>
+  <div class="scontent">
+   <div class="shead"><span class="stype ${s.type==='REPRISE'?'rev':s.type==='PICKUP'?'pick':''}">${s.type}</span>
+    ${s.deadline?`<span class="pill warn">by ${s.deadline}</span>`:''}
+    ${s.st==='done'?'<span class="pill acc">Done</span>':''}
+    ${s.st==='blocked'?'<span class="pill risk">Exception</span>':''}
+    ${s.addon?'<span class="pill acc">Add-on</span>':''}</div>
+   <div class="sname">${s.name}</div>
+   <div class="saddr">${s.addr}</div>
+   ${contactLine(s)}
+   <div class="smeta"><span class="earn">${s.pay?'+$'+s.pay.toFixed(2):'—'}</span>
+    <span style="font-size:11px;color:var(--muted)">· ${s.info}</span></div>
+   ${cur?navLinks(s.addr)+contactLinks(s)+`<button class="btn" style="margin-top:9px;min-height:46px" data-work="${s.id}">
+     ${s.type==='PICKUP'?'Arrived — scan the boxes':s.type==='REPRISE'?'Collect the buyback':'At the door — code + signature'}</button>`:''}
+  </div>
+  <div class="seta">${s.eta}</div></div>`;
+}
+function vRouteTab(){
+ if(!S.routeAccepted){
+  shell(`
+   <div class="card"><div class="hd">Your route for today <div class="sp"></div>
+     <span class="pill acc">$${routePay().toFixed(2)}</span></div>
+    <div class="map">${mapSvg}</div>
+    <div class="bd">
+     <div class="kv"><span class="k">Stops</span><span class="v">${S.stops.length} — 1 provider pickup · 4 client drops · 1 buyback</span></div>
+     <div class="kv"><span class="k">Devices</span><span class="v">9 · $12,880 declared (covered)</span></div>
+     <div class="kv"><span class="k">Window</span><span class="v">07:40 – 16:30 · ~92 km</span></div>
+    </div></div>
+   <div class="label">The stops, in order</div>
+   <div class="card">${S.stops.map((s,i)=>stopRow(s,i,true)).join('')}</div>
+   <button class="btn" id="acceptRoute">Accept today's route · $${routePay().toFixed(2)}</button>
+   <button class="btn ghost" id="declineRoute">Can't drive today — release it to Rami</button>`);
+  $('#acceptRoute').onclick=()=>{S.routeAccepted=true;toast('Route accepted — first stop: Côte-Vertu DC');render();};
+  $('#declineRoute').onclick=()=>toast('Route released — dispatch will reassign it');
+  return;
+ }
+ if(S.view==='stop')return vStopWork();
+ const cur=curStop();
+ shell(`
+  ${S.gps.alerted?`<div class="offbanner">⚠ OFF ROUTE — you are ${S.gps.offKm} km from the planned route.
+    Dispatch and your partner were alerted automatically (your threshold: ${S.gps.thresholdKm} km).
+    <button style="display:block;margin-top:8px;background:#fff;color:var(--risk);border-radius:6px;
+    padding:8px 12px;font-weight:800;font-size:12px" id="backOn">I'm back on route</button></div>`:''}
+  ${cur?'':'<div class="done-wrap"><div class="done-ring"><svg width="34" height="34" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><polyline points="4 12.5 9.5 18 20 6"/></svg></div><h2>Route complete</h2><p>Every device accounted for.</p><div class="money">$'+S.earned.toFixed(2)+'</div></div>'}
+  <div class="card">${S.stops.map((s,i)=>stopRow(s,i)).join('')}</div>
+  ${S.routeAccepted&&curStop()?`<button class="btn ghost" id="simOff">DEMO · simulate a wrong turn (${S.gps.thresholdKm} km threshold)</button>`:''}`);
+ if($('#simOff'))$('#simOff').onclick=()=>{
+  S.gps.offKm=(S.gps.thresholdKm+0.4).toFixed(1);S.gps.alerted=true;
+  toast(`Off route by ${S.gps.offKm} km — dispatch alerted`,true);render();};
+ if($('#backOn'))$('#backOn').onclick=()=>{S.gps.alerted=false;S.gps.offKm=0;
+  toast('Back on route — alert cleared, logged in the ledger');render();};
+ document.querySelectorAll('[data-work]').forEach(b=>b.onclick=()=>{const c=curStop();if(c&&c.type==='PICKUP')S.gps.dist=12;S.view='stop';S.otp='';render();});
+}
+
+/* ── 6 · DROP-OFF (OTP or signature) + pickup/reprise ── */
+function finishStop(s,msg){s.st='done';S.earned+=s.pay;S.view=null;S.gps.dist=450;S.boxOk=false;toast(msg);render();}
+function vStopWork(){
+ const s=curStop();if(!s){S.view=null;return render();}
+ if(s.type==='PICKUP')return vPickup(s);
+ if(s.type==='REPRISE')return vReprise(s);
+ return vDropoff(s);
+}
+function vPickup(s){
+ const BOXES=[
+  {id:'BX-1042',f:'G. Bilodeau · Rosemont',d:'1 device · $1,449'},
+  {id:'BX-8815',f:'G. Pensato · Laval',d:'1 device · $1,299'},
+  {id:'BX-1049',f:'S. Duchesneau · Vieux-Port',d:'2 devices · $1,908'},
+  {id:'BX-ANJ0',f:'Cellcom Anjou · restock',d:'1 device · $1,079'}];
+ if(S.phase==='verify'){
+  shell(`
+   <div class="card"><div class="hd">Provider release — ${s.name}</div>
+    <div class="bd" style="padding-bottom:10px">
+     <div class="kv"><span class="k">Boxes scanned into the car</span><span class="v">${S.loaded.length} of ${BOXES.length} ✓</span></div>
+     <div class="kv"><span class="k">IMEIs inside</span><span class="v">Scanned & sealed by the provider</span></div>
+     ${contactKvs(s)}
+    </div></div>
+   ${contactLinks(s)}
+   ${verifyBlock('The provider signs the release','Their dispatcher\u2019s app shows a release code. Code, then signature — custody never moves on one proof alone.','902314')}
+   <button class="btn ghost" id="back">Back</button>`);
+  $('#back').onclick=()=>{S.phase='scan';resetVerify();render();};
+  wireVerify('902314',nm=>{S.custody=9;S.car=BOXES.map(b=>b.id);S.phase='scan';resetVerify();
+   finishStop(s,`Custody accepted · ${BOXES.length} boxes on board · released by ${nm}`);});
+  return;
+ }
+ const left=BOXES.filter(b=>!S.loaded.includes(b.id));
+ shell(`
+  <div class="card"><div class="hd">Pickup — ${s.name}</div><div class="bd">
+   ${contactKvs(s)}
+   ${contactLinks(s)}
+   <div class="note acc" style="margin:10px 0 10px"><div><b>The provider scanned and sealed the IMEIs when packing.</b> Your job: scan each box's reference to confirm you're taking the right boxes — nothing more.</div></div>
+   <div class="scanview">${SCANSVG}</div>
+   <div class="label" style="margin-top:4px">Your manifest — ${BOXES.length} boxes · 9 devices · $12,880 declared</div>
+   ${BOXES.map(b=>`<div class="boxrow ${S.loaded.includes(b.id)?'scanned':''}">
+     <div><div class="bid">${b.id}</div><div class="bfor">${b.f} · ${b.d}</div></div>
+     <button class="scanb" data-load="${b.id}">${S.loaded.includes(b.id)?'✓ Scanned':'SCAN'}</button></div>`).join('')}
+   <div class="boxrow"><div><div class="bid" style="color:var(--faint)">BX-7734</div>
+     <div class="bfor">On the dock — NOT on your manifest</div></div>
+     <button class="scanb" style="background:var(--surface);color:var(--muted);border:1.5px solid var(--line-mid)" data-badbox="BX-7734">SCAN</button></div>
+   <div style="margin-top:12px">
+    <button class="btn" id="go" ${left.length?'disabled style="opacity:.45"':''}>
+     ${left.length?left.length+' box(es) left to scan':'All boxes confirmed — provider verification'}</button>
+    <button class="btn ghost" id="back">Back</button></div></div></div>`);
+ $('#back').onclick=()=>{S.view=null;render();};
+ document.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>{
+  S.loaded.push(b.dataset.load);toast(b.dataset.load+' ✓ on your manifest — into the car');render();});
+ document.querySelectorAll('[data-badbox]').forEach(b=>b.onclick=()=>{
+  toast('REFUSED — BX-7734 is not on your manifest. Leave it on the dock.',true);});
+ if(!left.length)$('#go').onclick=()=>{if(S.gps.dist>GEOFENCE_M)S.gps.dist=12;S.phase='verify';resetVerify();render();};
+}
+function vDropoff(s){
+ const BOXF={'BX-1042':'G. Bilodeau','BX-8815':'G. Pensato','BX-1049':'S. Duchesneau','BX-ANJ0':'Cellcom Anjou'};
+ if(!S.boxOk){
+  if(S.gps.dist>GEOFENCE_M){
+   shell(`
+    <div class="card"><div class="hd">${s.name} <div class="sp"></div><span class="pill">${s.provider}</span></div>
+     <div class="bd" style="padding-bottom:10px">
+      <div class="kv"><span class="k">Address</span><span class="v" style="font-weight:600">${s.addr}</span></div>
+      ${contactKvs(s)}
+     </div></div>
+    ${contactLinks(s)}
+    <div class="note warn" style="margin-top:10px"><div><b>Not answering?</b> Call or text before you log an exception — never leave the device.</div></div>
+    ${geoLocked(s)}
+    <button class="btn ghost" id="back">Back to route</button>`);
+   $('#back').onclick=()=>{S.view=null;render();};
+   $('#simArrive').onclick=()=>{S.gps.dist=12;toast('GPS · 12 m — inside the geofence, handover unlocked');render();};
+   return;
+  }
+  shell(`
+   ${gpsPill()}
+   <div class="card"><div class="hd">${s.name} <div class="sp"></div><span class="pill">${s.provider}</span>
+     ${s.deadline?`<span class="pill warn">by ${s.deadline}</span>`:''}</div>
+    <div class="bd" style="padding-bottom:10px">
+     <div class="kv"><span class="k">Deliver box</span><span class="v mono">${s.box}</span></div>
+     ${contactKvs(s)}
+     <div class="kv"><span class="k">Pay</span><span class="v" style="color:var(--acc)">+$${s.pay.toFixed(2)}</span></div>
+    </div></div>
+   ${contactLinks(s)}
+   <div class="card"><div class="hd">Scan the box at the door</div><div class="bd">
+    <div class="scanview">${SCANSVG}</div>
+    <div class="note warn" style="margin-bottom:8px"><div><b>Wrong box can never leave the car.</b> The app refuses any box that isn't ${s.box}. (Demo: tap a box to simulate the scan.)</div></div>
+    <div class="bigscan">${S.car.map(b=>`<button data-boxscan="${b}">
+      <div><div class="bid2">${b}</div><div class="bfor2">${BOXF[b]||'buyback'}</div></div>
+      <span class="sp"></span><span style="font-family:var(--mono);font-size:10px;color:var(--dkm)">SCAN</span></button>`).join('')}</div>
+    <button class="btn ghost" id="back" style="margin-top:10px">Back to route</button>
+   </div></div>`);
+  $('#back').onclick=()=>{S.view=null;render();};
+  document.querySelectorAll('[data-boxscan]').forEach(b=>b.onclick=()=>{
+   if(b.dataset.boxscan===s.box){S.boxOk=true;resetVerify();
+    toast(s.box+' confirmed — this is the right client');render();}
+   else toast(`REFUSED — ${b.dataset.boxscan} is for ${BOXF[b.dataset.boxscan]||'another stop'}`,true);});
+  return;
+ }
+ shell(`
+  ${gpsPill()}
+  <div class="card"><div class="hd">${s.name} <div class="sp"></div>
+    <span class="pill acc">${s.box} ✓</span>${s.deadline?`<span class="pill warn">by ${s.deadline}</span>`:''}</div>
+   <div class="bd" style="padding-bottom:10px">
+    <div class="kv"><span class="k">Releasing</span><span class="v">${s.n} device${s.n>1?'s':''} · box scanned ✓</span></div>
+    ${contactKvs(s)}
+    <div class="kv"><span class="k">Pay</span><span class="v" style="color:var(--acc)">+$${s.pay.toFixed(2)}</span></div>
+   </div></div>
+  ${contactLinks(s)}
+  ${verifyBlock('The client signs for the phone','Their tracking page shows a 6-digit code you never see. Code first, then their signature — both, every time, no exceptions.','417826')}
+  <button class="btn danger" style="margin-top:12px" id="exc">Problem at the door — exception</button>
+  <button class="btn ghost" id="back">Back to route</button>`);
+ $('#back').onclick=()=>{S.view=null;S.boxOk=false;resetVerify();render();};
+ $('#exc').onclick=()=>{
+  const r=prompt('Never leave devices. What happened?\nno receiver / closed / refused / seal / safety');
+  if(!r)return;s.st='blocked';S.view=null;S.boxOk=false;resetVerify();
+  toast('Exception recorded · custody kept · dispatch notified');render();};
+ wireVerify('417826',nm=>{S.custody-=s.n;S.car=S.car.filter(b=>b!==s.box);S.boxOk=false;resetVerify();
+  finishStop(s,`Delivered ${s.box} to ${nm} · box scan + code + signature on record · +$${s.pay.toFixed(2)}`);});
+}
+function vReprise(s){
+ if(S.phase==='verify'){
+  shell(`
+   <div class="card"><div class="hd">${s.name}</div>
+    <div class="bd" style="padding-bottom:10px">
+     <div class="kv"><span class="k">Collecting</span><span class="v">iPhone 14 Pro · grade ${S.grade} · seal R-31907</span></div>
+     ${contactKvs(s)}
+    </div></div>
+   ${contactLinks(s)}
+   ${gpsPill()}
+   ${verifyBlock('The client signs the release','Collecting is a pickup — same rule. Their page shows the code; then they sign the trade-in away.','417826')}
+   <button class="btn ghost" id="back">Back</button>`);
+  $('#back').onclick=()=>{S.phase='scan';resetVerify();render();};
+  wireVerify('417826',nm=>{S.custody+=1;S.car.push('R-31907');S.phase='scan';resetVerify();
+   finishStop(s,`Buyback in custody · grade ${S.grade} · released by ${nm} · +$${s.pay.toFixed(2)}`);});
+  return;
+ }
+ shell(`
+  <div class="card"><div class="hd">${s.name} <div class="sp"></div><span class="pill warn">REPRISE</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Device</span><span class="v mono">351984406220071</span></div>
+    ${contactKvs(s)}
+    <div class="kv"><span class="k">Blacklist check</span><span class="v" style="color:var(--acc)">Clean · locks off</span></div>
+    ${contactLinks(s)}
+    <div class="label">Condition grade</div>
+    <div class="chips">${['A','B','C','D'].map(g=>`<button class="chipG ${S.grade===g?'on':''}" data-g="${g}">
+      <div class="g">${g}</div><div class="l">${{A:'Like new',B:'Light wear',C:'Visible wear',D:'Damaged'}[g]}</div></button>`).join('')}</div>
+    <div class="kv" style="margin-top:10px"><span class="k">Return-leg cover</span>
+     <span class="v mono">${{A:'$580',B:'$520',C:'$390',D:'$120'}[S.grade]}</span></div>
+    <div style="margin-top:12px"><button class="btn" id="go">Photograph & seal — client verification</button>
+    <button class="btn ghost" id="back">Back</button></div></div></div>`);
+ $('#back').onclick=()=>{S.view=null;render();};
+ document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{S.grade=b.dataset.g;render();});
+ $('#go').onclick=()=>{if(S.gps.dist>GEOFENCE_M)S.gps.dist=12;S.phase='verify';resetVerify();render();};
+}
+/* ── 3 · ADD-ONS ── */
+function wireAddons(){
+ document.querySelectorAll('[data-aacc]').forEach(b=>b.onclick=()=>{
+  const a=S.addons.find(x=>x.id===b.dataset.aacc);a.state='accepted';
+  S.stops.push({id:100+S.stops.length,type:a.info.includes('trade-in')||a.info.includes('RMA')?'REPRISE':'DELIVER',
+   eta:'—',name:a.name,addr:a.addr,pay:a.pay,info:a.info,st:'',n:2,addon:true,
+   phone:a.phone,tel:a.tel,email:a.email,contact:a.contact||'Store'});
+  toast(`${a.name} added to your route · +$${a.pay.toFixed(2)}`);render();});
+ document.querySelectorAll('[data-adec]').forEach(b=>b.onclick=()=>{
+  const a=S.addons.find(x=>x.id===b.dataset.adec);a.state='declined';
+  toast('Skipped — no effect on your route or rating');render();});
+}
+function vAddons(){
+ const open=openAddons();
+ shell(`
+  ${!S.online?`<div class="note warn"><div><b>You're offline</b> — go online to receive add-on offers.</div></div>`:''}
+  <div class="note acc"><div><b>Add-ons are extra pay on top of your route.</b> Accept or skip — skipping never affects your route or your standing. First accept wins across drivers.</div></div>
+  ${open.length?open.map(a=>`
+   <div class="offer ${a.hot?'':'quiet'}"><div class="top">${a.hot?'EXPIRES SOON':'AVAILABLE'}
+     ${a.left!=null?`<span class="timer">0:${String(Math.max(0,a.left)).padStart(2,'0')}</span>`:''}</div>
+    <div class="bd"><div class="sname">${a.name} · <span class="earn" style="font-size:14px">+$${a.pay.toFixed(2)}</span></div>
+     <div class="saddr">${a.addr}</div>
+     ${contactLine(a)}
+     <div class="saddr" style="margin-top:3px">${a.info}</div>
+     ${navLinks(a.addr)}
+     ${contactLinks(a)}
+     <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn sm" data-aacc="${a.id}">Accept · add to route</button>
+      <button class="btn alt sm" data-adec="${a.id}">Skip</button></div></div></div>`).join('')
+  :`<div class="card"><div class="bd" style="color:var(--muted);font-size:13.5px">No open offers right now. New ones appear here — and on your dashboard — the moment a client books nearby.</div></div>`}
+  ${S.addons.filter(a=>a.state!=='open').length?`<div class="label">Earlier today</div>
+   <div class="card"><div class="bd">${S.addons.filter(a=>a.state!=='open').map(a=>
+    `<div class="kv"><span class="k">${a.name}</span><span class="v">
+      <span class="pill ${a.state==='accepted'?'acc':a.state==='declined'?'':'risk'}">${a.state}</span></span></div>`).join('')}
+   </div></div>`:''}`);
+ wireAddons();
+}
+
+/* ── 4 · EARNINGS ── */
+function vEarn(){
+ S.week[6][1]=S.earned;
+ const max=Math.max(...S.week.map(w=>w[1]),1);
+ const paid=S.stops.filter(s=>s.st==='done'&&s.pay);
+ shell(`
+  <div class="card"><div class="hd">Today</div><div class="bd">
+   <div style="font-family:var(--mono);font-size:34px;font-weight:800;color:var(--acc)">$${S.earned.toFixed(2)}</div>
+   <div style="font-size:12px;color:var(--muted);margin-top:4px">${paid.length} paid stops · route $${routePay().toFixed(2)} + add-ons</div>
+   ${paid.map(s=>`<div class="kv"><span class="k">${s.name}${s.addon?' · add-on':''}</span><span class="v">+$${s.pay.toFixed(2)}</span></div>`).join('')||'<div class="kv"><span class="k">Nothing closed yet</span><span class="v">—</span></div>'}
+  </div></div>
+  <div class="card"><div class="hd">This week</div><div class="bd">
+   <div class="bars">${S.week.map(([d,v],i)=>`<div><div class="b ${i===6?'hi':''}" style="height:${Math.max(6,90*v/max)}px"></div><div class="d">${d}</div></div>`).join('')}</div>
+   <div class="kv" style="margin-top:8px"><span class="k">Week total</span><span class="v">$${S.week.reduce((a,w)=>a+w[1],0).toFixed(2)}</span></div>
+   <div class="kv"><span class="k">Payout</span><span class="v">Fridays · direct deposit</span></div>
+  </div></div>
+  <div class="note acc"><div><b>Every dollar traces to a ledger entry.</b> A paid stop is a verified handover — code + signature, both mandatory — there is no other kind.</div></div>`);
+}
+
+/* ── 7 · PROFILE ── */
+function vProfile(){
+ shell(`
+  <div class="card"><div class="hd">Maya Chahwan <div class="sp"></div><span class="pill acc">Owner-operator</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Route</span><span class="v">MTL-03 · Laval / Rive-Nord</span></div>
+    <div class="kv"><span class="k">Vehicle</span><span class="v">Kia Niro · personal</span></div>
+    <div class="kv"><span class="k">Deliveries · 7 days</span><span class="v">184 · 100% on time</span></div>
+    <div class="kv"><span class="k">Incidents · 90 days</span><span class="v">0</span></div>
+    <div class="kv"><span class="k">Language</span><span class="v">Français / English</span></div>
+   </div></div>
+  <div class="card"><div class="hd">Compliance — all five stay green or the route locks</div><div class="bd">
+   ${[['BSP licence · convoyage de biens de valeur','2028-04-11'],['Commercial vehicle insurance','2027-03-01'],
+      ['Criminal record check','2026-02'],['CNESST 55090','Filed'],['Custody undertaking','v2 signed']]
+     .map(r=>`<div class="kv"><span class="k">${r[0]}</span><span class="v"><span class="pill acc">${r[1]}</span></span></div>`).join('')}
+  </div></div>
+  <div class="card"><div class="hd">Preferences</div><div class="bd">
+   <div class="kv"><span class="k">Navigation app</span><span class="v">Waze (default)</span></div>
+   <div class="kv"><span class="k">Add-on offers</span><span class="v">On · within 8 min detour</span></div>
+   <div class="kv"><span class="k">Off-route alert to dispatch</span><span class="v">
+     <span style="display:inline-flex;border:1.5px solid var(--line-mid);border-radius:7px;overflow:hidden">
+      ${[1,2,5].map(k=>`<button data-thresh="${k}" style="padding:6px 12px;font-size:12px;font-weight:800;
+       ${S.gps.thresholdKm===k?'background:var(--acc);color:#fff':'color:var(--muted)'}">${k} km</button>`).join('')}
+     </span></span></div>
+   <div class="kv"><span class="k">Geofence on handovers</span><span class="v">${GEOFENCE_M} m · cannot be disabled</span></div>
+   <div class="kv"><span class="k">Notifications</span><span class="v">Push + SMS</span></div>
+  </div></div>
+  <button class="btn alt">Call dispatch · 24/7</button>
+  <div class="note acc" style="margin-top:12px"><div><b>Year 1: the two owners are the carrier.</b> No employees, no contractors — the first contractor triggers the legal opinion, budgeted for Year 2.</div></div>`);
+ wireProfile();
+}
+
+function wireProfile(){
+ document.querySelectorAll('[data-thresh]').forEach(b=>b.onclick=()=>{
+  S.gps.thresholdKm=+b.dataset.thresh;
+  toast('Off-route alert set to '+S.gps.thresholdKm+' km — synced to dispatch');render();});
+}
+function render(){
+ if(S.tab==='dash')return vDash();
+ if(S.tab==='route')return vRouteTab();
+ if(S.tab==='addons')return vAddons();
+ if(S.tab==='earn')return vEarn();
+ return vProfile();
+}
+render();
+</script>
+</body></html>
