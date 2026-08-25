@@ -67,6 +67,26 @@ html.native .dock{padding-bottom:8px}
 .loginwrap .sub2{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.55}
 .loginwrap .field{margin-top:20px}
 .loginwrap .actions{margin-top:16px}
+.loginwrap .pindots{margin-top:22px}
+.loginwrap .pindots i{border-color:var(--line-mid)}
+.loginwrap .pindots i.on{background:var(--acc);border-color:var(--acc)}
+.loginwrap .pindots.err i{border-color:var(--risk);background:var(--risk-soft)}
+.pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px auto 0;width:100%;max-width:280px}
+.pinpad button{height:54px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line-mid);
+  color:var(--ink);font-family:var(--mono);font-size:22px;font-weight:700}
+.pinpad button:active{background:var(--raise)}
+.pinpad button.fn{font-size:16px;color:var(--muted)}
+.pinpad .gap{visibility:hidden}
+.choices{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.choice{display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;
+  padding:14px;border:1.5px solid var(--line-mid);border-radius:12px;background:var(--surface)}
+.choice:active{background:var(--raise)}
+.choice .ic{width:40px;height:40px;border-radius:10px;background:var(--acc-soft);color:var(--acc);
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.choice .ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.choice b{display:block;color:var(--ink);font-size:15px;font-weight:800}
+.choice span{display:block;color:var(--muted);font-size:12.5px;margin-top:3px;line-height:1.45;font-weight:500}
 .idpill{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);
  border:1px solid var(--acc-line);border-radius:20px;padding:7px 14px;font-size:13px;
  font-weight:700;color:var(--acc-ink);margin-top:4px}
@@ -301,7 +321,7 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 html.native .phone-screen:has(.dock) .toast{bottom:calc(176px + env(safe-area-inset-bottom))}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 /* lock / splash */
-.splash,.lock{height:100%;display:flex;flex-direction:column;align-items:center;padding:88px 28px 36px;text-align:center}
+.splash,.lock{height:100%;width:100%;display:flex;flex-direction:column;align-items:center;padding:88px 28px 36px;text-align:center}
 .splash .mark,.lock .mark{width:76px;height:76px;border-radius:18px;background:#0F6455;display:flex;
   align-items:center;justify-content:center;margin-bottom:18px}
 .splash .mark svg,.lock .mark svg{width:42px;height:20px}
@@ -309,9 +329,11 @@ html.native .phone-screen:has(.dock) .toast{bottom:calc(176px + env(safe-area-in
 .splash p{color:var(--dkm);margin-top:8px;font-size:13px}
 .lock .who{color:var(--dka2);font-size:13px;margin-top:6px;font-weight:600}
 .lock .hint{color:var(--dkm);font-size:12px;margin-top:22px}
+.lock .altlink{margin-top:auto;padding-top:28px;color:#8B9994;font-size:13px;font-weight:600}
 .face{width:64px;height:64px;border-radius:50%;border:1.5px solid var(--dkl);background:var(--dark2);
   color:var(--dka2);display:flex;align-items:center;justify-content:center;margin:22px auto 0}
-.face:active{background:#1E2C29}
+.face:active,.face.busy{background:#1E2C29}
+.face.busy{animation:pulse 1.2s infinite}
 .face svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .pindots{display:flex;gap:12px;justify-content:center;margin:18px 0 8px}
 .pindots i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--dkl);display:block}
@@ -358,7 +380,9 @@ const I={home:'<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>',
  nav:'<path d="M12 3 4.5 20l7.5-4 7.5 4z"/>',pin:'<path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
  phone:'<path d="M6.5 4.5h3l1.2 3-1.7 1.1a12 12 0 0 0 6.4 6.4l1.1-1.7 3 1.2v3A1.5 1.5 0 0 1 18 19 14.5 14.5 0 0 1 5 6a1.5 1.5 0 0 1 1.5-1.5z"/>',
  sms:'<path d="M5 6.5h14v9.5H9l-3.5 3v-3H5z"/>',
- mail:'<rect x="4" y="6.5" width="16" height="11.5" rx="1.5"/><path d="m4.5 7.5 7.5 6 7.5-6"/>'};
+ mail:'<rect x="4" y="6.5" width="16" height="11.5" rx="1.5"/><path d="m4.5 7.5 7.5 6 7.5-6"/>',
+ face:'<path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M9 15c.8 1.2 2 1.8 3 1.8s2.2-.6 3-1.8"/>',
+ key:'<circle cx="8" cy="12" r="3.2"/><path d="M11 12h9v3"/><path d="M16 12v2.5"/>'};
 const ic=n=>`<svg viewBox="0 0 24 24">${I[n]}</svg>`;
 const DEMO_CODE='417826';
 const LOGIN_CODE='246810';
@@ -386,7 +410,7 @@ function setChrome(dark){
 /* ── state ── */
 const S={
  gate:'splash',
- auth:{logged:false,stage:'id',id:'',method:'',code:''},
+ auth:{logged:false,stage:'id',id:'',method:'',code:'',lock:null,pin:'',pinOnce:'',pinErr:false,otpSent:false,faceTried:false},
  tab:'dash', view:null, online:true, otp:'', otpErr:false, codeOk:false, grade:'B', phase:'scan',
  routeAccepted:false, custody:0, earned:0, sigDrawn:false, car:[], loaded:[], boxOk:false,
  gps:{dist:450, offKm:0, thresholdKm:2, alerted:false},
@@ -512,6 +536,62 @@ function lookupDriver(v){
  const digits=key.replace(/\D/g,'');
  return DEMO_IDS[key]||DEMO_IDS[key.replace(/\s/g,'')]||DEMO_IDS[digits]||null;
 }
+const DEVICE_KEY='custode.device';
+function loadDevice(){
+ try{return JSON.parse(localStorage.getItem(DEVICE_KEY)||'null');}catch(e){return null;}
+}
+function saveDevice(d){localStorage.setItem(DEVICE_KEY,JSON.stringify(d));}
+function clearDevice(){localStorage.removeItem(DEVICE_KEY);}
+function blankAuth(){
+ return {logged:false,stage:'id',id:'',method:'',code:'',lock:null,pin:'',pinOnce:'',pinErr:false,otpSent:false,faceTried:false};
+}
+function restoreDeviceAuth(){
+ const d=loadDevice();
+ if(!d||!d.lock){S.auth=blankAuth();return;}
+ S.auth=blankAuth();
+ S.auth.id=d.id;S.auth.method=d.method;S.auth.lock=d.lock;
+ S.auth.stage=d.lock==='face'?'returnFace':'returnOtp';
+}
+function requestFaceId(){
+ return new Promise(res=>{
+  const native=window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.custode;
+  if(native){
+   const t=setTimeout(()=>res(false),25000);
+   window.__custodeFaceCb=ok=>{clearTimeout(t);res(!!ok);};
+   native.postMessage({action:'faceId'});
+   return;
+  }
+  setTimeout(()=>res(true),900);
+ });
+}
+function pinUI(){
+ const A=S.auth;
+ return `<div class="pindots ${A.pinErr?'err':''}">${[0,1,2,3].map(i=>`<i class="${i<A.pin.length?'on':''}"></i>`).join('')}</div>
+  <div class="pinpad">
+   ${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-p="${n}">${n}</button>`).join('')}
+   <span class="gap"></span><button type="button" data-p="0">0</button>
+   <button type="button" class="fn" data-p="del">⌫</button>
+  </div>`;
+}
+function wirePinPad(onFull){
+ document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{
+  const A=S.auth,k=b.dataset.p;A.pinErr=false;
+  if(k==='del')A.pin=A.pin.slice(0,-1);
+  else if(A.pin.length<4)A.pin+=k;
+  if(A.pin.length===4)onFull(A.pin);
+  else vLogin();
+ });
+}
+function unlinkPhone(){
+ clearDevice();S.auth=blankAuth();
+ toast('This iPhone is no longer linked');vLogin();
+}
+function finishLogin(returning){
+ S.auth.logged=true;S.auth.pin='';S.auth.code='';
+ const n=lookupDriver(S.auth.id)||'driver';
+ toast((returning?'Welcome back, ':'You’re in, ')+n);
+ render();
+}
 function currentDriver(){
  const n=lookupDriver(S.auth.id)||'Maya C.';
  return n==='Rami C.'
@@ -532,30 +612,72 @@ function vSplash(){
 }
 function vLogin(){
  const A=S.auth;
+ if(A.stage==='returnFace')return vReturnFace();
  setChrome(false);
  $('#gate').style.display='none';
  $('#app').style.display='flex';
- $('#app').innerHTML=`
-  <div class="loginwrap">
-   <div class="lg">${SEAL}<span style="font-weight:800;letter-spacing:.16em;color:var(--ink)">CUSTODE DRIVER</span></div>
-   ${A.stage==='id'?`
-    <h1>Sign in to drive</h1>
-    <div class="sub2">Use your <b>phone number</b> or your <b>work email</b> — we'll text or email you a one-time code. No passwords, ever.</div>
-    <div class="field"><input id="lid" inputmode="email" autocomplete="username"
-      placeholder="514-555-0199  or  you@custode.ca" value="${A.id}"></div>
-    <div class="actions"><button class="btn" id="lgo">Send my code</button></div>
-    <div class="note acc" style="margin-top:18px;margin-bottom:0"><div><b>Demo accounts:</b> 514-555-0199 or maya@custode.ca (Maya) · 514-555-0244 or rami@custode.ca (Rami)</div></div>`
-   :`
-    <h1>Enter the 6-digit code</h1>
-    <div class="sub2">Sent by ${A.method==='phone'?'SMS to':'email to'}</div>
-    <div class="idpill">${A.id} <button id="chg" type="button" style="font-size:11px;color:var(--acc);text-decoration:underline">change</button></div>
+ const otpBlock=(chg)=>{
+  const who=A.method==='phone'?'SMS to':'email to';
+  return `<h1>Enter the 6-digit code</h1>
+    <div class="sub2">Sent by ${who}</div>
+    <div class="idpill">${A.id}${chg?` <button id="chg" type="button" style="font-size:11px;color:var(--acc);text-decoration:underline">change</button>`:''}</div>
     <div class="field"><input id="lcode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
       placeholder="••••••" style="font-family:var(--mono);font-size:24px;letter-spacing:.4em;text-align:center" value="${A.code}"></div>
     <div class="actions">
-     <button class="btn" id="lver">Verify & sign in</button>
+     <button class="btn" id="lver">${A.stage==='returnOtp'?'Verify identity':'Verify code'}</button>
      <button class="btn ghost" id="lre">Resend the code</button></div>
-    <div class="note acc" style="margin-top:14px"><div><b>Demo code:</b> 2 4 6 8 1 0</div></div>`}
+    <div class="note acc" style="margin-top:14px;margin-bottom:0"><div><b>Demo code:</b> 2 4 6 8 1 0</div></div>`;
+ };
+ const body={
+  id:`<h1>Sign in to drive</h1>
+    <div class="sub2">First time on this iPhone: use your <b>phone number</b> or <b>work email</b>. We’ll send a one-time code. Then you set Face ID or a 4-digit PIN.</div>
+    <div class="field"><input id="lid" inputmode="email" autocomplete="username"
+      placeholder="514-555-0199  or  you@custode.ca" value="${A.id}"></div>
+    <div class="actions"><button class="btn" id="lgo">Send my code</button></div>
+    <div class="note acc" style="margin-top:18px;margin-bottom:0"><div><b>Demo accounts:</b> 514-555-0199 or maya@custode.ca (Maya) · 514-555-0244 or rami@custode.ca (Rami)</div></div>`,
+  code:otpBlock(true),
+  returnOtp:`<h1>Confirm it’s you</h1>
+    <div class="sub2">PIN unlock needs a one-time code first — sent by ${A.method==='phone'?'SMS':'email'}.</div>
+    <div class="idpill">${A.id}</div>
+    <div class="field"><input id="lcode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+      placeholder="••••••" style="font-family:var(--mono);font-size:24px;letter-spacing:.4em;text-align:center" value="${A.code}"></div>
+    <div class="actions">
+     <button class="btn" id="lver">Verify identity</button>
+     <button class="btn ghost" id="lre">Resend the code</button></div>
+    <div class="note acc" style="margin-top:14px;margin-bottom:0"><div><b>Demo code:</b> 2 4 6 8 1 0</div></div>
+    <button class="btn ghost" id="unlink" type="button">Use a different driver</button>`,
+  setup:`<h1>Protect this iPhone</h1>
+    <div class="sub2">Next time you open Custode:</div>
+    <div class="choices">
+     <button class="choice" id="chFace" type="button"><span class="ic">${ic('face')}</span><div>
+      <b>Face ID</b><span>Opens the app directly — your face is the login.</span></div></button>
+     <button class="choice" id="chPin" type="button"><span class="ic">${ic('key')}</span><div>
+      <b>4-digit PIN</b><span>We’ll send an OTP to your ${A.method==='phone'?'phone':'email'} each time, then you enter the PIN.</span></div></button>
+    </div>`,
+  pinCreate:`<h1>Create a 4-digit PIN</h1>
+    <div class="sub2">You’ll need this PIN after the identity code, every time you open the app.</div>
+    ${pinUI()}`,
+  pinConfirm:`<h1>Confirm your PIN</h1>
+    <div class="sub2">Enter the same 4 digits again.</div>
+    ${pinUI()}`,
+  faceEnroll:`<h1>Turn on Face ID</h1>
+    <div class="sub2">Next time Custode opens with your face — no code, no PIN.</div>
+    <div class="actions" style="margin-top:22px"><button class="btn" id="enFace">Enable Face ID</button>
+     <button class="btn ghost" id="backSetup" type="button">Choose PIN instead</button></div>`,
+  returnPin:`<h1>Enter your PIN</h1>
+    <div class="sub2">Identity confirmed. Unlock with your 4-digit PIN.</div>
+    ${pinUI()}
+    <button class="btn ghost" id="unlink" type="button">Use a different driver</button>`
+ };
+ $('#app').innerHTML=`
+  <div class="loginwrap">
+   <div class="lg">${SEAL}<span style="font-weight:800;letter-spacing:.16em;color:var(--ink)">CUSTODE DRIVER</span></div>
+   ${body[A.stage]||body.id}
   </div>`;
+ if(A.stage==='returnOtp'&&!A.otpSent){
+  A.otpSent=true;
+  toast(A.method==='phone'?'Code sent by SMS':'Code sent by email');
+ }
  if(A.stage==='id'){
   const go=()=>{
    const v=$('#lid').value.trim().toLowerCase();
@@ -568,18 +690,75 @@ function vLogin(){
   $('#lgo').onclick=go;
   $('#lid').addEventListener('keydown',e=>{if(e.key==='Enter')go();});
   setTimeout(()=>$('#lid')&&$('#lid').focus(),50);
- } else {
+ } else if(A.stage==='code'||A.stage==='returnOtp'){
   const ver=()=>{
    if($('#lcode').value.trim()!==LOGIN_CODE)return toast('Wrong code — try again or resend',true);
-   A.logged=true;
-   toast('Welcome back, '+(lookupDriver(A.id)||'driver'));render();};
+   if(A.stage==='returnOtp'){A.stage='returnPin';A.pin='';A.code='';vLogin();return;}
+   A.stage='setup';A.code='';vLogin();};
   $('#lver').onclick=ver;
   $('#lcode').addEventListener('keydown',e=>{if(e.key==='Enter')ver();});
   $('#lcode').addEventListener('input',e=>{A.code=e.target.value;});
-  $('#chg').onclick=()=>{A.stage='id';vLogin();};
+  const chg=$('#chg');if(chg)chg.onclick=()=>{A.stage='id';vLogin();};
   $('#lre').onclick=()=>toast('New code sent — the old one is dead');
+  const un=$('#unlink');if(un)un.onclick=unlinkPhone;
   setTimeout(()=>$('#lcode')&&$('#lcode').focus(),50);
+ } else if(A.stage==='setup'){
+  $('#chFace').onclick=()=>{A.stage='faceEnroll';vLogin();};
+  $('#chPin').onclick=()=>{A.stage='pinCreate';A.pin='';A.pinOnce='';A.pinErr=false;vLogin();};
+ } else if(A.stage==='pinCreate'){
+  wirePinPad(p=>{A.pinOnce=p;A.pin='';A.stage='pinConfirm';vLogin();});
+ } else if(A.stage==='pinConfirm'){
+  wirePinPad(p=>{
+   if(p!==A.pinOnce){A.pinErr=true;A.pin='';A.pinOnce='';A.stage='pinCreate';
+    toast('PINs didn’t match — try again',true);vLogin();return;}
+   saveDevice({id:A.id,method:A.method,lock:'pin',pin:p});
+   A.lock='pin';finishLogin(false);});
+ } else if(A.stage==='faceEnroll'){
+  $('#enFace').onclick=()=>{
+   const b=$('#enFace');if(b){b.disabled=true;b.textContent='Look at iPhone…';}
+   requestFaceId().then(ok=>{
+    if(!ok){if(b){b.disabled=false;b.textContent='Enable Face ID';}return toast('Face ID didn’t match — try again',true);}
+    saveDevice({id:A.id,method:A.method,lock:'face'});
+    A.lock='face';finishLogin(false);});
+  };
+  $('#backSetup').onclick=()=>{A.stage='setup';vLogin();};
+ } else if(A.stage==='returnPin'){
+  const un=$('#unlink');if(un)un.onclick=unlinkPhone;
+  wirePinPad(p=>{
+   const d=loadDevice();
+   if(!d||p!==d.pin){A.pinErr=true;A.pin='';toast('Wrong PIN',true);vLogin();return;}
+   finishLogin(true);});
  }
+}
+function vReturnFace(){
+ const A=S.auth,d=currentDriver();
+ setChrome(true);
+ $('#app').style.display='none';
+ $('#gate').style.display='flex';
+ $('#gate').innerHTML=`<div class="lock">
+   <div class="mark">${SEAL}</div>
+   <h1>CUSTODE</h1>
+   <div class="who">${d.short} · ${d.code}</div>
+   <button class="face" id="facebtn" type="button" aria-label="Face ID">${ic('face')}</button>
+   <div class="hint" id="facehint">Look at iPhone to unlock</div>
+   <button class="altlink" id="unlink" type="button">Use a different driver</button>
+  </div>`;
+ const go=()=>{
+  if(A.faceBusy)return;A.faceBusy=true;
+  const btn=$('#facebtn'),h=$('#facehint');
+  if(btn)btn.classList.add('busy');
+  if(h)h.textContent='Recognizing…';
+  requestFaceId().then(ok=>{
+   A.faceBusy=false;
+   if(ok){finishLogin(true);return;}
+   if(btn)btn.classList.remove('busy');
+   if(h)h.textContent='Didn’t match — tap to try again';
+   toast('Face ID didn’t match',true);
+  });
+ };
+ $('#facebtn').onclick=go;
+ $('#unlink').onclick=unlinkPhone;
+ if(!A.faceTried){A.faceTried=true;setTimeout(go,400);}
 }
 
 function openSheet(title,opts,onPick){
@@ -998,6 +1177,7 @@ function vProfile(){
     <div class="kv"><span class="k">Vehicle</span><span class="v">${d.vehicle}</span></div>
     <div class="kv"><span class="k">Deliveries · 7 days</span><span class="v">184 · 100% on time</span></div>
     <div class="kv"><span class="k">Incidents · 90 days</span><span class="v">0</span></div>
+    <div class="kv"><span class="k">Unlock on this iPhone</span><span class="v">${S.auth.lock==='face'?'Face ID':'PIN · OTP each open'}</span></div>
     <div class="kv"><span class="k">Language</span><span class="v">Français / English</span></div>
    </div></div>
   <div class="card"><div class="hd">Compliance — all five stay green or the route locks</div><div class="bd">
@@ -1017,11 +1197,12 @@ function vProfile(){
   </div></div>
   <div class="note acc" style="margin-bottom:0"><div><b>Year 1: the two owners are the carrier.</b> No employees, no contractors — the first contractor triggers the legal opinion, budgeted for Year 2.</div></div>`,
   `<button class="btn alt" id="callDisp">Call dispatch · 24/7</button>
-   <button class="btn ghost" id="signout">Sign out</button>`);
+   <button class="btn ghost" id="signout">Lock the app</button>
+   <button class="btn ghost" id="unlink">Unlink this iPhone</button>`);
  wireProfile();
  $('#callDisp').onclick=()=>toast('Calling dispatch · 24/7');
- $('#signout').onclick=()=>{S.auth={logged:false,stage:'id',id:'',method:'',code:''};
-  toast('Signed out');render();};
+ $('#signout').onclick=()=>{restoreDeviceAuth();toast('Locked');render();};
+ $('#unlink').onclick=unlinkPhone;
 }
 
 function wireProfile(){
@@ -1044,6 +1225,7 @@ function render(){
  return vProfile();
 }
 setInterval(tickClock,10000);
+restoreDeviceAuth();
 render();
 </script>
 </body></html>
