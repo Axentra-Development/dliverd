@@ -1,0 +1,1252 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dliverd Provider">
+<meta name="theme-color" content="#0C1211">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Dliverd Provider</title>
+<style>
+:root{
+  --paper:#F3F6F4;--surface:#FFFFFF;--raise:#FAFBFA;--sunk:#EDF1EF;
+  --ink:#111917;--body:#2B3733;--muted:#65726E;--faint:#8B9793;
+  --line:#DCE1DE;--line-mid:#C3CBC7;
+  --acc:#0F6455;--acc-ink:#0B4E42;--acc-soft:#E3EFEB;--acc-line:#9FC9BE;
+  --risk:#93301F;--risk-soft:#F8E9E5;--risk-line:#DFB6AC;
+  --warn:#7C5A0E;--warn-soft:#F6EEDC;
+  --dark:#0C1211;--dark2:#141C1A;--dkl:#31403C;--dkm:#8B9994;--dka:#54C1A6;--dka2:#7FD5BF;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1a2220}
+body{margin:0;color:var(--body);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;line-height:1.45}
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px 16px;
+  background:radial-gradient(1200px 600px at 50% -10%,#2a3a36 0%,#121816 55%,#0b100f 100%)}
+.phone{width:390px;height:844px;background:#000;border-radius:54px;padding:11px;position:relative;
+  box-shadow:0 0 0 1px #2c3331,0 28px 80px rgba(0,0,0,.55),inset 0 0 0 1px #3d4542}
+.phone-screen{height:100%;background:var(--paper);border-radius:44px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column}
+.island{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:118px;height:34px;
+  background:#0a0d0c;border-radius:20px;z-index:40;pointer-events:none}
+.osbar{position:absolute;top:0;left:0;right:0;height:54px;z-index:30;display:flex;align-items:flex-end;
+  justify-content:space-between;padding:0 28px 10px;color:#111;font-size:14px;font-weight:700;
+  pointer-events:none}
+.osbar.light{color:#EBF1EE}
+.osbar .sig{display:flex;align-items:center;gap:5px}
+.osbar svg{display:block}
+.homeind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:128px;height:5px;
+  background:#111;border-radius:4px;opacity:.28;z-index:30;pointer-events:none}
+.homeind.on-dark{background:#fff;opacity:.45}
+#app,#gate{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#gate{background:var(--dark);color:#C0CCC7}
+@media (max-width:480px){
+  .stage{padding:0;background:#000;min-height:100dvh}
+  .phone{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  .phone-screen{border-radius:0}
+}
+button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
+input,select{font-family:inherit;font-size:15px;color:var(--ink);border:1.5px solid var(--line-mid);
+  border-radius:6px;padding:12px;background:var(--surface);width:100%}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:1px}
+.mono{font-family:var(--mono)}
+.sp{flex:1 1 auto}
+.bar{flex:0 0 auto;z-index:10;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(16px);
+  -webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--line-mid);padding-top:54px}
+.bar .r1{display:flex;align-items:center;gap:10px;padding:8px 15px 10px}
+.brand{font-weight:800;font-size:13.5px;letter-spacing:.16em;color:var(--ink)}
+.sub{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint)}
+.main{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 16px}
+.card{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;
+  margin-bottom:12px;overflow:hidden}
+.card .hd{display:flex;align-items:center;gap:9px;padding:12px 15px;background:var(--raise);
+  border-bottom:1px solid var(--line);font-weight:800;color:var(--ink);font-size:14px}
+.card .bd{padding:13px 15px}
+.pill{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 7px;border:1px solid var(--line-mid);border-radius:3px;
+  color:var(--muted);background:var(--surface);white-space:nowrap}
+.pill.acc{color:var(--acc-ink);border-color:var(--acc-line);background:var(--acc-soft)}
+.pill.risk{color:var(--risk);border-color:var(--risk-line);background:var(--risk-soft)}
+.pill.warn{color:var(--warn);border-color:#DDC386;background:var(--warn-soft)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:50px;border-radius:8px;background:var(--acc);color:#fff;font-size:15.5px;font-weight:800}
+.btn:active{transform:scale(.99)}
+.btn.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-mid);font-weight:700}
+.btn.danger{background:var(--surface);color:var(--risk);border:1.5px solid var(--risk-line);font-weight:700}
+.btn.ghost{background:none;color:var(--muted);min-height:40px;font-weight:600;font-size:13px}
+.btn.sm{min-height:40px;font-size:13px;border-radius:7px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.note{display:flex;gap:9px;padding:11px 13px;font-size:12.5px;line-height:1.5;border-radius:8px;margin-bottom:12px}
+.note.acc{background:var(--acc-soft);color:var(--acc-ink);border:1px solid var(--acc-line)}
+.note.risk{background:var(--risk-soft);color:var(--risk);border:1px solid var(--risk-line)}
+.note.warn{background:var(--warn-soft);color:var(--warn);border:1px solid #DDC386}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted)} .kv .v{color:var(--ink);font-weight:700;text-align:right}
+.label{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);margin:14px 2px 7px}
+.hero{background:var(--dark);border-radius:12px;color:#C0CCC7;padding:16px;margin-bottom:12px}
+.hero .eyeb{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--dka)}
+.hero h2{color:#fff;font-size:18px;font-weight:800;margin-top:6px;line-height:1.25}
+.hero .m{font-size:12px;color:var(--dkm);margin-top:4px}
+.hero .row{display:flex;gap:8px;margin-top:13px}
+.hero .b1{flex:1 1 auto;min-height:44px;border-radius:7px;background:var(--dka);color:var(--dark);
+  font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:7px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;padding:13px 14px}
+.tile .v{font-family:var(--mono);font-size:23px;font-weight:800;color:var(--ink);line-height:1}
+.tile .v.acc{color:var(--acc)} .tile .v.risk{color:var(--risk)}
+.tile .k{font-size:10.5px;color:var(--muted);margin-top:5px}
+/* wizard */
+.wstep{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.whead{display:flex;align-items:center;gap:10px;padding:12px 14px;width:100%;text-align:left;background:var(--raise)}
+.wnum{width:26px;height:26px;border-radius:50%;border:2px solid var(--line-mid);display:flex;align-items:center;
+  justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted);flex:0 0 auto;
+  background:var(--surface)}
+.wstep.done .wnum{background:var(--acc);border-color:var(--acc);color:#fff}
+.wstep.cur .wnum{border-color:var(--acc);color:var(--acc-ink);box-shadow:0 0 0 4px var(--acc-soft)}
+.wstep.lockd .wnum{border-color:var(--line);color:var(--faint)}
+.wtitle{font-weight:800;font-size:13.5px;color:var(--ink)}
+.wstep.lockd .wtitle{color:var(--faint)}
+.wsum{font-size:10.5px;color:var(--muted);margin-top:1px;line-height:1.3}
+.wbody{padding:13px 14px;border-top:1px solid var(--line)}
+/* reconciliation */
+.rrow{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--line)}
+.rrow:last-child{border-bottom:0}
+.rst{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;padding:3px 0;border-radius:3px;border:1px solid;
+  flex:0 0 auto;width:56px;text-align:center;font-weight:700}
+.st-hit{color:var(--acc-ink);border-color:var(--acc-line);background:var(--acc-soft)}
+.st-miss,.st-short{color:var(--risk);border-color:var(--risk-line);background:var(--risk-soft)}
+.st-over,.st-extra{color:var(--warn);border-color:#DDC386;background:var(--warn-soft)}
+.st-pend{color:var(--muted);border-color:var(--line-mid);background:var(--sunk)}
+.rname{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.25}
+.rmeta{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:2px}
+.rqty{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:800;color:var(--ink);flex:0 0 auto}
+.rqty small{font-size:10px;color:var(--muted);font-weight:600}
+.scanbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.scanbtns button{border:1.5px solid var(--line-mid);border-radius:8px;background:var(--surface);
+  padding:9px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--ink);line-height:1.3}
+.scanbtns button:active{background:var(--raise)}
+.scanbtns .c{display:block;font-family:var(--mono);font-size:8.5px;color:var(--faint);margin-top:2px}
+.scanview{background:var(--dark);border-radius:10px;overflow:hidden;margin-bottom:10px}
+/* address */
+.addrbox{border:1.5px solid var(--line-mid);border-radius:8px;padding:10px 12px;margin-top:8px;
+  font-size:13px;line-height:1.5;background:var(--surface)}
+.addrbox.ok{border-color:var(--acc-line);background:var(--acc-soft)}
+.addrbox .t{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:3px}
+.strike{text-decoration:line-through;color:var(--faint)}
+/* handover / big code */
+.hand{background:var(--dark);color:#C0CCC7;border-radius:12px;padding:18px 16px;margin-bottom:12px}
+.hand h2{font-size:18px;font-weight:800;color:#fff;line-height:1.25}
+.hand .sb{font-size:12px;color:var(--dkm);margin-top:5px;line-height:1.5}
+.bigcode{font-family:var(--mono);font-size:46px;font-weight:800;letter-spacing:.14em;color:#fff;
+  text-align:center;padding:14px 0 4px;user-select:all;-webkit-user-select:all}
+.hmeta{display:flex;justify-content:space-between;margin-top:10px;font-family:var(--mono);
+  font-size:10px;color:#6D7B76}
+.hmeta b{color:var(--dka)}
+.otp{display:flex;gap:7px;justify-content:center;margin-top:16px}
+.otp span{width:40px;height:50px;border:1px solid var(--dkl);border-radius:6px;background:var(--dark2);
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;
+  font-weight:700;color:#EBF1EE}
+.otp span.f{border-color:var(--dka);background:#12302A}
+.otp.err span{border-color:#A63A26;background:#2C1A16}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.pad button{height:50px;border-radius:8px;background:var(--dark2);border:1px solid var(--dkl);
+  color:#EBF1EE;font-family:var(--mono);font-size:20px}
+.pad button:active{background:#1E2C29}
+.pad .fn{font-size:11px;color:var(--dkm)}
+.sighint{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:#6D7B76;text-align:center;padding:6px 0 8px}
+.lockcard{background:var(--risk-soft);border:1.5px solid var(--risk-line);border-radius:10px;
+  padding:18px 16px;text-align:center;margin-bottom:12px}
+.lockcard .big{font-size:34px}
+.lockcard h3{color:var(--risk);font-size:16px;margin-top:6px}
+.lockcard p{font-size:12.5px;color:var(--risk);margin-top:6px;line-height:1.5}
+/* box rows */
+.boxrow{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+.boxrow:last-child{border-bottom:0}
+.boxrow .bid{font-family:var(--mono);font-size:13px;font-weight:800;color:var(--ink)}
+.boxrow .bfor{font-size:11px;color:var(--muted);margin-top:1px}
+/* label preview */
+.labelprev{background:#fff;border:1.5px solid var(--line-mid);border-radius:10px;overflow:hidden;
+  box-shadow:0 10px 26px rgba(17,25,23,.14);margin-bottom:10px}
+.labelprev.void{opacity:.5;position:relative}
+.lband{background:var(--dark);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  font-weight:700;padding:9px 12px;display:flex;justify-content:space-between;align-items:center}
+.lbody{padding:12px 14px}
+.lname{font-size:17px;font-weight:800;color:#111;display:flex;align-items:center;gap:8px}
+.laddr{font-size:13px;color:#222;margin-top:3px;line-height:1.45}
+.lmeta{font-size:11px;color:#555;margin-top:5px}
+.lfrom{font-family:var(--mono);font-size:8.5px;color:#777;margin-top:9px;letter-spacing:.05em;text-transform:uppercase}
+.lreseal{margin-top:9px;border:1.5px solid #93301F;color:#93301F;font-size:11.5px;font-weight:700;
+  padding:7px 9px;border-radius:6px;line-height:1.4}
+.lbc{margin-top:10px}
+.lref{font-family:var(--mono);font-size:15px;font-weight:800;letter-spacing:.3em;text-align:center;color:#111;margin-top:2px}
+/* ledger */
+.ledrow{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.ledrow:last-child{border-bottom:0}
+.ledrow .lt{font-family:var(--mono);font-size:9.5px;color:var(--faint);width:58px;flex:0 0 auto}
+.ledrow .le{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--acc-ink);white-space:nowrap}
+.ledrow .lr{color:var(--muted);font-size:11px;line-height:1.35}
+.ledrow .lh{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--faint);flex:0 0 auto}
+.rangebar{height:8px;border-radius:4px;background:var(--sunk);overflow:hidden;margin-top:8px;
+  border:1px solid var(--line)}
+.rangebar i{display:block;height:100%;background:var(--acc);border-radius:4px;min-width:6px}
+/* nav / toast */
+.nav{flex:0 0 auto;z-index:10;display:flex;background:rgba(255,255,255,.9);
+  backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+  border-top:1px solid var(--line-mid);padding:7px 0 22px}
+.nav button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--faint);font-size:9px;font-weight:700;padding:4px 0;position:relative}
+.nav button.on{color:var(--acc)}
+.nav svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:-2px;right:calc(50% - 18px);min-width:16px;height:16px;border-radius:8px;
+  background:var(--risk);color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;
+  justify-content:center;padding:0 4px}
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(120%);
+  background:var(--ink);color:#EBF1EE;font-size:13px;font-weight:700;padding:11px 17px;
+  border-radius:8px;transition:transform .25s,opacity .25s;z-index:60;max-width:86%;text-align:center;
+  opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* splash / role picker */
+.splash{height:100%;display:flex;flex-direction:column;align-items:center;padding:88px 28px 36px;text-align:center}
+.splash .mark{width:76px;height:76px;border-radius:18px;background:#0F6455;display:flex;
+  align-items:center;justify-content:center;margin-bottom:18px}
+.splash .mark svg{width:42px;height:20px}
+.splash h1{color:#fff;font-size:28px;letter-spacing:.18em;font-weight:800}
+.splash p{color:var(--dkm);margin-top:8px;font-size:13px}
+.roles{height:100%;overflow-y:auto;padding:80px 22px 40px}
+.roles .mark{width:56px;height:56px;border-radius:14px;background:#0F6455;display:flex;
+  align-items:center;justify-content:center;margin-bottom:14px}
+.roles .mark svg{width:32px;height:16px}
+.roles h1{color:#fff;font-size:21px;letter-spacing:.14em;font-weight:800}
+.roles .st{color:var(--dkm);font-size:12px;margin-top:6px;line-height:1.5}
+.rolecard{display:block;width:100%;text-align:left;background:var(--dark2);border:1.5px solid var(--dkl);
+  border-radius:14px;padding:16px;margin-top:12px;color:#EBF1EE}
+.rolecard:active{background:#1E2C29}
+.rolecard .rt{font-size:16px;font-weight:800;color:#fff}
+.rolecard .rn{font-size:12.5px;color:var(--dka2);margin-top:3px;font-weight:600}
+.rolecard .rd{font-size:11px;color:var(--dkm);margin-top:7px;line-height:1.55}
+/* sheets & modals */
+.sheet{position:absolute;inset:0;background:rgba(12,18,17,.45);z-index:50;display:flex;align-items:flex-end}
+.sheet.center{align-items:center;padding:16px}
+.sheet .panel{width:100%;background:var(--surface);border-radius:16px 16px 0 0;padding:16px 16px 32px}
+.sheet.center .panel{border-radius:14px;padding:16px;max-height:88%;overflow-y:auto}
+.sheet .panel h3{font-size:16px;color:var(--ink)}
+.sheet .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.sheet .opts button{min-height:46px;border-radius:10px;border:1.5px solid var(--line-mid);
+  background:var(--raise);font-weight:700;font-size:14px}
+.field{margin-top:10px}
+.field .fl{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:4px}
+@keyframes slidein{0%{transform:translateY(-14px);opacity:0}100%{transform:none;opacity:1}}
+.appear{animation:slidein .3s}
+.sealimg{width:24px;height:24px;border-radius:5px;display:block}.mark>.sealimg{width:100%;height:100%;border-radius:inherit}
+.mark{background:none!important}
+</style></head><body>
+<div class="stage">
+  <div class="phone">
+    <div class="phone-screen">
+      <div class="island"></div>
+      <div class="osbar" id="osbar">
+        <span id="osclock">9:41</span>
+        <span class="sig">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx=".6" fill="currentColor"/><rect x="4.5" y="5.5" width="3" height="6.5" rx=".6" fill="currentColor"/><rect x="9" y="3" width="3" height="9" rx=".6" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx=".6" fill="currentColor" opacity=".35"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12"><path d="M1 7.2A8 8 0 0 1 8 4a8 8 0 0 1 7 3.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.6 9A4.6 4.6 0 0 1 8 7.2 4.6 4.6 0 0 1 12.4 9" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="11" r="1.1" fill="currentColor"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".8" width="21" height="10.4" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="2" y="2.3" width="16.2" height="7.4" rx="1.2" fill="currentColor"/><rect x="22.2" y="3.6" width="1.8" height="4.8" rx=".6" fill="currentColor"/></svg>
+        </span>
+      </div>
+      <div id="gate"></div>
+      <div id="app" style="display:none"></div>
+      <div class="toast" id="toast"></div>
+      <div class="homeind" id="homeind"></div>
+    </div>
+  </div>
+</div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const SEAL=`<img class="sealimg" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABCGVYSWZNTQAqAAAACAAHARIAAwAAAAEAAQAAARoABQAAAAEAAABiARsABQAAAAEAAABqASgAAwAAAAEAAgAAATEAAgAAADkAAAByATsAAgAAAA0AAACsh2kABAAAAAEAAAC6AAAAAAAAASwAAAABAAABLAAAAAFDYW52YSBkb2M9REFIVFV4R2RIWE0gdXNlcj1VQUZWZzhJNU9XQSBicmFuZD1CQUZWZzhCTTBzcwAATWF5YSBDaGFod2FuAAAABpAAAAcAAAAEMDIxMJEBAAcAAAAEAQIDAKAAAAcAAAAEMDEwMKABAAMAAAABAAEAAKACAAQAAAABAAABAKADAAQAAAABAAABAAAAAADonB5tAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj4yNDE2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6RXhpZlZlcnNpb24+MDIxMDwvZXhpZjpFeGlmVmVyc2lvbj4KICAgICAgICAgPGV4aWY6Rmxhc2hQaXhWZXJzaW9uPjAxMDA8L2V4aWY6Rmxhc2hQaXhWZXJzaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MjQxNjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICAgICA8cmRmOlNlcT4KICAgICAgICAgICAgICAgPHJkZjpsaT4xPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGk+MjwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpPjM8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaT4wPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOlNlcT4KICAgICAgICAgPC9leGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkNhbnZhIGRvYz1EQUhUVXhHZEhYTSB1c2VyPVVBRlZnOEk1T1dBIGJyYW5kPUJBRlZnOEJNMHNzPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WVJlc29sdXRpb24+MzAwPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkRsaXZlcmQgLSAyPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOkFsdD4KICAgICAgICAgPC9kYzp0aXRsZT4KICAg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">`;
+const SEALD=`<img class="sealimg" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABCGVYSWZNTQAqAAAACAAHARIAAwAAAAEAAQAAARoABQAAAAEAAABiARsABQAAAAEAAABqASgAAwAAAAEAAgAAATEAAgAAADkAAAByATsAAgAAAA0AAACsh2kABAAAAAEAAAC6AAAAAAAAASwAAAABAAABLAAAAAFDYW52YSBkb2M9REFIVFV4R2RIWE0gdXNlcj1VQUZWZzhJNU9XQSBicmFuZD1CQUZWZzhCTTBzcwAATWF5YSBDaGFod2FuAAAABpAAAAcAAAAEMDIxMJEBAAcAAAAEAQIDAKAAAAcAAAAEMDEwMKABAAMAAAABAAEAAKACAAQAAAABAAABAKADAAQAAAABAAABAAAAAADonB5tAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj4yNDE2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6RXhpZlZlcnNpb24+MDIxMDwvZXhpZjpFeGlmVmVyc2lvbj4KICAgICAgICAgPGV4aWY6Rmxhc2hQaXhWZXJzaW9uPjAxMDA8L2V4aWY6Rmxhc2hQaXhWZXJzaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MjQxNjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICAgICA8cmRmOlNlcT4KICAgICAgICAgICAgICAgPHJkZjpsaT4xPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGk+MjwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpPjM8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaT4wPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOlNlcT4KICAgICAgICAgPC9leGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkNhbnZhIGRvYz1EQUhUVXhHZEhYTSB1c2VyPVVBRlZnOEk1T1dBIGJyYW5kPUJBRlZnOEJNMHNzPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WVJlc29sdXRpb24+MzAwPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkRsaXZlcmQgLSAyPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOkFsdD4KICAgICAgICAgPC9kYzp0aXRsZT4KICAg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">`;
+const I={desk:'<path d="M4 8.5h16V20H4z"/><path d="M4 8.5 6.5 4h11L20 8.5"/><line x1="10" y1="12.5" x2="14" y2="12.5"/>',
+ boxes:'<path d="M12 3 20 7v10l-8 4-8-4V7z"/><path d="M4 7l8 4 8-4"/><line x1="12" y1="11" x2="12" y2="21"/>',
+ truck:'<path d="M2.5 7h11v9.5h-11z"/><path d="M13.5 10.5h4l3 3v3h-7"/><circle cx="6.5" cy="18.5" r="1.7"/><circle cx="16.5" cy="18.5" r="1.7"/>',
+ ledger:'<path d="M8 5h13M8 12h13M8 19h13"/><rect x="3" y="3.6" width="2.8" height="2.8"/><rect x="3" y="10.6" width="2.8" height="2.8"/><rect x="3" y="17.6" width="2.8" height="2.8"/>',
+ user:'<circle cx="12" cy="8.5" r="3.7"/><path d="M4.8 20c.7-3.7 3.7-5.6 7.2-5.6s6.5 1.9 7.2 5.6"/>'};
+const ic=n=>`<svg viewBox="0 0 24 24">${I[n]}</svg>`;
+let toastT;
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.background=bad?'#93301F':'';
+ t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3200);}
+function tickClock(){
+ const d=new Date(),h=((d.getHours()+11)%12)+1,m=String(d.getMinutes()).padStart(2,'0');
+ const el=$('#osclock');if(el)el.textContent=h+':'+m;
+}
+function setChrome(dark){
+ const bar=$('#osbar'),ind=$('#homeind');
+ if(bar)bar.classList.toggle('light',!!dark);
+ if(ind)ind.classList.toggle('on-dark',!!dark);
+}
+/* scene clock — the demo day is Mon 24 Aug; the desk scene starts at 09:12 */
+let sceneMin=9*60+12;
+const tNow=()=>String(Math.floor(sceneMin/60)).padStart(2,'0')+':'+String(sceneMin%60).padStart(2,'0');
+const hx=()=>Math.floor(4096+Math.random()*61439).toString(16)+'…';
+const money=c=>'$'+(c/100).toLocaleString('en-CA',{minimumFractionDigits:2});
+
+/* ── shared world ── */
+const ROLES={
+ MANAGER:{key:'MANAGER',role:'STORE_MANAGER',title:'Provider Management',name:'Chantal Guimond',short:'Chantal G.',pill:'MANAGER'},
+ REP:{key:'REP',role:'STORE_REP',title:'Provider Representative',name:'Karim Haddad',short:'Karim H.',pill:'REP'}};
+const STORE={prov:'BMobile',name:'BMobile · entrepôt Saint-Laurent',addr:'4400 boul. Côte-Vertu, Saint-Laurent, QC'};
+const RELEASE_OTP='902314';           /* provider release code at pickup */
+const OTP_MGR='731908';               /* Chantal's approval code (second person for a rep) */
+const OTP_DISPATCH='550217';          /* DLIVERD dispatch code (second person for the manager) */
+const SVC=[
+ {id:'C24', n:'DLIVERD 24',      p:1075,d:'End of day · by 17:00',band:'DLIVERD 24 — END OF DAY'},
+ {id:'NOON',n:'DLIVERD 24 NOON', p:1550,d:'By 12:00 · morning-only',band:'DLIVERD 24 NOON — BY 12:00',
+  off:'Cutoff passed — the 07:40 morning run already left with Maya; a 12:00 window can no longer be sold today'},
+ {id:'AM',  n:'DLIVERD 24 AM',   p:2150,d:'By 10:30 · morning-only',band:'DLIVERD 24 AM — BY 10:30',
+  off:'Cutoff passed — the 07:40 morning run already left with Maya; a 10:30 window can no longer be sold today'},
+ {id:'EVE', n:'DLIVERD EVENING', p:2350,d:'17:30–21:00 tonight',band:'DLIVERD EVENING — 17:30–21:00'},
+ {id:'REP', n:'REPRISE',         p:975, d:'Reverse pickup — collect from the recipient',band:'REPRISE — REVERSE PICKUP'}];
+const DISC_REASONS=['Customer bought an extra item at the counter','Item out of stock — ships separately',
+ 'Substitution approved by the customer','Count corrected at the desk — ticket was wrong'];
+const ADDR_REASONS=['Recipient asked before dispatch','Typo in the order','Verified with recipient by phone','Building access — concierge / side door'];
+const UNSEAL_REASONS=['Wrong item packed','Customer changed the order','Address change that needs a new label','Damaged item discovered','Suspected tamper — security'];
+const EXPECTED=[
+ {code:'APL16P256',name:'iPhone 16 Pro 256 · Natural',ser:true, want:1,unit:144900,type:'Serialized · IMEI'},
+ {code:'MG25W-CA', name:'MagSafe 25W charger',            ser:false,want:1,unit:6500,  type:'SKU'}];
+const IMEI_1='356938041002197', IMEI_2='353411090554368';
+const TICKET={ref:'BM-1050',rec:'Léa Fortin',lang:'FR',phone:'514 •••-••83',email:'l•••••n@gm•••.com',
+ fetched:{line1:'5112 av. du Parc',unit:'app. 3',city:'Montréal',postal:'H2V 4E6',note:'Sonnez au 3 — 2e étage'}};
+
+function freshDesk(n){
+ const f=TICKET.fetched;
+ return {step:1,ticket:false,packFirst:false,banner:'',
+  boxRef:'BX-'+(1050+n),ticketRef:'BM-'+(1050+n),
+  lines:[],disc:'',
+  addr:{fetched:{...f},ship:{...f},confirmed:false,overridden:false,corrected:false,reason:'',approvedBy:''},
+  sealed:false,seal:null,sealHist:[],resealed:0,
+  svc:'C24',booked:false,mv:null,mvSt:null,bookedBy:'',bookedAt:'',freeUntil:'',printed:0,labelVoid:false,
+  fails:0,lockedBox:false};
+}
+/* ── state ── */
+const S={
+ gate:'splash',role:null,tab:'desk',view:null,scan:'CAM',
+ packCount:0,nextSeal:40123,nextMv:4475,
+ desk:freshDesk(0),
+ modal:null,   /* {type:'unknown'|'addr'|'unseal'|'cancel', ...} */
+ unseal:{stage:1,reason:'',otp:'',err:false},
+ pickup:{stage:'idle',scanned:[],ttl:600},
+ queue:[{mv:'M-4472',box:'BX-8815',who:'Karim H.',at:'Sun 17:42',field:'line1',
+   from:'1602 boul. Le Corbusier',to:'1600 boul. Le Corbusier',reason:'Typo in the order'}],
+ boxes:[
+  {box:'BX-1042',mv:'M-4471',mvSt:'ASSIGNED',boxSt:'SEALED',seal:'CS-40118',ticket:'BM-1042',
+   rec:'Geneviève Bilodeau',lang:'FR',addr:'6321 rue Beaubien E, Montréal',svc:'DLIVERD 24',win:'08:00–17:00',
+   by:'Chantal G.',resealed:0,declared:144900,
+   items:[{n:'iPhone 16 Pro 256 · Natural',id:'IMEI 356938035643809',v:144900}],
+   hist:[{s:'CS-40118',st:'INTACT',at:'Sun 17:02',by:'Chantal G.'}]},
+  {box:'BX-8815',mv:'M-4472',mvSt:'ASSIGNED',boxSt:'SEALED',seal:'CS-40119',ticket:'CE-8815',
+   rec:'Gino Pensato',lang:'EN',addr:'1600 boul. Le Corbusier app 407, Laval',svc:'DLIVERD 24 AM',win:'08:00–10:30',
+   by:'Chantal G.',resealed:0,declared:129900,note:'Cellcom ticket — routed via this DC',
+   items:[{n:'Galaxy S25+ 256 · Silver',id:'IMEI 490154203237518',v:129900}],
+   hist:[{s:'CS-40119',st:'INTACT',at:'Sun 17:08',by:'Karim H.'}]},
+  {box:'BX-1049',mv:'M-4473',mvSt:'ASSIGNED',boxSt:'SEALED',seal:'CS-40121',ticket:'BM-1049',
+   rec:'Samuel Duchesneau',lang:'FR',addr:'380 rue Saint-Paul O app 12, Montréal',svc:'DLIVERD 24 NOON',win:'08:00–12:00',
+   by:'Chantal G.',resealed:1,declared:197800,
+   items:[{n:'iPhone 16e 128 · White',id:'IMEI 352099001761481',v:82900},
+          {n:'Pixel 10 Pro 128 · Obsidian',id:'IMEI 358241077331855',v:114900}],
+   hist:[{s:'CS-40120',st:'VOIDED — wrong charger packed',at:'Sun 17:14',by:'Karim H.'},
+         {s:'CS-40121',st:'INTACT · re-seal',at:'Sun 17:19',by:'Karim H.'}]},
+  {box:'BX-ANJ0',mv:'M-4474',mvSt:'ASSIGNED',boxSt:'SEALED',seal:'CS-40122',ticket:'— restock',
+   rec:'Cellcom Anjou — store restock',lang:'FR',addr:"7999 boul. des Galeries d'Anjou, Anjou",svc:'DLIVERD 24',win:'08:00–17:00',
+   by:'Chantal G.',resealed:0,declared:107900,
+   items:[{n:'iPhone 16 128 · Ultramarine',id:'IMEI 354009221884170',v:107900}],
+   hist:[{s:'CS-40122',st:'INTACT',at:'Sun 17:24',by:'Chantal G.'}]}],
+ ledger:[
+  {t:'07:12',e:'manifest.printed',r:'4 boxes · pickup 07:40 · Maya · MTL-03',h:hx()},
+  {t:'Sun 17:42',e:'address.overridden',r:'M-4472 · line1 · Karim H. — review pending',h:hx()},
+  {t:'Sun 17:33',e:'movement.booked',r:'M-4474 · BX-ANJ0 · DLIVERD 24',h:hx()},
+  {t:'Sun 17:32',e:'movement.booked',r:'M-4473 · BX-1049 · DLIVERD 24 NOON',h:hx()},
+  {t:'Sun 17:31',e:'movement.booked',r:'M-4472 · BX-8815 · DLIVERD 24 AM',h:hx()},
+  {t:'Sun 17:30',e:'movement.booked',r:'M-4471 · BX-1042 · DLIVERD 24',h:hx()},
+  {t:'Sun 17:24',e:'box.sealed',r:'BX-ANJ0 · CS-40122 · Chantal G.',h:hx()},
+  {t:'Sun 17:19',e:'box.sealed',r:'BX-1049 · CS-40121 · re-seal ×1 · Karim H.',h:hx()},
+  {t:'Sun 17:14',e:'seal.voided',r:'BX-1049 · CS-40120 · wrong item packed · 2nd code: Chantal G.',h:hx()},
+  {t:'Sun 17:08',e:'box.sealed',r:'BX-8815 · CS-40119 · Karim H.',h:hx()},
+  {t:'Sun 17:02',e:'box.sealed',r:'BX-1042 · CS-40118 · Chantal G.',h:hx()}],
+};
+const U=()=>ROLES[S.role]||ROLES.REP;
+function chain(e,r){S.ledger.unshift({t:tNow(),e,r,h:hx()});sceneMin+=1;}
+
+/* ── gate: splash → role picker ── */
+function vGate(){
+ $('#app').style.display='none';$('#gate').style.display='flex';setChrome(true);
+ if(S.gate==='splash'){
+  $('#gate').innerHTML=`<div class="splash">
+    <div class="mark">${SEALD}</div>
+    <h1>DLIVERD</h1>
+    <p>Provider portal · packing desk</p>
+   </div>`;
+  setTimeout(()=>{if(S.gate==='splash'){S.gate='roles';render();}},1300);
+  return;
+ }
+ $('#gate').innerHTML=`<div class="roles">
+   <div class="mark">${SEALD}</div>
+   <h1>PROVIDER</h1>
+   <div class="st">${STORE.name}<br>${STORE.addr}<br>Mon 24 Aug · driver Maya · MTL-03 arriving 07:40</div>
+   <button class="rolecard" id="pickMgr">
+    <div class="rt">Provider Management</div>
+    <div class="rn">Chantal Guimond · Store manager</div>
+    <div class="rd">Everything a rep can do, plus: the store ledger &amp; review queue, cancel any booking
+     before pickup, approve unseals and material address changes, seal-range oversight.</div>
+   </button>
+   <button class="rolecard" id="pickRep">
+    <div class="rt">Provider Representative</div>
+    <div class="rn">Karim Haddad · Store rep</div>
+    <div class="rd">Pack, seal and book. No ledger — the tab is not rendered at all. Unseals need
+     Chantal's code. Cancels: only your own bookings.</div>
+   </button>
+   <div class="sighint" style="margin-top:18px">DEMO · PICK A ROLE — THE WHOLE APP CHANGES WITH IT</div>
+  </div>`;
+ $('#pickMgr').onclick=()=>{S.role='MANAGER';S.gate='app';S.tab='desk';toast('Signed in — Chantal Guimond · STORE_MANAGER');render();};
+ $('#pickRep').onclick=()=>{S.role='REP';if(S.tab==='ledger')S.tab='desk';S.gate='app';toast('Signed in — Karim Haddad · STORE_REP');render();};
+}
+
+/* ── shell ── */
+function tabs(){
+ const t=[['desk','desk','Desk'],['boxes','boxes','Boxes'],['pickup','truck','Pickup']];
+ if(S.role==='MANAGER')t.push(['ledger','ledger','Ledger']);  /* STORE_REP: absent from the DOM entirely */
+ t.push(['profile','user','Profile']);
+ return t;
+}
+function shell(inner){
+ const undone=S.pickup.stage!=='done'?S.boxes.filter(b=>b.mvSt==='ASSIGNED').length:0;
+ $('#app').innerHTML=`
+  <div class="bar"><div class="r1">${SEAL}
+    <div><div class="brand">PROVIDER</div><div class="sub">${U().short} · Saint-Laurent · Mon 24 Aug</div></div>
+    <div class="sp"></div>
+    <span class="pill acc">${U().pill}</span>
+    <button class="pill" id="scanmode" title="Scanner mode">${S.scan==='CAM'?'📷 CAMERA':'⌨ WEDGE'}</button>
+   </div></div>
+  <div class="main">${inner}</div>
+  <div class="nav">
+   ${tabs().map(([t,i2,l])=>`<button data-tab="${t}" class="${S.tab===t?'on':''}">${ic(i2)}<span>${l}</span>
+     ${t==='pickup'&&undone?`<span class="badge">${undone}</span>`:''}
+     ${t==='ledger'&&S.queue.length?`<span class="badge">${S.queue.length}</span>`:''}</button>`).join('')}
+  </div>`;
+ $('#scanmode').onclick=()=>{S.scan=S.scan==='CAM'?'WEDGE':'CAM';
+  toast(S.scan==='CAM'?'Camera scanning — point the phone at the barcode':'Wedge mode — the USB counter scanner types into the desk');render();};
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.view=null;render();});
+ renderModal();
+}
+
+/* ── DESK · the 5-step packing wizard ── */
+const D=()=>S.desk;
+const declared=()=>D().lines.reduce((a,l)=>a+l.got*l.unit,0);
+function lstat(l){
+ if(!D().ticket)return l.got>0?'PENDING':'—';
+ if(l.expected){if(l.got===0)return 'MISSING';if(l.got<l.want)return 'SHORT';if(l.got>l.want)return 'OVER';return 'HIT';}
+ return 'EXTRA';
+}
+const discrepant=()=>D().ticket&&D().lines.some(l=>['MISSING','SHORT','OVER','EXTRA'].includes(lstat(l)));
+function attachTicket(){
+ const d=D();d.ticket=true;
+ for(const e of EXPECTED){
+  let l=d.lines.find(x=>x.code===e.code);
+  if(!l){l={code:e.code,name:e.name,ser:e.ser,unit:e.unit,got:0,imeis:[],expected:true,want:e.want,type:e.type};d.lines.push(l);}
+  else{l.expected=true;l.want=e.want;l.name=e.name;l.unit=e.unit;l.type=e.type;}
+ }
+ d.lines.sort((a,b)=>(b.expected?1:0)-(a.expected?1:0));
+ if(d.packFirst&&d.lines.some(l=>l.got>0)){
+  const hit=d.lines.filter(l=>l.expected&&l.got>0).length,
+        miss=d.lines.filter(l=>l.expected&&l.got===0).length,
+        unexp=d.lines.filter(l=>!l.expected).length;
+  d.banner=`Match run at attach — ${hit} matched, ${miss} missing, ${unexp} unexpected.`;
+ }
+ chain('ticket.attached',d.ticketRef+' · '+TICKET.rec+' · '+d.boxRef);
+ d.step=d.packFirst?2:2;
+ toast(d.ticketRef+' fetched — Léa Fortin · tracking link, code and receipt unlocked');
+ render();
+}
+function doScan(code,name,unit,ser,imei){
+ const d=D();
+ if(d.sealed)return toast('REFUSED — manifest locked, '+d.boxRef+' is sealed. Unseal to change it.',true);
+ let l=d.lines.find(x=>x.code===code);
+ if(ser){
+  if(l&&l.imeis.includes(imei))return toast('REFUSED — IMEI …'+imei.slice(-4)+' is already in this box (duplicate serialized)',true);
+  if(!l){l={code,name,ser:true,unit,got:0,imeis:[],expected:false,want:0,type:'Serialized · IMEI'};d.lines.push(l);}
+  l.imeis.push(imei);l.got++;
+  toast(name+' · IMEI …'+imei.slice(-4)+' ✓ in '+d.boxRef);
+ }else{
+  if(!l){l={code,name,ser:false,unit,got:1,imeis:[],expected:false,want:0,type:'SKU'};d.lines.push(l);
+   toast(name+' ✓ in '+d.boxRef);}
+  else{l.got++;} /* duplicate SKU → quantity increments silently, no warning */
+ }
+ render();
+}
+function wedgeHandle(v){
+ v=v.trim();if(!v)return;
+ if(v===IMEI_1)return doScan('APL16P256','iPhone 16 Pro 256 · Natural',144900,true,IMEI_1);
+ if(v===IMEI_2)return doScan('APL16P256','iPhone 16 Pro 256 · Desert',144900,true,IMEI_2);
+ if(v.toUpperCase()==='MG25W-CA')return doScan('MG25W-CA','MagSafe 25W charger',6500,false);
+ S.modal={type:'unknown',code:v};render();
+}
+function stepState(n){
+ const d=D();
+ if(n===1)return d.ticket?'done':'open';
+ if(n===2)return d.lines.some(l=>l.got>0)?'done':'open';
+ if(n===3)return d.addr.confirmed?'done':(d.ticket?'open':'lockd');
+ if(n===4)return d.sealed?'done':(d.addr.confirmed?'open':'lockd');
+ if(n===5)return d.booked?'done':(d.sealed?'open':'lockd');
+ return 'open';
+}
+function stepSum(n){
+ const d=D();
+ if(n===1)return d.ticket?d.ticketRef+' · '+TICKET.rec+' · FR ✓':'Scan or type the work-order ref — ticket-first is preferred';
+ if(n===2){const c=d.lines.reduce((a,l)=>a+l.got,0);
+  return c?c+' item'+(c>1?'s':'')+' scanned · declared '+money(declared())+(discrepant()?' · DISCREPANCY':''):'Live reconciliation against the ticket';}
+ if(n===3)return d.addr.confirmed?d.addr.ship.line1+', '+d.addr.ship.city+' — confirmed ✓':(d.ticket?'Confirm where this box is going':'Locked — the address comes from the ticket (step 1)');
+ if(n===4)return d.sealed?d.boxRef+' · '+d.seal+' · SEALED'+(d.resealed?' · re-sealed ×'+d.resealed:''):(d.addr.confirmed?'Next seal from your range: CS-'+S.nextSeal:'Locked — confirm the shipping address in step 3 first');
+ if(n===5)return d.booked?d.mv+' · '+SVC.find(s=>s.id===d.svc).n+' · booked':(d.sealed?'Pick the service, book, print':'Locked — seal the box in step 4 first');
+ return '';
+}
+function stepHead(n,title){
+ const st=stepState(n),cur=D().step===n?'cur':'';
+ return `<button class="whead" data-step="${n}">
+  <div class="wnum">${st==='done'?'✓':n}</div>
+  <div><div class="wtitle">${title}</div><div class="wsum">${stepSum(n)}</div></div>
+ </button>`;
+}
+function step1Body(){
+ const d=D();
+ if(d.ticket)return `
+  <div class="kv"><span class="k">Ticket</span><span class="v mono">${d.ticketRef} · open</span></div>
+  <div class="kv"><span class="k">Customer</span><span class="v">${TICKET.rec} <span class="pill acc">FR</span></span></div>
+  <div class="kv"><span class="k">Phone</span><span class="v mono">${TICKET.phone}</span></div>
+  <div class="kv"><span class="k">Email</span><span class="v mono" style="font-weight:600">${TICKET.email}</span></div>
+  ${d.banner?`<div class="note warn appear" style="margin:10px 0 0"><div><b>${d.banner}</b> Resolve the lines in step 2.</div></div>`:''}
+  <div class="note acc" style="margin:10px 0 0"><div>This fetch is what unlocked <b>Léa's tracking link, her
+   delivery code and her receipt</b> — DLIVERD texts her the moment you book. Her delivery code is never
+   shown to the store or the driver.</div></div>`;
+ return `
+  <div class="note acc" style="margin:0 0 10px"><div><b>Ticket-first is faster and preferred</b> — the match runs
+   live while you scan. Pack-first works too: the match runs the moment you attach.</div></div>
+  <input id="tickIn" class="mono" placeholder="Scan or type the ticket ref…" autocomplete="off">
+  <div style="display:flex;gap:8px;margin-top:10px">
+   <button class="btn sm" id="tickGo">Fetch the ticket</button>
+   <button class="btn alt sm" id="packFirst">Pack first</button>
+  </div>
+  <button class="btn ghost" id="tickDemo">DEMO · scan the walk-in ticket ${d.ticketRef}</button>`;
+}
+function reconRows(){
+ const d=D();
+ if(!d.lines.length)return `<div class="note warn" style="margin:0"><div>Nothing scanned yet.
+  ${d.ticket?'The ticket expects 2 lines — they show MISSING until scanned.':'No ticket attached — scans will sit as PENDING until one is.'}</div></div>`;
+ const CLS={HIT:'hit',MISSING:'miss',SHORT:'short',OVER:'over',EXTRA:'extra',PENDING:'pend','—':'pend'};
+ return d.lines.map(l=>{const st=lstat(l);
+  return `<div class="rrow">
+   <span class="rst st-${CLS[st]}">${st}</span>
+   <div><div class="rname">${l.name}</div>
+    <div class="rmeta">${l.code} · ${l.type}${l.imeis.length?' · '+l.imeis.map(i=>'…'+i.slice(-4)).join(' '):''}</div></div>
+   <div class="rqty">${l.got}<small>/${l.expected?l.want:'—'}</small><br><small>${money(l.unit)}</small></div>
+  </div>`;}).join('');
+}
+function step2Body(){
+ const d=D();
+ return `
+  <div class="scanview"><svg viewBox="0 0 400 90" style="width:100%;height:90px;display:block">
+   <rect width="400" height="90" fill="#0C1211"/>
+   <rect x="90" y="14" width="220" height="62" fill="#101A18" stroke="#1E2C29"/>
+   <g stroke="#4FBFA4" stroke-width="2.4" fill="none">
+    <polyline points="90,30 90,14 108,14"/><polyline points="292,14 310,14 310,30"/>
+    <polyline points="310,60 310,76 292,76"/><polyline points="108,76 90,76 90,60"/></g>
+   <g stroke="#E9F2EF" stroke-width="3">${[120,128,140,152,160,174,186,194,208,220,228,242,254,262,276].map(x=>`<line x1="${x}" y1="28" x2="${x}" y2="62"/>`).join('')}</g>
+   <line x1="90" y1="45" x2="310" y2="45" stroke="#93301F" stroke-width="1.5" opacity=".85"/>
+  </svg></div>
+  ${S.scan==='WEDGE'?`<input id="wedge" class="mono" placeholder="⌨ Wedge — the USB scanner types here, Enter = scan" style="margin-bottom:10px">`:''}
+  ${reconRows()}
+  <div class="kv" style="margin-top:6px"><span class="k">Declared so far</span>
+   <span class="v">${money(declared())}</span></div>
+  <div class="note acc" style="margin:8px 0 0"><div><b>DLIVERD never opens a box.</b> These lines are
+   shipper-attested contents; the seal — not a count — is what custody verifies.</div></div>
+  ${discrepant()?`
+   <div class="note warn appear" style="margin:10px 0 0"><div><b>Discrepancy against the ticket.</b> It never blocks
+    a scan and it won't block the seal — but it needs a reason, and both land on Léa's receipt.</div></div>
+   <div class="field"><div class="fl">Discrepancy reason — closed list, required to seal</div>
+    <select id="discSel"><option value="">Choose a reason…</option>
+     ${DISC_REASONS.map(r=>`<option ${d.disc===r?'selected':''}>${r}</option>`).join('')}</select></div>`:''}
+  <div class="label">Demo scans — a real desk points the camera or wedge gun</div>
+  <div class="scanbtns">
+   <button data-scan="ip1">SCAN · iPhone 16 Pro 256<span class="c">IMEI ${IMEI_1}</span></button>
+   <button data-scan="chg">SCAN · MagSafe 25W charger<span class="c">SKU MG25W-CA</span></button>
+   <button data-scan="dup">SCAN · same iPhone again<span class="c">IMEI ${IMEI_1} — duplicate</span></button>
+   <button data-scan="ip2">SCAN · a second iPhone<span class="c">IMEI ${IMEI_2} — not on the ticket</span></button>
+   <button data-scan="chg">SCAN · charger again<span class="c">same SKU — qty +1, silently</span></button>
+   <button data-scan="unk">SCAN · unknown barcode<span class="c">0093412207 — capture, never refuse</span></button>
+  </div>`;
+}
+function addrLine(a){return `${a.line1}${a.unit?', '+a.unit:''}<br>${a.city} QC ${a.postal}`;}
+function step3Body(){
+ const d=D(),A=d.addr;
+ if(!d.ticket)return `<div class="note warn" style="margin:0"><div>The shipping address comes from the ticket.
+  Attach ${d.ticketRef} in step 1 — pack-first still lets you scan meanwhile.</div></div>`;
+ const changed=['line1','unit','city','postal'].some(k=>A.fetched[k]!==A.ship[k]);
+ return `
+  <div class="addrbox"><div class="t">As fetched from the ticket${changed?' — superseded':''}</div>
+   <div class="${changed?'strike':''}">${addrLine(A.fetched)}</div></div>
+  <div class="addrbox ${A.confirmed?'ok':''}"><div class="t">As shipping ${A.confirmed?'· CONFIRMED ✓':''}</div>
+   ${addrLine(A.ship)}
+   <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Note: «${A.ship.note||'—'}»</div>
+   ${A.overridden?`<div style="margin-top:6px"><span class="pill warn">OVERRIDDEN · ${A.reason}</span>
+     ${A.approvedBy?`<span class="pill acc">APPROVED · ${A.approvedBy}</span>`:''}</div>`:
+    A.corrected?`<div style="margin-top:6px"><span class="pill">CORRECTED · unit/note — free</span></div>`:''}
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+   <button class="btn sm" id="addrConfirm" ${A.confirmed?'disabled':''}>${A.confirmed?'Address confirmed ✓':'Confirm this address'}</button>
+   <button class="btn alt sm" id="addrEdit">Edit</button>
+  </div>
+  ${A.confirmed?'':`<div class="sighint" style="text-align:left;padding:8px 0 0">SEALING STAYS LOCKED UNTIL THIS ADDRESS IS CONFIRMED</div>`}`;
+}
+function step4Body(){
+ const d=D();
+ if(d.lockedBox)return `
+  <div class="lockcard"><div class="big">🔒</div><h3>${d.boxRef} is locked</h3>
+   <p>Five failed approval codes. Only a DLIVERD <b>SUPER_ADMIN</b> can open this box now —
+    chained as <span class="mono">unseal.locked</span>. Call dispatch.</p></div>`;
+ if(d.sealed)return `
+  <div class="kv"><span class="k">Box ref</span><span class="v mono">${d.boxRef}</span></div>
+  <div class="kv"><span class="k">Seal</span><span class="v mono">${d.seal}</span></div>
+  <div class="kv"><span class="k">Lock state</span><span class="v"><span class="pill acc">SEALED — MANIFEST LOCKED</span></span></div>
+  <div class="kv"><span class="k">Seals used on this box</span><span class="v">${d.sealHist.length}${d.resealed?' · re-sealed ×'+d.resealed:''}</span></div>
+  <div class="label">Seal history</div>
+  ${d.sealHist.map(h=>`<div class="kv"><span class="k mono">${h.s}</span><span class="v" style="font-weight:600">${h.st} · ${h.at} · ${h.by}</span></div>`).join('')}
+  ${d.resealed?`<div class="note warn" style="margin:10px 0 0"><div><b>Re-sealed ×${d.resealed}.</b> This appears on
+   Léa's receipt forever — a box opened and closed again is not the same as one that never was.</div></div>`:''}
+  <button class="btn danger" style="margin-top:12px" id="unsealBtn">Unlock this box</button>`;
+ const guards=[
+  ['Ticket attached',d.ticket],
+  ['At least one line in the box',d.lines.some(l=>l.got>0)],
+  ['Shipping address confirmed (step 3)',d.addr.confirmed],
+  ...(discrepant()?[['Discrepancy reason chosen',!!d.disc]]:[]),
+  ['Seal CS-'+S.nextSeal+' issued to this store · in range',true]];
+ const ok=guards.every(g=>g[1]);
+ return `
+  ${guards.map(g=>`<div class="kv"><span class="k">${g[0]}</span>
+    <span class="v">${g[1]?'<span class="pill acc">✓</span>':'<span class="pill risk">✗</span>'}</span></div>`).join('')}
+  ${ok?'':`<div class="note warn" style="margin:10px 0 0"><div><b>Sealing is disabled</b> — clear the ✗ lines above. The reason is always shown, never a dead button.</div></div>`}
+  <button class="btn" style="margin-top:12px" id="sealBtn" ${ok?'':'disabled'}>Seal ${d.boxRef} with CS-${S.nextSeal}</button>
+  <div class="sighint">THE SEAL COMES OFF THE ROLL — CS-40001–45000 ISSUED TO THIS STORE</div>`;
+}
+function barsSvg(){
+ const w=[3,1,2,1,1,3,2,1,1,2,3,1,2,2,1,3,1,1,2,1,3,2,1,2,1,1,3,1,2,3];
+ let x=8,out='';
+ for(let i=0;i<w.length;i++){out+=`<rect x="${x}" y="4" width="${w[i]*2.4}" height="34" fill="#111"/>`;x+=w[i]*2.4+2.6;}
+ return `<svg viewBox="0 0 ${x+8} 42" style="width:78%;max-width:250px;height:42px;display:block;margin:0 auto">${out}</svg>`;
+}
+function labelPreview(){
+ const d=D(),svc=SVC.find(s=>s.id===d.svc),A=d.addr.ship;
+ return `
+  <div class="labelprev ${d.labelVoid?'void':''}">
+   <div class="lband"><span>${svc.band}</span><span>${STORE.prov.toUpperCase()}</span></div>
+   <div class="lbody">
+    <div class="lname">${TICKET.rec} <span class="pill acc">FR</span>${d.labelVoid?'<span class="pill risk">VOID</span>':''}</div>
+    <div class="laddr">${addrLine(A)}</div>
+    <div class="lmeta">${TICKET.phone} · «${A.note}»</div>
+    <div class="lfrom">FROM ${STORE.name} · ${STORE.addr}</div>
+    ${d.resealed?`<div class="lreseal">⚠ Cette boîte a été ouverte et rescellée avant l'expédition.</div>`:''}
+    <div class="lbc">${barsSvg()}</div>
+    <div class="lref">${d.boxRef}</div>
+    <div style="text-align:center;margin-top:6px"><span class="pill">SEAL ${d.seal||'—'}</span>
+     ${d.mv?`<span class="pill">${d.mv}</span>`:''}</div>
+   </div></div>
+  <div class="note acc" style="margin-top:2px"><div><b>The label never says what's inside</b> — no product, no
+   declared value. Shipper-attested contents, seal-verified custody.${d.resealed?' A re-sealed box says so — in Léa’s language.':''}</div></div>`;
+}
+function step5Body(){
+ const d=D();
+ const freeLine=d.booked?'':'Free cancel for 60 min after booking; $4.50 after — the quote is always shown before the button.';
+ return `
+  ${d.mvSt==='RECALLED'?`<div class="note risk appear"><div><b>${d.mv} was RECALLED</b> by the unseal — cancellation
+    quote applied. Re-seal, pick a service and book again.</div></div>`:''}
+  ${d.mvSt==='CANCELLED'?`<div class="note warn appear"><div><b>${d.mv} cancelled.</b> The box is still sealed on your
+    shelf — book a new pickup when ready.</div></div>`:''}
+  <div class="label" style="margin-top:0">Service — rate card</div>
+  ${SVC.map(s=>`
+   <button class="whead" style="background:${d.svc===s.id&&!s.off?'var(--acc-soft)':'var(--surface)'};border:1.5px solid ${d.svc===s.id&&!s.off?'var(--acc-line)':'var(--line)'};border-radius:8px;margin-bottom:7px;${s.off?'opacity:.55':''}"
+     data-svc="${s.id}" ${s.off?'data-off="1"':''}>
+    <div style="flex:1 1 auto"><div class="wtitle">${s.n} ${s.id==='C24'?'<span class="pill acc">DEFAULT</span>':''}</div>
+     <div class="wsum">${s.off?s.off:s.d}</div></div>
+    <div class="rqty">${money(s.p)}</div>
+   </button>`).join('')}
+  ${d.booked?`
+   <div class="note acc appear"><div><b>${d.mv} · BOOKED</b> · ${SVC.find(s=>s.id===d.svc).n} · booked ${d.bookedAt} by ${d.bookedBy}.
+    Léa just got her tracking link by SMS. Free cancel until ${d.freeUntil}.</div></div>
+   ${labelPreview()}
+   <button class="btn" id="printBtn">${d.printed?'Reprint label · copy '+(d.printed+1)+' — reprints are chained':'Print label'}</button>
+   <button class="btn alt" style="margin-top:8px" id="packAnother">Pack another box</button>`
+  :`<div class="note warn" style="margin-top:4px"><div><b>Booking ${'M-'+S.nextMv}</b> · ${SVC.find(s=>s.id===d.svc).n} ·
+    ${money(SVC.find(s=>s.id===d.svc).p)}. ${freeLine}</div></div>
+   <button class="btn" id="bookBtn">Book the pickup · ${money(SVC.find(s=>s.id===d.svc).p)}</button>`}`;
+}
+function vDesk(){
+ const d=D();
+ shell(`
+  <div class="hero"><div class="eyeb">Packing desk · walk-in</div>
+   <h2>New box ${d.boxRef} — ticket ${d.ticketRef}</h2>
+   <div class="m">${U().name} · ${U().role} · scanner: ${S.scan==='CAM'?'camera':'wedge'} · next seal CS-${S.nextSeal}</div></div>
+  ${[[1,'Ticket & customer'],[2,'Products in the box'],[3,'Where it goes'],[4,'Seal & label'],[5,'Confirm pickup']]
+   .map(([n,t])=>`<div class="wstep ${stepState(n)==='done'?'done':''} ${d.step===n?'cur':''} ${stepState(n)==='lockd'?'lockd':''}">
+     ${stepHead(n,t)}
+     ${d.step===n?`<div class="wbody">${[step1Body,step2Body,step3Body,step4Body,step5Body][n-1]()}</div>`:''}
+    </div>`).join('')}`);
+ document.querySelectorAll('[data-step]').forEach(b=>b.onclick=()=>{
+  const n=+b.dataset.step;
+  if(stepState(n)==='lockd'){
+   toast(n===3?'Locked — attach the ticket first; the address comes from it'
+    :n===4?'Locked — confirm the shipping address in step 3 first'
+    :'Locked — seal the box in step 4 first',true);
+   return;}
+  d.step=n;render();});
+ /* step 1 */
+ if($('#tickGo'))$('#tickGo').onclick=()=>{
+  const v=($('#tickIn').value||'').trim().toUpperCase();
+  if(v===d.ticketRef)attachTicket();
+  else toast(v?('No open ticket '+v+' at this store — check the ref'):'Type or scan a ticket ref',true);};
+ if($('#tickIn'))$('#tickIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#tickGo').click();});
+ if($('#tickDemo'))$('#tickDemo').onclick=()=>attachTicket();
+ if($('#packFirst'))$('#packFirst').onclick=()=>{d.packFirst=true;d.step=2;
+  toast('Pack-first — scans will sit PENDING until the ticket attaches');render();};
+ /* step 2 */
+ document.querySelectorAll('[data-scan]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.scan;
+  if(k==='ip1'||k==='dup')doScan('APL16P256','iPhone 16 Pro 256 · Natural',144900,true,IMEI_1);
+  else if(k==='ip2')doScan('APL16P256','iPhone 16 Pro 256 · Desert',144900,true,IMEI_2);
+  else if(k==='chg')doScan('MG25W-CA','MagSafe 25W charger',6500,false);
+  else if(k==='unk'){if(d.sealed)return toast('REFUSED — manifest locked, '+d.boxRef+' is sealed.',true);
+   S.modal={type:'unknown',code:'0093412207'};render();}});
+ if($('#discSel'))$('#discSel').onchange=e=>{d.disc=e.target.value;
+  if(d.disc)toast('Reason recorded — it will appear on the receipt');render();};
+ if($('#wedge')){$('#wedge').focus();
+  $('#wedge').addEventListener('keydown',e=>{if(e.key==='Enter'){wedgeHandle(e.target.value);e.target.value='';}});}
+ /* step 3 */
+ if($('#addrConfirm'))$('#addrConfirm').onclick=()=>{d.addr.confirmed=true;
+  chain('address.confirmed',d.boxRef+' · '+d.addr.ship.line1);
+  toast('Address confirmed — sealing unlocked');render();};
+ if($('#addrEdit'))$('#addrEdit').onclick=()=>{
+  if(d.sealed)return toast('Sealed — an address change now needs an unseal (step 4)',true);
+  S.modal={type:'addr'};render();};
+ /* step 4 */
+ if($('#sealBtn'))$('#sealBtn').onclick=()=>{
+  d.seal='CS-'+S.nextSeal;S.nextSeal++;d.sealed=true;
+  d.sealHist.push({s:d.seal,st:d.resealed?'INTACT · re-seal':'INTACT',at:tNow(),by:U().short});
+  chain('box.sealed',d.boxRef+' · '+d.seal+(d.resealed?' · re-seal ×'+d.resealed:'')+' · '+U().short+(d.disc?' · discrepancy: '+d.disc:''));
+  d.labelVoid=false;d.step=5;
+  toast(d.boxRef+' sealed with '+d.seal+' — manifest locked');render();};
+ if($('#unsealBtn'))$('#unsealBtn').onclick=()=>{
+  S.unseal={stage:1,reason:'',otp:'',err:false};S.modal={type:'unseal'};render();};
+ /* step 5 */
+ document.querySelectorAll('[data-svc]').forEach(b=>b.onclick=()=>{
+  const s=SVC.find(x=>x.id===b.dataset.svc);
+  if(b.dataset.off)return toast(s.n+' — '+s.off,true);
+  if(d.booked)return toast('Already booked as '+SVC.find(x=>x.id===d.svc).n+' — cancel first to change service',true);
+  d.svc=s.id;render();});
+ if($('#bookBtn'))$('#bookBtn').onclick=()=>{
+  d.mv='M-'+S.nextMv;S.nextMv++;d.booked=true;d.mvSt='BOOKED';
+  d.bookedBy=U().short;d.bookedAt=tNow();
+  const fm=sceneMin+60;d.freeUntil=String(Math.floor(fm/60)).padStart(2,'0')+':'+String(fm%60).padStart(2,'0');
+  chain('movement.booked',d.mv+' · '+d.boxRef+' · '+SVC.find(s=>s.id===d.svc).n+' · '+U().short);
+  toast(d.mv+' booked — Léa has her tracking link; her code arrives when the driver is close');render();};
+ if($('#printBtn'))$('#printBtn').onclick=()=>{
+  d.printed++;chain(d.printed>1?'label.reprinted':'label.printed',d.boxRef+' · copy '+d.printed+' · '+U().short);
+  toast(d.printed>1?'Reprint · copy '+d.printed+' — unusual reprint counts surface in anomalies':'Label printed — onto the box, barcode out');render();};
+ if($('#packAnother'))$('#packAnother').onclick=()=>{
+  snapshotPacked();S.packCount++;S.desk=freshDesk(S.packCount);
+  toast('Desk cleared — next box '+S.desk.boxRef);render();};
+}
+function snapshotPacked(){
+ const d=D();if(!d.sealHist.length)return;
+ S.boxes.push({box:d.boxRef,mv:d.mv||'—',mvSt:d.mvSt||'—',boxSt:d.sealed?'SEALED':'OPEN',seal:d.seal,
+  ticket:d.ticketRef,rec:TICKET.rec,lang:'FR',addr:d.addr.ship.line1+', '+d.addr.ship.city,
+  svc:SVC.find(s=>s.id===d.svc).n,win:'—',by:d.bookedBy||U().short,resealed:d.resealed,declared:declared(),
+  items:d.lines.filter(l=>l.got>0).map(l=>({n:l.name,id:l.ser?'IMEI '+l.imeis.join(', '):l.code+' ×'+l.got,v:l.unit*l.got})),
+  hist:d.sealHist.map(h=>({...h}))});
+}
+
+/* ── modals ── */
+function closeModal(){S.modal=null;render();}
+function renderModal(){
+ document.querySelectorAll('.phone-screen > .sheet').forEach(x=>x.remove());
+ if(!S.modal)return;
+ const wrap=document.createElement('div');wrap.className='sheet center';
+ const m=S.modal;
+ if(m.type==='unknown')wrap.innerHTML=modalUnknown(m);
+ if(m.type==='addr')wrap.innerHTML=modalAddr();
+ if(m.type==='unseal')wrap.innerHTML=modalUnseal();
+ if(m.type==='cancel')wrap.innerHTML=modalCancel(m);
+ $('.phone-screen').appendChild(wrap);
+ wrap.addEventListener('click',e=>{if(e.target===wrap)closeModal();});
+ wireModal(wrap,m);
+}
+function modalUnknown(m){
+ return `<div class="panel appear">
+  <h3>Unknown barcode — captured, never refused</h3>
+  <div class="note acc" style="margin:10px 0 0"><div>A scan is <b>never blocked</b> at a busy counter.
+   The code goes in as an EXTRA line with a description and a photo — the ticket match flags it, the receipt shows it.</div></div>
+  <div class="field"><div class="fl">Code as scanned</div><input id="ukCode" class="mono" value="${m.code}"></div>
+  <div class="field"><div class="fl">What is it?</div><input id="ukDesc" placeholder="e.g. AirPods Pro case — customer add-on"></div>
+  <div class="field"><div class="fl">Unit value (declared)</div><input id="ukVal" class="mono" inputmode="decimal" placeholder="0.00"></div>
+  <button class="btn alt sm" style="margin-top:10px" id="ukPhoto">📷 Photo of the item — attach</button>
+  <div style="display:flex;gap:8px;margin-top:12px">
+   <button class="btn sm" id="ukSave">Add to the box</button>
+   <button class="btn ghost" id="ukCancel">Cancel</button></div></div>`;
+}
+function modalAddr(){
+ const A=D().addr,sh=A.ship;
+ const over2k=declared()>200000;
+ return `<div class="panel appear">
+  <h3>Edit the shipping address</h3>
+  <div class="wsum" style="margin-top:4px">Unit, buzzer and note are free corrections. Changing
+   <b>street, city or postal</b> is a material override — reason required, chained, reviewed.</div>
+  <div class="field"><div class="fl">Street (line1) — material</div><input id="adL1" value="${sh.line1}"></div>
+  <div style="display:flex;gap:8px">
+   <div class="field" style="flex:1"><div class="fl">Unit — free</div><input id="adUnit" value="${sh.unit}"></div>
+   <div class="field" style="flex:1"><div class="fl">Postal — material</div><input id="adPc" class="mono" value="${sh.postal}"></div></div>
+  <div class="field"><div class="fl">City — material</div><input id="adCity" value="${sh.city}"></div>
+  <div class="field"><div class="fl">Delivery note — free</div><input id="adNote" value="${sh.note}"></div>
+  <div class="field" id="adReasonWrap" style="display:none"><div class="fl">Override reason — required for a material change</div>
+   <select id="adReason"><option value="">Choose a reason…</option>
+    ${ADDR_REASONS.map(r=>`<option>${r}</option>`).join('')}</select></div>
+  <div id="adApproval" style="display:none">
+   ${S.role==='REP'
+    ?`<div class="note risk" style="margin:10px 0 0"><div>This box declares <b>${money(declared())}</b> — over $2,000,
+       a material change also needs <b>Chantal's approval</b> (STORE_MANAGER). Save stays blocked until she approves.</div></div>
+      <button class="btn alt sm" id="adAskMgr">DEMO · Chantal approved on her phone</button>
+      <div class="sighint" id="adApproved" style="display:none">APPROVED · CHANTAL GUIMOND · STORE_MANAGER ✓</div>`
+    :`<div class="note warn" style="margin:10px 0 0"><div>This box declares <b>${money(declared())}</b> — over $2,000.
+       You are STORE_MANAGER: <b>your save is the approval</b>, chained as address.overridden + manager.approved.</div></div>`}
+  </div>
+  ${A.confirmed?`<div class="note warn" style="margin:10px 0 0"><div>This address is <b>confirmed</b> — any saved
+    edit clears the confirmation and the app will say so.</div></div>`:''}
+  <div style="display:flex;gap:8px;margin-top:12px">
+   <button class="btn sm" id="adSave">Save</button>
+   <button class="btn ghost" id="adCancel">Cancel</button></div>
+  <input type="hidden" id="adOver2k" value="${over2k?'1':''}">
+  </div>`;
+}
+function modalUnseal(){
+ const d=D(),u=S.unseal;
+ const secondName=S.role==='REP'?'Chantal Guimond · STORE_MANAGER':'DLIVERD dispatch';
+ if(u.stage===1)return `<div class="panel appear">
+  <h3>Unlock ${d.boxRef} — breaking the seal</h3>
+  <div class="wsum" style="margin-top:4px">Dual control: a reason from the closed list, then a code
+   sent to a <b>different</b> person. Here is exactly what it costs, before any button:</div>
+  <div class="card" style="margin:12px 0 0"><div class="bd">
+   <div class="kv"><span class="k">Seal ${d.seal}</span><span class="v" style="color:var(--risk)">VOIDED — forever</span></div>
+   <div class="kv"><span class="k">Seal count</span><span class="v">becomes ${d.sealHist.length+1} — on Léa's receipt, forever</span></div>
+   <div class="kv"><span class="k">Movement ${d.booked?d.mv:''}</span>
+    <span class="v">${d.booked?'RECALLED — cancellation quote <span style="color:var(--risk)">$4.50</span>':'none booked — nothing to recall'}</span></div>
+   <div class="kv"><span class="k">Printed label</span>
+    <span class="v">${d.printed?'VOIDED — reprint after re-seal':'none printed yet'}</span></div>
+  </div></div>
+  <div class="field"><div class="fl">Reason — closed list</div>
+   <select id="usReason"><option value="">Choose a reason…</option>
+    ${UNSEAL_REASONS.map(r=>`<option ${u.reason===r?'selected':''}>${r}</option>`).join('')}</select></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+   <button class="btn danger sm" id="usNext">Continue — request ${S.role==='REP'?"Chantal's":"dispatch's"} code</button>
+   <button class="btn ghost" id="usCancel">Keep it sealed</button></div></div>`;
+ const cells=[...Array(6)].map((_,i)=>`<span class="${u.otp[i]?'f':''}">${u.otp[i]||''}</span>`).join('');
+ const demo=S.role==='REP'?OTP_MGR:OTP_DISPATCH;
+ return `<div class="panel appear" style="background:var(--dark)">
+  <div class="hand" style="margin:0;padding:4px 0 0">
+   <h2>Second person's code</h2>
+   <div class="sb">Reason: <b style="color:#fff">${u.reason}</b>.
+    ${S.role==='REP'
+     ?'The approval code went to <b style="color:#fff">Chantal Guimond (STORE_MANAGER)</b> — your own code can never open your own seal.'
+     :'No second manager is on shift — the request <b style="color:#fff">escalated to DLIVERD dispatch</b>. Their console shows the code.'}</div>
+   <div class="otp ${u.err?'err':''}">${cells}</div>
+   <div class="hmeta"><span>Expires in <b>09:41</b></span><span>Attempt <b>${Math.min(D().fails+1,5)}</b> of 5</span></div>
+   <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-uk="${n}">${n}</button>`).join('')}
+    <button class="fn" data-uk="clr">CLEAR</button><button data-uk="0">0</button><button class="fn" data-uk="del">⌫</button></div>
+   <div class="sighint" style="margin-top:8px">DEMO · ${S.role==='REP'?"CHANTAL'S PHONE":"DISPATCH CONSOLE"} SHOWS ${demo.split('').join(' ')}</div>
+   <button class="btn ghost" id="usCancel" style="color:var(--dkm)">Cancel — keep it sealed</button>
+  </div></div>`;
+}
+function modalCancel(m){
+ const b=m.b,own=b.by===U().short;
+ const free=m.free;
+ return `<div class="panel appear">
+  <h3>Cancel ${b.mv} — ${b.box}</h3>
+  <div class="card" style="margin:12px 0 0"><div class="bd">
+   <div class="kv"><span class="k">Quote today</span><span class="v">${free?'$0.00 — inside the free hour':'$4.50 — the 60-min free window has passed'}</span></div>
+   <div class="kv"><span class="k">The box</span><span class="v">stays SEALED on your shelf</span></div>
+   <div class="kv"><span class="k">The driver</span><span class="v">${b.mvSt==='ASSIGNED'?"Maya's manifest shrinks — she is notified":'not yet assigned'}</span></div>
+   <div class="kv"><span class="k">Booked by</span><span class="v">${b.by}${own?' (you)':''}</span></div>
+  </div></div>
+  <button class="btn danger" style="margin-top:12px" id="cxGo">Cancel ${b.mv} · ${free?'$0.00':'$4.50'}</button>
+  <button class="btn ghost" id="cxNo">Keep the booking</button></div>`;
+}
+function wireModal(wrap,m){
+ const q=s=>wrap.querySelector(s);
+ if(m.type==='unknown'){
+  q('#ukPhoto').onclick=()=>{q('#ukPhoto').textContent='📷 Photo attached ✓';toast('Photo attached to the capture');};
+  q('#ukCancel').onclick=closeModal;
+  q('#ukSave').onclick=()=>{
+   const code=q('#ukCode').value.trim()||'UNKNOWN',desc=q('#ukDesc').value.trim()||'Unlabelled item',
+    val=Math.round(parseFloat(q('#ukVal').value||'0')*100)||0;
+   D().lines.push({code,name:desc,ser:false,unit:val,got:1,imeis:[],expected:false,want:0,type:'Captured · unknown'});
+   S.modal=null;toast(desc+' captured as EXTRA — the match will flag it');render();};
+ }
+ if(m.type==='addr'){
+  const A=D().addr;
+  const material=()=>q('#adL1').value!==A.fetched.line1||q('#adCity').value!==A.fetched.city||q('#adPc').value!==A.fetched.postal;
+  const refresh=()=>{
+   const mat=material();
+   q('#adReasonWrap').style.display=mat?'':'none';
+   q('#adApproval').style.display=(mat&&q('#adOver2k').value)?'':'none';};
+  ['adL1','adUnit','adPc','adCity','adNote'].forEach(id=>q('#'+id).addEventListener('input',refresh));
+  refresh();
+  let mgrOk=false;
+  if(q('#adAskMgr'))q('#adAskMgr').onclick=()=>{mgrOk=true;q('#adApproved').style.display='';
+   toast('Chantal approved the material change — chained manager.approved');};
+  q('#adCancel').onclick=closeModal;
+  q('#adSave').onclick=()=>{
+   const mat=material();
+   const vals={line1:q('#adL1').value.trim(),unit:q('#adUnit').value.trim(),city:q('#adCity').value.trim(),
+    postal:q('#adPc').value.trim(),note:q('#adNote').value.trim()};
+   const changed=Object.keys(vals).some(k=>vals[k]!==A.ship[k]);
+   if(!changed){S.modal=null;return render();}
+   if(mat){
+    const r=q('#adReason').value;
+    if(!r)return toast('A material change needs a reason from the list — save stays blocked',true);
+    if(q('#adOver2k').value&&S.role==='REP'&&!mgrOk)return toast("Over $2,000 — Chantal's approval is required before save",true);
+    A.reason=r;A.overridden=true;
+    A.approvedBy=q('#adOver2k').value?(S.role==='REP'?'Chantal G.':U().short+' (self, STORE_MANAGER)'):'';
+    chain('address.overridden',D().boxRef+' · '+ (vals.line1!==A.fetched.line1?'line1':vals.city!==A.fetched.city?'city':'postal')+' · '+r+' · '+U().short+(A.approvedBy?' · approved: '+A.approvedBy:''));
+    if(S.role==='REP')S.queue.push({mv:D().mv||'—',box:D().boxRef,who:U().short,at:tNow(),field:'material',
+     from:A.fetched.line1,to:vals.line1,reason:r});
+   }else{A.corrected=true;chain('address.corrected',D().boxRef+' · unit/note · free · '+U().short);}
+   A.ship=vals;
+   const wasConfirmed=A.confirmed;
+   if(wasConfirmed){A.confirmed=false;chain('address.unconfirmed',D().boxRef+' · edit after confirmation');}
+   S.modal=null;
+   toast(wasConfirmed?'Saved — the confirmation was cleared; confirm the address again before sealing'
+    :(mat?'Material override saved — chained and reviewable':'Correction saved — unit/note are free'));
+   render();};
+ }
+ if(m.type==='unseal'){
+  const u=S.unseal,d=D();
+  if(q('#usCancel'))q('#usCancel').onclick=closeModal;
+  if(u.stage===1){
+   q('#usReason').onchange=e=>{u.reason=e.target.value;};
+   q('#usNext').onclick=()=>{
+    if(!u.reason)return toast('Pick a reason — the closed list is the point',true);
+    u.stage=2;render();};
+  }else{
+   const demo=S.role==='REP'?OTP_MGR:OTP_DISPATCH;
+   wrap.querySelectorAll('[data-uk]').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.uk;u.err=false;
+    if(k==='clr')u.otp='';else if(k==='del')u.otp=u.otp.slice(0,-1);
+    else if(u.otp.length<6)u.otp+=k;
+    if(u.otp.length===6){
+     if(u.otp===demo){doUnseal();return;}
+     u.otp='';u.err=true;d.fails++;
+     if(d.fails>=5){d.lockedBox=true;S.modal=null;
+      chain('unseal.locked',d.boxRef+' · 5 failed codes · SUPER_ADMIN only');
+      toast('5 failed codes — '+d.boxRef+' is LOCKED. Only SUPER_ADMIN can open it.',true);render();return;}
+     toast('Wrong code · attempt '+d.fails+' of 5 logged',true);}
+    render();});
+  }
+ }
+ if(m.type==='cancel'){
+  q('#cxNo').onclick=closeModal;
+  q('#cxGo').onclick=()=>{
+   const b=m.b;
+   if(b.live){const d=D();d.mvSt='CANCELLED';d.booked=false;}
+   else b.mvSt='CANCELLED';
+   chain('movement.cancelled',b.mv+' · '+b.box+' · '+(m.free?'$0.00':'$4.50')+' · '+U().short);
+   S.modal=null;
+   toast(b.mv+' cancelled · '+(m.free?'no fee — inside the free hour':'$4.50 applied')+' · the box stays sealed');
+   render();};
+ }
+}
+function doUnseal(){
+ const d=D(),u=S.unseal;
+ const last=d.sealHist[d.sealHist.length-1];
+ if(last)last.st='VOIDED — '+u.reason.toLowerCase();
+ chain('seal.voided',d.boxRef+' · '+d.seal+' · '+u.reason+' · 2nd code: '+(S.role==='REP'?'Chantal G.':'dispatch'));
+ if(d.booked){d.mvSt='RECALLED';d.booked=false;
+  chain('movement.recalled',d.mv+' · unseal after booking · quote $4.50');}
+ if(d.printed){d.labelVoid=true;chain('label.voided',d.boxRef+' · unseal voids the print');}
+ d.printed=0;d.sealed=false;d.resealed++;d.fails=0;
+ S.modal=null;d.step=4;
+ toast(d.seal+' VOIDED — '+d.boxRef+' is OPEN again · seal count now '+(d.sealHist.length+1)+' · it will show on the receipt');
+ render();
+}
+
+/* ── BOXES ── */
+function liveDeskBox(){
+ const d=D();
+ if(!d.sealHist.length)return null;
+ return {box:d.boxRef,mv:d.mv||'—',mvSt:d.mvSt||'—',boxSt:d.lockedBox?'LOCKED':d.sealed?'SEALED':'OPEN',
+  seal:d.seal,ticket:d.ticketRef,rec:TICKET.rec,lang:'FR',addr:d.addr.ship.line1+', '+d.addr.ship.city,
+  svc:SVC.find(s=>s.id===d.svc).n,win:'—',by:d.bookedBy||U().short,resealed:d.resealed,declared:declared(),
+  items:d.lines.filter(l=>l.got>0).map(l=>({n:l.name,id:l.ser?'IMEI '+l.imeis.map(i=>'…'+i.slice(-4)).join(', '):l.code+' ×'+l.got,v:l.unit*l.got})),
+  hist:d.sealHist,live:true};
+}
+function allBoxes(){const l=liveDeskBox();return l?S.boxes.concat([l]):S.boxes.slice();}
+function stPill(st){
+ const cls=st==='SEALED'||st==='BOOKED'||st==='ASSIGNED'?'acc'
+  :st==='IN_CUSTODY'||st==='PICKED_UP'?'warn'
+  :st==='CANCELLED'||st==='RECALLED'||st==='LOCKED'?'risk':'';
+ return `<span class="pill ${cls}">${st}</span>`;
+}
+function canCancel(b){
+ if(['PICKED_UP','DELIVERED','CANCELLED','RECALLED','—'].includes(b.mvSt))return {ok:false,why:
+  b.mvSt==='PICKED_UP'?'In custody — cancel is no longer possible. The visit is payable in full; the box comes back at the REPRISE rate ($9.75).'
+  :b.mvSt==='—'?'No booking on this box yet.'
+  :'Already '+b.mvSt.toLowerCase()+'.'};
+ if(S.role==='REP'&&b.by!==U().short)return {ok:false,why:
+  'Only your own bookings — this one was booked by '+b.by+'. Chantal (STORE_MANAGER) can cancel any booking before pickup; you can cancel '+D().boxRef+' only.'};
+ return {ok:true};
+}
+function vBoxes(){
+ const boxes=allBoxes();
+ if(S.view!=null){
+  const b=boxes.find(x=>x.box===S.view);
+  if(!b){S.view=null;return vBoxes();}
+  const c=canCancel(b);
+  shell(`
+   <button class="btn ghost" style="justify-content:flex-start;padding-left:2px" id="backList">‹ All boxes</button>
+   <div class="card"><div class="hd">${b.box}<div class="sp"></div>${stPill(b.boxSt)}${stPill(b.mvSt)}</div>
+    <div class="bd">
+     <div class="kv"><span class="k">Movement</span><span class="v mono">${b.mv}</span></div>
+     <div class="kv"><span class="k">Ticket</span><span class="v mono">${b.ticket}</span></div>
+     <div class="kv"><span class="k">Service</span><span class="v">${b.svc}${b.win!=='—'?' · '+b.win:''}</span></div>
+     <div class="kv"><span class="k">Recipient</span><span class="v">${b.rec} <span class="pill acc">${b.lang}</span></span></div>
+     <div class="kv"><span class="k">Address</span><span class="v" style="font-weight:600">${b.addr}</span></div>
+     <div class="kv"><span class="k">Booked by</span><span class="v">${b.by}${b.by===U().short?' (you)':''}</span></div>
+     ${b.note?`<div class="kv"><span class="k">Routing</span><span class="v" style="font-weight:600">${b.note}</span></div>`:''}
+    </div></div>
+   <div class="card"><div class="hd">Manifest — shipper-attested</div><div class="bd">
+    ${b.items.map(i=>`<div class="kv"><span class="k">${i.n}<br><span class="mono" style="font-size:10px">${i.id}</span></span><span class="v">${money(i.v)}</span></div>`).join('')}
+    <div class="kv"><span class="k">Declared total</span><span class="v">${money(b.declared)}</span></div>
+   </div></div>
+   <div class="note acc"><div><b>Declared value is never printed on the label.</b> Shipper-attested contents,
+    seal-verified custody — DLIVERD never opens a box.</div></div>
+   <div class="card"><div class="hd">Seal history</div><div class="bd">
+    ${b.hist.map(h=>`<div class="kv"><span class="k mono">${h.s}</span><span class="v" style="font-weight:600">${h.st} · ${h.at} · ${h.by}</span></div>`).join('')}
+    ${b.resealed?`<div class="note warn" style="margin:10px 0 0"><div><b>Re-sealed ×${b.resealed}</b> — this appears on ${b.rec.split(' ')[0]}'s receipt forever.</div></div>`:''}
+   </div></div>
+   ${c.ok?`<button class="btn danger" id="cxOpen">Cancel the booking ${b.mv}</button>`
+    :b.mvSt==='ASSIGNED'||b.mvSt==='BOOKED'
+     ?`<button class="btn danger" style="opacity:.55" id="cxDenied">Cancel the booking ${b.mv}</button>`
+     :`<div class="note ${b.mvSt==='PICKED_UP'?'warn':'risk'}"><div>${c.why}</div></div>`}`);
+  $('#backList').onclick=()=>{S.view=null;render();};
+  if($('#cxOpen'))$('#cxOpen').onclick=()=>{
+   const free=b.live&&D().freeUntil&&sceneMin<=(+D().freeUntil.slice(0,2)*60 + +D().freeUntil.slice(3));
+   S.modal={type:'cancel',b,free:!!free};render();};
+  if($('#cxDenied'))$('#cxDenied').onclick=()=>toast(c.why,true);
+  return;
+ }
+ shell(`
+  <div class="tiles">
+   <div class="tile"><div class="v">${boxes.length}</div><div class="k">Boxes today</div></div>
+   <div class="tile"><div class="v acc">${money(boxes.reduce((a,b)=>a+b.declared,0))}</div><div class="k">Declared · never on a label</div></div>
+  </div>
+  <div class="label" style="margin-top:0">Today's boxes — tap for detail</div>
+  <div class="card">
+   ${boxes.map(b=>`<button class="boxrow" style="width:100%;text-align:left;padding-left:14px;padding-right:14px" data-box="${b.box}">
+     <div><div class="bid">${b.box} <span style="color:var(--faint);font-weight:600">· ${b.mv}</span></div>
+      <div class="bfor">${b.rec} · ${b.svc}${b.by===U().short?' · yours':''}</div></div>
+     <div class="sp"></div>${stPill(b.boxSt)}${stPill(b.mvSt)}</button>`).join('')}
+  </div>
+  <div class="note acc"><div><b>Cancelling:</b> ${S.role==='MANAGER'
+   ?'as STORE_MANAGER you can cancel any booking that isn’t picked up yet.'
+   :'as a rep you can cancel only bookings you made ('+D().boxRef+'). Chantal can cancel any, before pickup.'}
+   The quote is always shown before the button.</div></div>`);
+ document.querySelectorAll('[data-box]').forEach(b=>b.onclick=()=>{S.view=b.dataset.box;render();});
+}
+
+/* ── PICKUP · the 07:40 dock handover ── */
+function vPickup(){
+ const P=S.pickup;
+ const manifest=S.boxes.filter(b=>['ASSIGNED','PICKED_UP'].includes(b.mvSt));
+ const rows=manifest.map(b=>`<div class="boxrow">
+   <div><div class="bid">${b.box} <span style="color:var(--faint);font-weight:600">· seal ${b.seal}</span></div>
+    <div class="bfor">${b.mv} · ${b.rec}</div></div>
+   <div class="sp"></div>${stPill(b.boxSt)}</div>`).join('')
+  +`<div class="boxrow" style="opacity:.55">
+   <div><div class="bid" style="color:var(--faint)">BX-7734</div>
+    <div class="bfor">On the dock — not booked today; the driver's app will refuse it</div></div>
+   <div class="sp"></div><span class="pill">NOT BOOKED</span></div>`;
+ if(P.stage==='done'){
+  shell(`
+   <div class="hero"><div class="eyeb">Dock · pickup closed</div>
+    <h2>Custody accepted by Maya C. · 4 boxes · 07:52</h2>
+    <div class="m">Release code verified on her phone · you signed on her phone · seals matched the manifest.
+     Two proofs, both directions — chained.</div></div>
+   <div class="card"><div class="hd">This morning's manifest</div>${rows}</div>
+   <div class="note acc"><div><b>Custody never lapses.</b> From 07:52 those 4 boxes are Maya's problem and the
+    ledger's record — the store's day is the desk again.</div></div>`);
+  return;
+ }
+ shell(`
+  <div class="hero"><div class="eyeb">Dock · 07:40 pickup</div>
+   <h2>Maya · MTL-03 · Kia Niro ${P.stage==='idle'?'is at the dock':'— release in progress'}</h2>
+   <div class="m">4 boxes · ${money(S.boxes.reduce((a,b)=>a+b.declared,0))} declared · she scans each box ref and
+    checks each seal against her manifest</div></div>
+  ${P.stage!=='idle'?`
+   <div class="hand">
+    <h2>Release code — show it to no one but Maya</h2>
+    <div class="sb">The driver types this into <b style="color:#fff">their</b> app — then you sign on their
+     phone. Two proofs, both directions. Léa's delivery code is a different code; the store never sees it.</div>
+    <div class="bigcode">${RELEASE_OTP}</div>
+    <div class="hmeta"><span>TTL <b id="ttl">10:00</b></span><span>One movement set · one use</span></div>
+   </div>`:''}
+  <div class="card"><div class="hd">Manifest — 4 boxes for MTL-03
+    <div class="sp"></div><span class="pill ${P.stage==='scanned'?'warn':'acc'}">${P.stage==='scanned'?'SCANNED ✓':'AWAITING DRIVER'}</span></div>
+   ${rows}</div>
+  ${P.stage==='idle'?`
+   <button class="btn" id="askRelease">The driver asks for release — show the code</button>
+   <div class="sighint">DEMO · MAYA HAS SCANNED HER MANIFEST AND TAPS “REQUEST RELEASE”</div>`
+  :P.stage==='code'?`
+   <button class="btn" id="simScan">DEMO · driver scanned all four — seals matched</button>`
+  :`
+   <div class="note acc appear"><div><b>All four scanned, seals matched.</b> Maya typed the code ✓ — now you sign
+    on her phone to release custody.</div></div>
+   <button class="btn" id="simSign">DEMO · you signed on Maya's phone</button>`}`);
+ if($('#askRelease'))$('#askRelease').onclick=()=>{P.stage='code';P.ttl=600;
+  toast('Release code live — it expires in 10:00');render();};
+ if($('#simScan'))$('#simScan').onclick=()=>{
+  manifest.forEach(b=>{b.boxSt='IN_CUSTODY';});P.stage='scanned';
+  toast('BX-1042 · BX-8815 · BX-1049 · BX-ANJ0 scanned — seals matched the manifest');render();};
+ if($('#simSign'))$('#simSign').onclick=()=>{
+  manifest.forEach(b=>{b.mvSt='PICKED_UP';b.boxSt='IN_CUSTODY';});
+  P.stage='done';
+  chain('custody.accepted','M-4471…M-4474 · 4 boxes · Maya C. · code + signature · 07:52');
+  toast('Custody accepted by Maya C. · 4 boxes · 07:52');render();};
+}
+
+/* ── LEDGER · STORE_MANAGER only — for STORE_REP this view is never rendered ── */
+function vLedger(){
+ if(S.role!=='MANAGER'){S.tab='desk';return vDesk();}
+ const used=S.nextSeal-1-40000,total=5000;
+ shell(`
+  <div class="card"><div class="hd">Store ledger — today
+    <div class="sp"></div><span class="pill acc">CHAIN OK</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Chain head</span><span class="v mono">${S.ledger[0].h.replace('…','')}…</span></div>
+    <div class="kv"><span class="k">Events (store scope)</span><span class="v">${S.ledger.length} today</span></div>
+    <div class="kv"><span class="k">Daily Merkle root</span><span class="v mono" style="font-weight:600">anchored 07:00 · externally timestamped</span></div>
+   </div></div>
+  <div class="card"><div class="hd">Address-override review — ${S.queue.length} pending</div><div class="bd">
+   ${S.queue.length?S.queue.map((o,i)=>`
+    <div class="kv" style="align-items:flex-start"><span class="k">${o.mv} · ${o.box}<br>
+      <span style="font-size:11px">${o.field} · by ${o.who} · ${o.at}</span><br>
+      <span class="strike" style="font-size:11px">${o.from}</span> → <b style="font-size:11px;color:var(--ink)">${o.to}</b><br>
+      <span style="font-size:11px">Reason: ${o.reason}</span></span>
+     <span class="v"><button class="btn sm" style="min-height:32px;padding:0 10px;font-size:11px" data-qok="${i}">Approve</button><br>
+      <button class="btn danger sm" style="min-height:32px;padding:0 10px;font-size:11px;margin-top:6px" data-qflag="${i}">Flag</button></span></div>`).join('')
+   :'<div style="color:var(--muted);font-size:13px">Queue clear. Redirect fraud shows up here first — an empty queue is the good kind of boring.</div>'}
+  </div></div>
+  <div class="card"><div class="hd">Seal range — issued to this store</div><div class="bd">
+   <div class="kv"><span class="k">Range</span><span class="v mono">CS-40001 – CS-45000</span></div>
+   <div class="kv"><span class="k">Consumed through</span><span class="v mono">CS-${S.nextSeal-1} · next CS-${S.nextSeal}</span></div>
+   <div class="rangebar"><i style="width:${Math.max(2,used/total*100)}%"></i></div>
+   <div style="font-size:11px;color:var(--muted);margin-top:5px">${used} of ${total.toLocaleString()} used · dispatch alerts on exhaustion</div>
+  </div></div>
+  <div class="label">Event stream — newest first · store scope</div>
+  <div class="card"><div class="bd" style="padding-top:4px;padding-bottom:4px">
+   ${S.ledger.map(ev=>`<div class="ledrow"><span class="lt">${ev.t}</span>
+     <div><div class="le">${ev.e}</div><div class="lr">${ev.r}</div></div>
+     <span class="lh">${ev.h}</span></div>`).join('')}
+  </div></div>
+  <div class="note acc"><div><b>Store-scoped view.</b> Full hashes, chain verification and the anomaly board live
+   in the DLIVERD admin console — this is your store's slice of the same chain.</div></div>`);
+ document.querySelectorAll('[data-qok]').forEach(b=>b.onclick=()=>{
+  const o=S.queue.splice(+b.dataset.qok,1)[0];
+  chain('override.reviewed',o.mv+' · approved · '+U().short);
+  toast(o.mv+' override approved — chained');render();});
+ document.querySelectorAll('[data-qflag]').forEach(b=>b.onclick=()=>{
+  const o=S.queue.splice(+b.dataset.qflag,1)[0];
+  chain('override.flagged',o.mv+' · flagged to DLIVERD dispatch · '+U().short);
+  toast(o.mv+' flagged to dispatch — they take it from here',true);render();});
+}
+
+/* ── PROFILE ── */
+function vProfile(){
+ const mgr=S.role==='MANAGER';
+ const caps=mgr?[
+   ['Pack, seal & book','<span class="pill acc">YES</span>'],
+   ['Cancel bookings','<span class="pill acc">ANY · before pickup</span>'],
+   ['Approve unseals','<span class="pill acc">YES — second person for reps</span>'],
+   ['Approve address override > $2,000','<span class="pill acc">YES</span>'],
+   ['Store ledger & review queue','<span class="pill acc">FULL</span>'],
+   ['Own unseal — second code','<span class="pill warn">ANOTHER MGR / DISPATCH</span>']]
+  :[
+   ['Pack, seal & book','<span class="pill acc">YES</span>'],
+   ['Cancel bookings','<span class="pill warn">OWN ONLY</span>'],
+   ['Approve unseals','<span class="pill risk">NO — Chantal’s code</span>'],
+   ['Approve address override > $2,000','<span class="pill risk">NO — needs Chantal</span>'],
+   ['Store ledger','<span class="pill risk">NEVER — tab not rendered</span>'],
+   ['Locked box (5 failed codes)','<span class="pill risk">SUPER_ADMIN ONLY</span>']];
+ shell(`
+  <div class="card"><div class="hd">${U().name} <div class="sp"></div><span class="pill acc">${U().role}</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Role</span><span class="v">${U().title}</span></div>
+    <div class="kv"><span class="k">Store</span><span class="v">${STORE.name}</span></div>
+    <div class="kv"><span class="k">Address</span><span class="v" style="font-weight:600">${STORE.addr}</span></div>
+    <div class="kv"><span class="k">Provider</span><span class="v">${STORE.prov}</span></div>
+    <div class="kv"><span class="k">Today's driver</span><span class="v">Maya · MTL-03 · Kia Niro · 07:40</span></div>
+   </div></div>
+  <div class="card"><div class="hd">Scanner</div><div class="bd">
+   <div class="kv"><span class="k">Mode</span><span class="v">
+    <span style="display:inline-flex;border:1.5px solid var(--line-mid);border-radius:7px;overflow:hidden">
+     ${[['CAM','📷 Camera'],['WEDGE','⌨ Wedge']].map(([k,l])=>`<button data-scanset="${k}" style="padding:6px 12px;font-size:12px;font-weight:800;${S.scan===k?'background:var(--acc);color:#fff':'color:var(--muted)'}">${l}</button>`).join('')}
+    </span></span></div>
+   <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Wedge renders a focused input on the desk that
+    the USB counter scanner types into. Camera uses the phone.</div>
+  </div></div>
+  <div class="card"><div class="hd">What this role can do</div><div class="bd">
+   ${caps.map(c=>`<div class="kv"><span class="k">${c[0]}</span><span class="v">${c[1]}</span></div>`).join('')}
+  </div></div>
+  <div class="note acc"><div><b>DLIVERD never opens a box.</b> Shipper-attested contents, seal-verified custody —
+   the roles above are about who may break that seal, and who watches them do it.</div></div>
+  <button class="btn alt" id="switchRole">Switch role — back to the picker</button>
+  <button class="btn ghost" id="lockApp">Lock the desk</button>`);
+ document.querySelectorAll('[data-scanset]').forEach(b=>b.onclick=()=>{S.scan=b.dataset.scanset;
+  toast(S.scan==='CAM'?'Camera scanning':'Wedge mode — scanner types into the desk');render();});
+ $('#switchRole').onclick=()=>{S.gate='roles';toast('Pick a role — the app rebuilds around it');render();};
+ $('#lockApp').onclick=()=>{S.gate='roles';toast('Desk locked');render();};
+}
+
+/* ── render ── */
+function render(){
+ tickClock();
+ if(S.gate!=='app')return vGate();
+ $('#gate').style.display='none';
+ $('#app').style.display='flex';
+ setChrome(false);
+ if(S.role==='REP'&&S.tab==='ledger')S.tab='desk';
+ if(S.tab==='desk')return vDesk();
+ if(S.tab==='boxes')return vBoxes();
+ if(S.tab==='pickup')return vPickup();
+ if(S.tab==='ledger')return vLedger();
+ return vProfile();
+}
+setInterval(tickClock,10000);
+setInterval(()=>{ /* release-code TTL, updated in place — no re-render */
+ if(S.pickup.stage==='code'||S.pickup.stage==='scanned'){
+  if(S.pickup.ttl>0)S.pickup.ttl--;
+  const el=$('#ttl');
+  if(el)el.textContent=String(Math.floor(S.pickup.ttl/60)).padStart(2,'0')+':'+String(S.pickup.ttl%60).padStart(2,'0');
+ }
+},1000);
+render();
+</script>
+</body></html>

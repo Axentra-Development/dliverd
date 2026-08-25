@@ -1,6 +1,6 @@
 {
-  "name": "Dliverd Driver",
-  "short_name": "Dliverd",
+  "name": "Dliverd Provider",
+  "short_name": "Provider",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0C1211",

@@ -1,0 +1,918 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0C1211">
+<title>Dliverd · Admin</title>
+<style>
+:root{
+  --paper:#F3F6F4;--surface:#FFFFFF;--raise:#FAFBFA;--sunk:#EDF1EF;
+  --ink:#111917;--body:#2B3733;--muted:#65726E;--faint:#8B9793;
+  --line:#DCE1DE;--line-mid:#C3CBC7;
+  --acc:#0F6455;--acc-ink:#0B4E42;--acc-soft:#E3EFEB;--acc-line:#9FC9BE;
+  --risk:#93301F;--risk-soft:#F8E9E5;--risk-line:#DFB6AC;
+  --warn:#7C5A0E;--warn-soft:#F6EEDC;
+  --dark:#0C1211;--dark2:#141C1A;--dkl:#31403C;--dkm:#8B9994;--dka:#54C1A6;--dka2:#7FD5BF;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:radial-gradient(1400px 700px at 50% -12%,#2a3a36 0%,#121816 55%,#0b100f 100%) #0b100f;
+  color:var(--body);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;line-height:1.45;overflow:hidden}
+button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
+input,select,textarea{font-family:inherit;font-size:13.5px;color:var(--ink);border:1.5px solid var(--line-mid);
+  border-radius:6px;padding:9px 11px;background:var(--surface);width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:1px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.mono{font-family:var(--mono)}
+.sp{flex:1 1 auto}
+/* ── console frame ── */
+.console{display:flex;flex-direction:column;height:100vh}
+.topbar{flex:0 0 48px;display:flex;align-items:center;gap:12px;padding:0 18px;background:var(--dark);
+  border-bottom:1px solid #1E2A27;color:#C0CCC7;z-index:20}
+.topbar .brand{font-weight:800;font-size:13px;letter-spacing:.16em;color:#EBF1EE}
+.topbar .sub{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--dkm)}
+.topbar .role{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--dka2);border:1px solid #265F53;background:#12302A;border-radius:3px;padding:3px 7px}
+.topbar .ticker{font-family:var(--mono);font-size:10px;color:var(--dkm)}
+.topbar .ticker b{color:var(--dka)}
+.topbar .clock{font-family:var(--mono);font-size:12px;font-weight:700;color:#EBF1EE}
+.avatar{width:28px;height:28px;border-radius:50%;background:#12302A;border:1px solid #265F53;
+  color:var(--dka2);font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.frame{flex:1 1 auto;min-height:0;display:flex}
+/* sidebar */
+.side{flex:0 0 216px;background:var(--dark2);border-right:1px solid #1E2A27;display:flex;
+  flex-direction:column;padding:14px 10px 12px;overflow-y:auto}
+.side .grp{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:#5B6B66;margin:12px 8px 6px}
+.side .grp:first-child{margin-top:0}
+.nav-it{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 10px;
+  border-radius:7px;color:var(--dkm);font-size:13px;font-weight:600;margin-bottom:2px}
+.nav-it svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.nav-it:hover{background:#1A2422;color:#C0CCC7}
+.nav-it.on{background:#12302A;color:var(--dka2)}
+.nav-it .bdg{margin-left:auto;min-width:17px;height:17px;border-radius:9px;background:var(--risk);
+  color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.nav-it .bdg.warn2{background:#7C5A0E}
+.side .foot{margin-top:auto;padding:10px 8px 2px;font-family:var(--mono);font-size:8.5px;
+  letter-spacing:.08em;text-transform:uppercase;color:#5B6B66;line-height:1.7}
+.side .foot b{color:var(--dka)}
+/* main pane */
+.main{flex:1 1 auto;min-width:0;background:var(--paper);overflow-y:auto;padding:20px 24px 40px}
+.pane{max-width:1060px}
+.pagehead{display:flex;align-items:baseline;gap:12px;margin-bottom:4px;flex-wrap:wrap}
+.pagehead h1{font-size:19px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.pagehead .pd{font-size:12.5px;color:var(--muted)}
+.label{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);margin:16px 2px 7px}
+/* cards / pills / notes / kv — driver idioms */
+.card{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;
+  margin-bottom:14px;overflow:hidden}
+.card .hd{display:flex;align-items:center;gap:9px;padding:11px 15px;background:var(--raise);
+  border-bottom:1px solid var(--line);font-weight:800;color:var(--ink);font-size:13.5px}
+.card .bd{padding:13px 15px}
+.pill{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 7px;border:1px solid var(--line-mid);border-radius:3px;
+  color:var(--muted);background:var(--surface);white-space:nowrap}
+.pill.acc{color:var(--acc-ink);border-color:var(--acc-line);background:var(--acc-soft)}
+.pill.risk{color:var(--risk);border-color:var(--risk-line);background:var(--risk-soft)}
+.pill.warn{color:var(--warn);border-color:#DDC386;background:var(--warn-soft)}
+.pill.dark{color:var(--dka2);border-color:#265F53;background:var(--dark)}
+.note{display:flex;gap:9px;padding:11px 13px;font-size:12.5px;line-height:1.5;border-radius:8px;margin-bottom:12px}
+.note.acc{background:var(--acc-soft);color:var(--acc-ink);border:1px solid var(--acc-line)}
+.note.risk{background:var(--risk-soft);color:var(--risk);border:1px solid var(--risk-line)}
+.note.warn{background:var(--warn-soft);color:var(--warn);border:1px solid #DDC386}
+.note.plain{background:var(--surface);color:var(--muted);border:1px solid var(--line-mid)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted)} .kv .v{color:var(--ink);font-weight:700;text-align:right}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;
+  padding:0 16px;border-radius:7px;background:var(--acc);color:#fff;font-size:13px;font-weight:800}
+.btn:active{transform:scale(.99)}
+.btn.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-mid);font-weight:700}
+.btn.danger{background:var(--surface);color:var(--risk);border:1.5px solid var(--risk-line);font-weight:700}
+.btn.ghost{background:none;color:var(--muted);font-weight:600;font-size:12.5px;min-height:32px}
+.btn.sm{min-height:30px;font-size:11.5px;padding:0 11px;border-radius:6px}
+.btn[disabled]{opacity:.45;cursor:default}
+/* tables */
+.tblwrap{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);text-align:left;font-weight:600;padding:7px 10px;border-bottom:1px solid var(--line-mid);
+  background:var(--raise);white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);color:var(--body);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.ref{font-family:var(--mono);font-size:11.5px;color:var(--ink);white-space:nowrap}
+.tbl th.num,.tbl td.num{text-align:right;font-family:var(--mono);font-size:11.5px;white-space:nowrap}
+.tbl tr.rowbtn{cursor:pointer}
+.tbl tr.rowbtn:hover td{background:var(--raise)}
+/* ledger stream */
+.chiprow{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 12px}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  padding:6px 11px;border:1.5px solid var(--line-mid);border-radius:16px;color:var(--muted);background:var(--surface)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.chainhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--dark);color:var(--dkm);
+  border-radius:9px;padding:11px 14px;font-family:var(--mono);font-size:11px;margin-bottom:12px}
+.chainhead b{color:var(--dka2);font-size:12px}
+.chainhead .st{color:#EBF1EE}
+.evt{display:flex;gap:10px;align-items:baseline;padding:7px 12px;border-bottom:1px solid var(--line);
+  font-size:12px;transition:background .12s}
+.evt:last-child{border-bottom:0}
+.evt .t{font-family:var(--mono);font-size:10.5px;color:var(--faint);flex:0 0 78px;white-space:nowrap}
+.evt .ty{font-family:var(--mono);font-size:10.5px;font-weight:700;flex:0 0 158px;color:var(--acc-ink);white-space:nowrap}
+.evt .ty.risk{color:var(--risk)} .evt .ty.warn{color:var(--warn)} .evt .ty.adm{color:var(--ink)}
+.evt .rf{flex:1 1 auto;min-width:0;color:var(--body)}
+.evt .rf .mono{font-size:11px;color:var(--ink)}
+.evt .ac{flex:0 0 148px;font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evt .hs{flex:0 0 122px;font-family:var(--mono);font-size:10.5px;color:var(--faint);text-align:right;white-space:nowrap}
+.evt .hs b{color:var(--acc-ink);font-weight:700}
+.evt.scanning{background:var(--acc-soft)}
+.evt.okd .hs b{color:var(--acc)}
+.evt.broke{background:var(--risk-soft)}
+.evt.broke .hs b{color:var(--risk)}
+.evt.tampered .ty::after{content:" ·"; color:var(--risk)}
+.daysep{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);background:var(--sunk);padding:5px 12px;border-bottom:1px solid var(--line)}
+/* bars & meters */
+.meter{height:9px;border-radius:5px;background:var(--sunk);overflow:hidden;border:1px solid var(--line)}
+.meter i{display:block;height:100%;background:var(--acc)}
+.meter i.warn{background:#B98A1B}
+.meter i.risk{background:var(--risk)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:96px;padding:8px 2px 0}
+.bars>div{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.bars .b{width:100%;background:var(--acc-line);border-radius:4px 4px 0 0}
+.bars .b.hi{background:var(--acc)}
+.bars .d{font-family:var(--mono);font-size:9px;color:var(--faint)}
+/* two-col grid */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.grid2 .card{margin-bottom:0}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 14px}
+.tile{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;padding:12px 14px}
+.tile .v{font-family:var(--mono);font-size:21px;font-weight:800;color:var(--ink);line-height:1}
+.tile .v.acc{color:var(--acc)} .tile .v.risk{color:var(--risk)} .tile .v.warn{color:var(--warn)}
+.tile .k{font-size:10.5px;color:var(--muted);margin-top:5px}
+/* modal */
+.ovl{position:fixed;inset:0;background:rgba(12,18,17,.5);z-index:80;display:flex;
+  align-items:center;justify-content:center;padding:20px}
+.modal{width:100%;max-width:440px;background:var(--surface);border-radius:12px;overflow:hidden;
+  box-shadow:0 24px 70px rgba(0,0,0,.45);animation:mpop .18s cubic-bezier(.2,1.3,.4,1)}
+@keyframes mpop{0%{transform:scale(.94);opacity:0}100%{transform:none;opacity:1}}
+.modal .mh{padding:14px 18px 0;font-size:15px;font-weight:800;color:var(--ink)}
+.modal .mb{padding:10px 18px 4px;font-size:12.5px;color:var(--body);line-height:1.55}
+.modal .mf{display:flex;gap:8px;justify-content:flex-end;padding:14px 18px 16px}
+.conseq{background:var(--warn-soft);border:1px solid #DDC386;color:var(--warn);border-radius:7px;
+  padding:9px 11px;font-size:12px;line-height:1.5;margin:8px 0}
+.conseq.risk{background:var(--risk-soft);border-color:var(--risk-line);color:var(--risk)}
+.conseq.acc{background:var(--acc-soft);border-color:var(--acc-line);color:var(--acc-ink)}
+/* toast */
+.toast{position:fixed;right:22px;bottom:22px;transform:translateY(140%);background:var(--ink);
+  color:#EBF1EE;font-size:13px;font-weight:700;padding:12px 17px;border-radius:8px;
+  transition:transform .25s,opacity .25s;z-index:90;max-width:420px;opacity:0;pointer-events:none}
+.toast.show{transform:none;opacity:1;pointer-events:auto}
+/* anomaly cards */
+.anom{display:flex;gap:12px;padding:12px 15px;border-bottom:1px solid var(--line);align-items:flex-start}
+.anom:last-child{border-bottom:0}
+.anom .sig{flex:0 0 auto;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:15px;background:var(--sunk)}
+.anom .sig.risk{background:var(--risk-soft);color:var(--risk)}
+.anom .sig.warn{background:var(--warn-soft);color:var(--warn)}
+.anom .sig.ok{background:var(--acc-soft);color:var(--acc-ink)}
+.anom h4{font-size:13px;color:var(--ink)}
+.anom p{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.anom p .mono{font-size:11px;color:var(--ink)}
+.crumb{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:10px}
+.crumb button{color:var(--acc);font-weight:700;font-family:var(--mono);font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase}
+@media (max-width:1000px){
+  .side{flex-basis:176px}
+  .grid2{grid-template-columns:1fr}
+  .grid2 .card{margin-bottom:14px}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .evt .ac{display:none}
+}
+@media (max-width:900px){
+  .side{flex-basis:60px;padding:14px 7px}
+  .side .grp,.side .foot,.nav-it span.lb{display:none}
+  .nav-it{justify-content:center;padding:10px 0}
+  .nav-it .bdg{position:absolute;margin:0;transform:translate(12px,-10px)}
+  .nav-it{position:relative}
+  .main{padding:16px 14px 40px}
+  .topbar .ticker{display:none}
+}
+.sealimg{width:24px;height:24px;border-radius:5px;display:block}.mark>.sealimg{width:100%;height:100%;border-radius:inherit}
+</style></head><body>
+<div class="console">
+  <div class="topbar">
+    <img class="sealimg" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABCGVYSWZNTQAqAAAACAAHARIAAwAAAAEAAQAAARoABQAAAAEAAABiARsABQAAAAEAAABqASgAAwAAAAEAAgAAATEAAgAAADkAAAByATsAAgAAAA0AAACsh2kABAAAAAEAAAC6AAAAAAAAASwAAAABAAABLAAAAAFDYW52YSBkb2M9REFIVFV4R2RIWE0gdXNlcj1VQUZWZzhJNU9XQSBicmFuZD1CQUZWZzhCTTBzcwAATWF5YSBDaGFod2FuAAAABpAAAAcAAAAEMDIxMJEBAAcAAAAEAQIDAKAAAAcAAAAEMDEwMKABAAMAAAABAAEAAKACAAQAAAABAAABAKADAAQAAAABAAABAAAAAADonB5tAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj4yNDE2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6RXhpZlZlcnNpb24+MDIxMDwvZXhpZjpFeGlmVmVyc2lvbj4KICAgICAgICAgPGV4aWY6Rmxhc2hQaXhWZXJzaW9uPjAxMDA8L2V4aWY6Rmxhc2hQaXhWZXJzaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MjQxNjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICAgICA8cmRmOlNlcT4KICAgICAgICAgICAgICAgPHJkZjpsaT4xPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGk+MjwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpPjM8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaT4wPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOlNlcT4KICAgICAgICAgPC9leGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkNhbnZhIGRvYz1EQUhUVXhHZEhYTSB1c2VyPVVBRlZnOEk1T1dBIGJyYW5kPUJBRlZnOEJNMHNzPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WVJlc29sdXRpb24+MzAwPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkRsaXZlcmQgLSAyPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOkFsdD4KICAgICAgICAgPC9kYzp0aXRsZT4KICAg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">
+    <div><span class="brand">DLIVERD</span>&nbsp;&nbsp;<span class="brand" style="color:var(--dka2)">ADMIN</span>
+      <div class="sub">Maya C. · Super admin · Mon 24 Aug</div></div>
+    <span class="role">SUPER_ADMIN</span>
+    <div class="sp"></div>
+    <span class="ticker">ON THE ROAD · <b>$12,880</b> DECLARED · 2 DRIVERS · 4 IN CUSTODY</span>
+    <span class="clock" id="clock">09:41</span>
+    <div class="avatar">MC</div>
+  </div>
+  <div class="frame">
+    <nav class="side" id="side"></nav>
+    <main class="main" id="main"></main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const SEAL=`<img class="sealimg" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABCGVYSWZNTQAqAAAACAAHARIAAwAAAAEAAQAAARoABQAAAAEAAABiARsABQAAAAEAAABqASgAAwAAAAEAAgAAATEAAgAAADkAAAByATsAAgAAAA0AAACsh2kABAAAAAEAAAC6AAAAAAAAASwAAAABAAABLAAAAAFDYW52YSBkb2M9REFIVFV4R2RIWE0gdXNlcj1VQUZWZzhJNU9XQSBicmFuZD1CQUZWZzhCTTBzcwAATWF5YSBDaGFod2FuAAAABpAAAAcAAAAEMDIxMJEBAAcAAAAEAQIDAKAAAAcAAAAEMDEwMKABAAMAAAABAAEAAKACAAQAAAABAAABAKADAAQAAAABAAABAAAAAADonB5tAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj4yNDE2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6RXhpZlZlcnNpb24+MDIxMDwvZXhpZjpFeGlmVmVyc2lvbj4KICAgICAgICAgPGV4aWY6Rmxhc2hQaXhWZXJzaW9uPjAxMDA8L2V4aWY6Rmxhc2hQaXhWZXJzaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MjQxNjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICAgICA8cmRmOlNlcT4KICAgICAgICAgICAgICAgPHJkZjpsaT4xPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGk+MjwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpPjM8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaT4wPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOlNlcT4KICAgICAgICAgPC9leGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkNhbnZhIGRvYz1EQUhUVXhHZEhYTSB1c2VyPVVBRlZnOEk1T1dBIGJyYW5kPUJBRlZnOEJNMHNzPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WVJlc29sdXRpb24+MzAwPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkRsaXZlcmQgLSAyPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOkFsdD4KICAgICAgICAgPC9kYzp0aXRsZT4KICAg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">`;
+const SEALD=`<img class="sealimg" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABCGVYSWZNTQAqAAAACAAHARIAAwAAAAEAAQAAARoABQAAAAEAAABiARsABQAAAAEAAABqASgAAwAAAAEAAgAAATEAAgAAADkAAAByATsAAgAAAA0AAACsh2kABAAAAAEAAAC6AAAAAAAAASwAAAABAAABLAAAAAFDYW52YSBkb2M9REFIVFV4R2RIWE0gdXNlcj1VQUZWZzhJNU9XQSBicmFuZD1CQUZWZzhCTTBzcwAATWF5YSBDaGFod2FuAAAABpAAAAcAAAAEMDIxMJEBAAcAAAAEAQIDAKAAAAcAAAAEMDEwMKABAAMAAAABAAEAAKACAAQAAAABAAABAKADAAQAAAABAAABAAAAAADonB5tAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj4yNDE2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6RXhpZlZlcnNpb24+MDIxMDwvZXhpZjpFeGlmVmVyc2lvbj4KICAgICAgICAgPGV4aWY6Rmxhc2hQaXhWZXJzaW9uPjAxMDA8L2V4aWY6Rmxhc2hQaXhWZXJzaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MjQxNjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICAgICA8cmRmOlNlcT4KICAgICAgICAgICAgICAgPHJkZjpsaT4xPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGk+MjwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpPjM8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaT4wPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOlNlcT4KICAgICAgICAgPC9leGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkNhbnZhIGRvYz1EQUhUVXhHZEhYTSB1c2VyPVVBRlZnOEk1T1dBIGJyYW5kPUJBRlZnOEJNMHNzPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WVJlc29sdXRpb24+MzAwPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkRsaXZlcmQgLSAyPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOkFsdD4KICAgICAgICAgPC9kYzp0aXRsZT4KICAg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">`;
+const I={ledger:'<path d="M5 4h14v16H5z"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4.5"/>',
+ shield:'<path d="M12 3 5 6v5c0 5 3.2 8.4 7 10 3.8-1.6 7-5 7-10V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
+ flag:'<path d="M6 21V4"/><path d="M6 5h11l-2.5 3.5L17 12H6"/>',
+ store:'<path d="M4.5 9.5 6 4h12l1.5 5.5"/><path d="M4.5 9.5a2.4 2.4 0 0 0 4.9 0 2.4 2.4 0 0 0 4.9 0 2.4 2.4 0 0 0 4.9 0"/><path d="M6 12v8h12v-8"/><path d="M10 20v-5h4v5"/>',
+ truck:'<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+ tag:'<path d="M4 4h7l9 9-7 7-9-9z"/><circle cx="8.5" cy="8.5" r="1.4"/>',
+ seal2:'<rect x="4" y="4" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/><path d="M11 15.5H7.5V11M13 8.5h3.5V13"/>',
+ cash:'<rect x="3" y="6.5" width="18" height="11" rx="1.5"/><circle cx="12" cy="12" r="2.8"/>',
+ lock:'<rect x="5.5" y="10.5" width="13" height="9" rx="1.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>'};
+const ic=n=>`<svg viewBox="0 0 24 24">${I[n]}</svg>`;
+let toastT;
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.background=bad?'#93301F':'';
+ t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3400);}
+function tickClock(){const d=new Date(),h=((d.getHours()+11)%12)+1,m=String(d.getMinutes()).padStart(2,'0');
+ const el=$('#clock');if(el)el.textContent=h+':'+m+(d.getHours()<12?' AM':' PM');}
+
+/* ── state ── */
+const S={
+ nav:'ledger', lf:'all',
+ verify:{running:false,done:false,broken:false,at:-1},
+ tampered:false,
+ provSel:null, payDrill:false,
+ evts:[
+  /* Sun 23 Aug — tail of yesterday */
+  {q:381,d:'SUN 23 AUG',y:1,t:'17:36',ty:'admin.seal_range_issued',refs:'RNG-0007 · Anjou · <span class="mono">CS-45001–46000</span>',ac:'Maya C. · SUPER_ADMIN',h:'b6d1',prov:'cellcom',g:'adm'},
+  {q:384,y:1,t:'18:02',ty:'box.sealed',refs:'<span class="mono">BX-0996</span> · seal <span class="mono">CS-40117</span> · Beaubien',ac:'J. Tran · STORE_MANAGER',h:'2e90',prov:'bmobile',g:'seal'},
+  {q:386,y:1,t:'18:04',ty:'movement.booked',refs:'<span class="mono">M-4469</span> · DLIVERD 24 · $10.75',ac:'system',h:'d44a',prov:'bmobile',g:'cust'},
+  /* Mon 24 Aug */
+  {q:398,d:'MON 24 AUG',t:'06:52',ty:'session.opened',refs:'entrepôt Saint-Laurent · packing desk',ac:'C. Guimond · STORE_MANAGER',h:'71bd',prov:'bmobile',g:'pack'},
+  {q:401,t:'07:04',ty:'ticket.attached',refs:'ticket <span class="mono">BM-1042</span> · 1 line expected',ac:'K. Haddad · STORE_REP',h:'ac52',prov:'bmobile',g:'pack'},
+  {q:405,t:'07:09',ty:'item.scanned',refs:'<span class="mono">BM-1042</span> · iPhone 16 Pro 256 · 1/1 · $1,449',ac:'K. Haddad · STORE_REP',h:'5f07',prov:'bmobile',g:'pack'},
+  {q:409,t:'07:11',ty:'address.confirmed',refs:'<span class="mono">M-4471</span> · addr hash <span class="mono">8c31…</span>',ac:'K. Haddad · STORE_REP',h:'9f2c',prov:'bmobile',g:'pack'},
+  {q:412,t:'07:14',ty:'box.sealed',refs:'<span class="mono">M-4471</span> · <span class="mono">BX-1042</span> · seal <span class="mono">CS-40118</span> · $1,449 declared',ac:'K. Haddad · STORE_REP',h:'07a7',prov:'bmobile',g:'seal',tgt:true},
+  {q:414,t:'07:15',ty:'label.printed',refs:'<span class="mono">BX-1042</span> · copy 1',ac:'K. Haddad · STORE_REP',h:'e1c8',prov:'bmobile',g:'pack'},
+  {q:417,t:'07:18',ty:'box.sealed',refs:'<span class="mono">M-4472</span> · <span class="mono">BX-8815</span> · seal <span class="mono">CS-40119</span> · $1,299 · scan→seal 26 min',ac:'K. Haddad · STORE_REP',h:'34ee',prov:'cellcom',g:'seal'},
+  {q:421,t:'07:24',ty:'box.sealed',refs:'<span class="mono">M-4473</span> · <span class="mono">BX-1049</span> · seal <span class="mono">CS-40121</span> · 2 devices · $1,908',ac:'K. Haddad · STORE_REP',h:'c093',prov:'bmobile',g:'seal'},
+  {q:422,t:'07:25',ty:'label.printed',refs:'<span class="mono">BX-1049</span> · copy 1',ac:'K. Haddad · STORE_REP',h:'b8a0',prov:'bmobile',g:'pack'},
+  {q:423,t:'07:29',ty:'label.printed',refs:'<span class="mono">BX-1049</span> · copy 2 · reprint',ac:'K. Haddad · STORE_REP',h:'6d17',prov:'bmobile',g:'pack',w:true},
+  {q:425,t:'07:31',ty:'box.sealed',refs:'<span class="mono">M-4474</span> · <span class="mono">BX-ANJ0</span> · seal <span class="mono">CS-40122</span> · restock · $1,079',ac:'C. Guimond · STORE_MANAGER',h:'f5b2',prov:'cellcom',g:'seal'},
+  {q:427,t:'07:33',ty:'movement.booked',refs:'<span class="mono">M-4471…M-4475</span> · 4 drops + 1 reprise · $12,880 declared',ac:'system',h:'88d9',prov:'bmobile',g:'cust'},
+  {q:431,t:'07:40',ty:'driver.accepted',refs:'route <span class="mono">MTL-03</span> · 6 stops',ac:'M. Chahwan · DRIVER',h:'40fb',g:'cust'},
+  {q:433,t:'07:52',ty:'custody.accepted',refs:'<span class="mono">M-4471–M-4474</span> · 4 boxes · seals photographed intact · 45.508,-73.712',ac:'M. Chahwan · DRIVER',h:'27c4',g:'cust'},
+  {q:436,t:'08:44',ty:'otp.issued',refs:'<span class="mono">M-4471</span> · delivery · sent to +1 514 •• 4419 · TTL 10 min',ac:'system',h:'93e6',prov:'bmobile',g:'otp'},
+  {q:437,t:'08:46',ty:'signature.captured',refs:'<span class="mono">M-4471</span> · signer G. Bilodeau · 45.5501,-73.5721',ac:'M. Chahwan · DRIVER',h:'1aa9',prov:'bmobile',g:'cust'},
+  {q:438,t:'08:47',ty:'movement.delivered',refs:'<span class="mono">M-4471</span> · <span class="mono">BX-1042</span> · code + signature · 12 m from pin',ac:'system',h:'70d3',prov:'bmobile',g:'cust'},
+  {q:441,t:'09:12',ty:'seal.mismatch',refs:'scanned <span class="mono">CS-91007</span> — not in any issued range · Anjou dock',ac:'R. Aziz · DRIVER',h:'ce41',prov:'cellcom',g:'seal',r:true},
+  {q:444,t:'10:34',ty:'address.overridden',refs:'<span class="mono">M-4478</span> · line1 + postal changed · $2,340 · 40 min before dispatch',ac:'Planète Mobile · STORE_MANAGER',h:'5b6e',prov:'planete',g:'pack',r:true},
+  {q:446,t:'10:41',ty:'address.corrected',refs:'<span class="mono">M-4472</span> · app. 407 added · minor fields',ac:'Cellcom Laval · STORE_REP',h:'8e02',prov:'cellcom',g:'pack'},
+  {q:449,t:'10:58',ty:'otp.failed',refs:'<span class="mono">M-4473</span> · delivery · attempt 1 of 5',ac:'M. Chahwan · DRIVER',h:'4d90',prov:'bmobile',g:'otp',w:true},
+  {q:453,t:'11:02',ty:'otp.exhausted',refs:'<span class="mono">M-4473</span> · 5 failed attempts · handover locked',ac:'system',h:'e77f',prov:'bmobile',g:'otp',r:true},
+  {q:455,t:'11:04',ty:'otp.reissued',refs:'<span class="mono">M-4473</span> · override · reason: client mis-typed, verified by phone',ac:'R. Aziz · DISPATCHER',h:'0b3c',prov:'bmobile',g:'otp',w:true},
+  {q:458,t:'11:21',ty:'custody.accepted',refs:'<span class="mono">M-4475</span> · reprise <span class="mono">R-31907</span> · grade B · sealed at door',ac:'M. Chahwan · DRIVER',h:'62f8',prov:'cellcom',g:'cust'},
+  {q:461,t:'11:47',ty:'movement.offered',refs:'<span class="mono">M-4480</span> · unassigned · offered to 2 drivers',ac:'system',h:'944e',g:'cust'}],
+ roots:[
+  {d:'2026-08-23',n:96,root:'a51f3d…',ref:'RFC 3161 · tsr-20260823-77120',ok:true},
+  {d:'2026-08-22',n:118,root:'0c7be2…',ref:'RFC 3161 · tsr-20260822-76488',ok:true},
+  {d:'2026-08-21',n:131,root:'6f90aa…',ref:'RFC 3161 · tsr-20260821-75902',ok:true},
+  {d:'2026-08-20',n:104,root:'e24c81…',ref:'RFC 3161 · tsr-20260820-75311',ok:true}],
+ overrides:[
+  {id:'OVR-118',st:'pending',mov:'M-4478',prov:'Planète Mobile · Marché Central',val:2340,
+   when:'10:34 · 40 min before dispatch',fields:'line1 + postal',
+   from:'2210 rue Chabanel O, Montréal H4N 1H5',to:'188 rue Legendre O, Montréal H2N 1A9',
+   who:'D. Farah · STORE_MANAGER',note:'Material change on a new provider, close to dispatch — the classic redirect shape.'},
+  {id:'OVR-117',st:'cleared',mov:'M-4472',prov:'Cellcom · Carrefour Laval',val:1299,
+   when:'10:41',fields:'unit only',
+   from:'1600 boul. Le Corbusier, Laval',to:'1600 boul. Le Corbusier, app. 407, Laval',
+   who:'Cellcom Laval · STORE_REP',note:'Apartment number added · minor fields · auto-cleared, no approval needed.'}],
+ providers:[
+  {id:'bmobile',name:'BMobile',st:'ACTIVE · ANCHOR',cap:3000,ins:'2027-05-31',insDays:280,
+   stores:[{n:'entrepôt Saint-Laurent',a:'4400 boul. Côte-Vertu, Saint-Laurent',range:'CS-40001–45000'},
+           {n:'Beaubien',a:'6250 rue Beaubien E, Montréal',range:'shares Saint-Laurent range'}],
+   users:[{n:'Chantal Guimond',r:'STORE_MANAGER',s:'Saint-Laurent'},{n:'Karim Haddad',r:'STORE_REP',s:'Saint-Laurent'},
+          {n:'Josée Tran',r:'STORE_MANAGER',s:'Beaubien'},{n:'Ali Reza',r:'STORE_REP',s:'Beaubien'}],
+   keys:[{id:'ck_live_••••7f2d',made:'2026-06-03',scope:'bookings + tracking',st:'active'}],
+   vol:'≈ 9 boxes / day'},
+  {id:'cellcom',name:'Cellcom',st:'ACTIVE',cap:2500,ins:'2027-02-28',insDays:188,
+   stores:[{n:'Anjou',a:"7999 boul. des Galeries d'Anjou",range:'CS-45001–46000'},
+           {n:'Carrefour Laval',a:'3035 boul. le Carrefour, Laval',range:'no range issued yet'}],
+   users:[{n:'Marc-Olivier Dubé',r:'STORE_MANAGER',s:'Anjou'},{n:'Sofia Ricci',r:'STORE_REP',s:'Anjou'},
+          {n:'Nadia Bélanger',r:'STORE_MANAGER',s:'Carrefour Laval'}],
+   keys:[{id:'ck_live_••••c4a9',made:'2026-07-12',scope:'bookings',st:'active'}],
+   vol:'≈ 5 boxes / day'},
+  {id:'planete',name:'Planète Mobile',st:'ONBOARDING',cap:2500,ins:'2026-10-12',insDays:49,
+   stores:[{n:'Marché Central',a:'9187 boul. de l’Acadie, Montréal',range:'no range issued yet'}],
+   users:[{n:'Dania Farah',r:'STORE_MANAGER',s:'Marché Central'}],
+   keys:[{id:'ck_test_••••18b0',made:'2026-08-19',scope:'sandbox',st:'test'}],
+   vol:'pilot · first live movement 24 Aug'}],
+ drivers:[
+  {id:'MTL-03',n:'Maya Chahwan',veh:'Kia Niro · personal',role:'Owner-operator',
+   docs:[['BSP licence · convoyage de biens de valeur','2028-04-11',594],['Commercial vehicle insurance','2027-03-01',189],
+         ['Criminal record check','2027-02-10',170],['CNESST 55090','filed',999],['Custody undertaking (SOP v2)','signed 2026-06-01',999]],
+   stats:['184 deliveries','100% on time','0 incidents · 90 days']},
+  {id:'MTL-01',n:'Rami Aziz',veh:'Ford Transit Connect',role:'Owner-operator',
+   docs:[['BSP licence · convoyage de biens de valeur','2027-11-02',435],['Commercial vehicle insurance','2026-09-16',23],
+         ['Criminal record check','2027-01-22',151],['CNESST 55090','filed',999],['Custody undertaking (SOP v2)','signed 2026-06-01',999]],
+   stats:['171 deliveries','99.4% on time','0 incidents · 90 days']}],
+ rates:[
+  {code:'DLIVERD_24',name:'DLIVERD 24',win:'by end of day',price:10.75,def:true},
+  {code:'DLIVERD_24_NOON',name:'DLIVERD 24 NOON',win:'by 12:00 · morning-only',price:15.50},
+  {code:'DLIVERD_24_AM',name:'DLIVERD 24 AM',win:'by 10:30 · morning-only',price:21.50},
+  {code:'DLIVERD_EVENING',name:'DLIVERD EVENING',win:'17:30–21:00',price:23.50},
+  {code:'REPRISE',name:'REPRISE',win:'trade-in return leg',price:9.75}],
+ ranges:[
+  {id:'RNG-0004',store:'BMobile · entrepôt Saint-Laurent',first:40001,last:45000,used:122},
+  {id:'RNG-0007',store:'Cellcom · Anjou',first:45001,last:46000,used:811}],
+ weekMaya:[['Mon',118],['Tue',134],['Wed',96],['Thu',148],['Fri',162],['Sat',74]],
+ weekRami:[['Mon',126],['Tue',121],['Wed',140],['Thu',132],['Fri',155],['Sat',68]],
+ todayMaya:[['Stop 2 · G. Bilodeau · M-4471 · delivered 08:47',10.75],['Stop 4 · reprise R-31907 · M-4475 · collected 11:21',13.25]],
+ todayRami:[['Beaubien run · M-4468 · delivered 08:31',10.75],['Anjou restock leg · M-4470 · delivered 09:55',9.75],['RMA return · M-4476 · collected 11:12',11.75]],
+ purges:[{id:'REQ-2026-081',who:'recipient · movement M-4102',law:'Law 25 · art. 28',done:'2026-08-19 03:00',
+   what:'name, phone, address plaintext + per-movement salt destroyed · hashes retained — chain unbroken'}],
+ issueRange:{store:'planete-mc',size:1000},
+};
+const money=n=>'$'+n.toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sum=a=>a.reduce((x,[,v])=>x+v,0);
+
+/* ── shared chrome ── */
+const NAV=[
+ ['grp','EVIDENCE'],
+ ['ledger','ledger','Ledger'],['overrides','flag','Overrides'],['anomalies','shield','Anomalies'],
+ ['grp','NETWORK'],
+ ['providers','store','Providers'],['drivers','truck','Drivers'],
+ ['grp','COMMERCIAL'],
+ ['rates','tag','Rate card'],['seals','seal2','Seal ranges'],['payouts','cash','Payouts'],
+ ['grp','COMPLIANCE'],
+ ['privacy','lock','Privacy']];
+function badges(){
+ const o=S.overrides.filter(x=>x.st==='pending').length;
+ const dr=S.drivers.some(d=>d.docs.some(x=>x[2]<30&&x[2]<999))?1:0;
+ const sr=S.ranges.some(r=>(r.used/(r.last-r.first+1))>.8)?1:0;
+ return {overrides:o,anomalies:3,drivers:dr,seals:sr};
+}
+function drawSide(){
+ const b=badges();
+ $('#side').innerHTML=NAV.map(x=>x[0]==='grp'
+  ?`<div class="grp">${x[1]}</div>`
+  :`<button class="nav-it ${S.nav===x[0]?'on':''}" data-nav="${x[0]}">${ic(x[1])}<span class="lb">${x[2]}</span>
+    ${b[x[0]]?`<span class="bdg ${x[0]==='overrides'?'':'warn2'}">${b[x[0]]}</span>`:''}</button>`).join('')
+  +`<div class="foot">CHAIN HEAD <b>${headHash()}…</b><br>1,284 EVENTS · ROOT ANCHORED<br>DEMO · NO REAL DATA</div>`;
+ document.querySelectorAll('[data-nav]').forEach(el=>el.onclick=()=>{
+  S.nav=el.dataset.nav;S.provSel=null;S.verify={running:false,done:false,broken:false,at:-1};render();});
+}
+const headHash=()=>S.evts[S.evts.length-1].h;
+function pane(title,sub,inner){
+ $('#main').innerHTML=`<div class="pane">
+  <div class="pagehead"><h1>${title}</h1><span class="pd">${sub}</span></div>${inner}</div>`;
+}
+/* modal — every recorded action states its consequence BEFORE the button */
+function openModal(o){
+ const w=document.createElement('div');w.className='ovl';
+ w.innerHTML=`<div class="modal"><div class="mh">${o.title}</div>
+  <div class="mb">${o.body}
+   ${o.note?`<div class="label" style="margin:10px 0 5px">${o.note.toUpperCase()} — REQUIRED, CHAINED WITH YOUR NAME</div>
+   <textarea id="mnote" rows="2" placeholder="${o.note}…"></textarea>`:''}
+   ${o.input?`<div class="label" style="margin:10px 0 5px">${o.input.label}</div>
+   <input id="minput" class="mono" value="${o.input.value}">`:''}</div>
+  <div class="mf"><button class="btn ghost" id="mCancel">Cancel</button>
+   <button class="btn ${o.danger?'danger':''}" id="mOk">${o.ok}</button></div></div>`;
+ document.body.appendChild(w);
+ w.addEventListener('click',e=>{if(e.target===w)w.remove();});
+ w.querySelector('#mCancel').onclick=()=>w.remove();
+ if(o.note)w.querySelector('#mnote').focus();
+ w.querySelector('#mOk').onclick=()=>{
+  let note='',val='';
+  if(o.note){note=w.querySelector('#mnote').value.trim();
+   if(!note)return toast('A note is required — it is chained with the action',true);}
+  if(o.input)val=w.querySelector('#minput').value.trim();
+  w.remove();o.onOk(note,val);};
+}
+/* append an admin event to the chain (demo) */
+function appendEvt(ty,refs,cls){
+ const d=new Date(),hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0');
+ const h=(Math.floor(Math.random()*0xEFFF)+0x1000).toString(16);
+ S.evts.push({q:S.evts[S.evts.length-1].q+2,t:hh+':'+mm,ty,refs,ac:'Maya C. · SUPER_ADMIN',h,g:'adm',...cls});
+ return h;
+}
+
+/* ── 1 · LEDGER ── */
+const LF=[['all','All'],['today','Today'],['bmobile','BMobile'],['cellcom','Cellcom'],['planete','Planète'],
+ ['cust','Custody'],['seal','Seals'],['otp','OTP'],['pack','Packing'],['adm','Admin']];
+function evtsVisible(){
+ return S.evts.filter(e=>{
+  if(S.lf==='all')return true;
+  if(S.lf==='today')return !e.y;
+  if(['bmobile','cellcom','planete'].includes(S.lf))return e.prov===S.lf;
+  return e.g===S.lf;});
+}
+function tyClass(e){return e.r?'risk':e.w?'warn':(e.g==='adm'?'adm':'');}
+function evtRow(e,i,list){
+ const gi=S.evts.indexOf(e);
+ const prev=gi>0?S.evts[gi-1].h:'f09a';
+ const refs=(S.tampered&&e.tgt)?e.refs.replace('$1,449 declared','<b style="color:var(--risk)">$2,449 declared</b>'):e.refs;
+ return `${e.d?`<div class="daysep">${e.d}</div>`:''}
+ <div class="evt ${S.tampered&&e.tgt?'tampered':''}" data-eq="${e.q}">
+  <span class="t">evt ${e.q} · ${e.t}</span>
+  <span class="ty ${tyClass(e)}">${e.ty}</span>
+  <span class="rf">${refs} ${S.tampered&&e.tgt?'<span class="pill risk">db row edited</span>':''}</span>
+  <span class="ac">${e.ac}</span>
+  <span class="hs">${prev}→<b>${e.h}…</b></span></div>`;
+}
+function vLedger(){
+ const V=S.verify;
+ const list=evtsVisible();
+ pane('Ledger','append-only · hash-chained · one writer · UPDATE revoked at the database',`
+  <div class="chainhead">${SEALD}
+   <span>CHAIN HEAD</span><b>${headHash()}…</b>
+   <span>·</span><span class="st">1,284 events</span><span>·</span><span>genesis 03 jun</span>
+   <span>·</span><span>nightly verify 03:05 ✓</span><div class="sp"></div>
+   <button class="btn sm" id="verifyBtn" ${V.running?'disabled':''}
+     style="background:var(--dka);color:var(--dark)">${V.running?'Recomputing…':'Verify chain'}</button></div>
+  ${V.done&&!V.broken?`<div class="note acc"><div><b>1,284 events · chain intact · head ${headHash()}…</b>
+    — every prev-hash link and every recomputed event hash matches the recorded value. Recomputed in 0.9 s.</div></div>`:''}
+  ${V.done&&V.broken?`<div class="note risk"><div><b>CHAIN BREAK — break at evt 412 · box.sealed M-4471 —
+    recorded hash 07a7… ≠ recomputed 3c19…</b><br>The stored row no longer matches its own hash: the
+    declared value was altered after sealing. Every event after 412 inherits the break, and tonight's
+    Merkle root will not match the externally timestamped one. This is what tampering looks like — precisely located, impossible to hide.
+    <button class="btn sm danger" style="margin-top:8px" id="untamper">DEMO · restore the row</button></div></div>`:''}
+  <div class="chiprow">${LF.map(([k,l])=>`<button class="chip ${S.lf===k?'on':''}" data-lf="${k}">${l}</button>`).join('')}
+   <span class="sp"></span>
+   <button class="chip" id="tamperBtn" style="${S.tampered?'border-color:var(--risk-line);color:var(--risk);background:var(--risk-soft)':''}">
+    DEMO · ${S.tampered?'event 412 tampered':'tamper with event 412'}</button></div>
+  <div class="card"><div class="hd">Event stream <div class="sp"></div>
+    <span class="pill">${list.length} shown</span><span class="pill acc">short hashes · full 64-hex via API</span></div>
+   ${list.map((e,i)=>evtRow(e,i,list)).join('')}</div>
+  <div class="grid2">
+   <div class="card"><div class="hd">Daily Merkle roots <div class="sp"></div><span class="pill acc">externally timestamped</span></div>
+    <div class="tblwrap"><table class="tbl">
+     <tr><th>Service date</th><th class="num">Events</th><th>Root</th><th>External timestamp</th><th></th></tr>
+     <tr><td class="ref">2026-08-24</td><td class="num">61 so far</td><td class="ref">—</td>
+      <td style="color:var(--muted)">publishes 00:05 tonight</td><td><span class="pill warn">pending</span></td></tr>
+     ${S.roots.map(r=>`<tr><td class="ref">${r.d}</td><td class="num">${r.n}</td><td class="ref">${r.root}</td>
+      <td class="ref" style="color:var(--muted)">${r.ref}</td><td><span class="pill acc">anchored</span></td></tr>`).join('')}
+    </table></div></div>
+   <div class="card"><div class="hd">Why the roots matter</div><div class="bd">
+    <div class="note plain" style="margin-bottom:10px"><div>Each night at 00:05 a Merkle tree is built over the day's
+     event hashes and the root is stamped by a third-party RFC 3161 authority. "Our log is append-only"
+     becomes <b>"here is yesterday's root, timestamped before today's events existed."</b> That sentence is
+     what an insurer and a court respond to.</div></div>
+    <div class="kv"><span class="k">Tree</span><span class="v">SHA-256 · odd counts duplicate last leaf</span></div>
+    <div class="kv"><span class="k">Anchor</span><span class="v">RFC 3161 TSA · not under our control</span></div>
+    <div class="kv"><span class="k">Nightly full verify</span><span class="v">03:05 · alerts on any break</span></div>
+   </div></div>
+  </div>`);
+ document.querySelectorAll('[data-lf]').forEach(b=>b.onclick=()=>{S.lf=b.dataset.lf;render();});
+ $('#tamperBtn').onclick=()=>{
+  S.tampered=!S.tampered;S.verify={running:false,done:false,broken:false,at:-1};
+  toast(S.tampered?'DEMO — evt 412 edited directly in the database (declared $1,449 → $2,449)':'DEMO — evt 412 restored',S.tampered);
+  render();};
+ if($('#untamper'))$('#untamper').onclick=()=>{S.tampered=false;S.verify={running:false,done:false,broken:false,at:-1};
+  toast('Row restored — run Verify again');render();};
+ $('#verifyBtn').onclick=runVerify;
+}
+function runVerify(){
+ if(S.verify.running)return;
+ S.lf='all';S.verify={running:true,done:false,broken:false,at:-1};render();
+ const rows=[...document.querySelectorAll('.evt')];
+ let i=0;
+ const step=setInterval(()=>{
+  if(i>0){rows[i-1].classList.remove('scanning');rows[i-1].classList.add('okd');}
+  if(i>=rows.length){clearInterval(step);
+   S.verify={running:false,done:true,broken:false,at:-1};render();return;}
+  const r=rows[i];r.classList.add('scanning');
+  if(S.tampered&&+r.dataset.eq===412){clearInterval(step);
+   r.classList.remove('scanning');r.classList.add('broke');
+   setTimeout(()=>{S.verify={running:false,done:true,broken:true,at:412};render();
+    toast('Chain break at evt 412 — recorded 07a7… ≠ recomputed 3c19…',true);},450);
+   return;}
+  i++;},70);
+}
+
+/* ── 2 · OVERRIDES ── */
+function vOverrides(){
+ const p=S.overrides.filter(o=>o.st==='pending');
+ pane('Address overrides','small, high signal — where redirect fraud shows up first',`
+  <div class="note plain"><div>A <b>material</b> address change (line1, city, postal) after confirmation
+   requires a reason at the store and lands here before dispatch. Minor fields (unit, buzzer) clear
+   automatically. Both kinds are chained either way — this queue is the human eye on the dangerous kind.</div></div>
+  ${S.overrides.map(o=>{
+   if(o.st!=='pending')return `
+   <div class="card"><div class="hd">${o.id} · <span class="mono" style="font-size:12px">${o.mov}</span>
+     <div class="sp"></div><span class="pill ${o.st==='cleared'?'acc':o.st==='approved'?'acc':'risk'}">${
+      o.st==='cleared'?'auto-cleared · minor':o.st==='approved'?'approved · chained':'flagged · movement held'}</span></div>
+    <div class="bd">
+     <div class="kv"><span class="k">Changed by</span><span class="v">${o.who} · ${o.when}</span></div>
+     <div class="kv"><span class="k">Fields</span><span class="v">${o.fields}</span></div>
+     <div class="kv"><span class="k">Address</span><span class="v" style="font-weight:600">
+      <s style="color:var(--faint)">${o.from}</s><br>${o.to}</span></div>
+     <div class="kv"><span class="k">Note</span><span class="v" style="font-weight:600;color:var(--muted)">${o.note}</span></div>
+    </div></div>`;
+   return `
+   <div class="card" style="border-color:var(--risk-line)"><div class="hd" style="background:var(--risk-soft);color:var(--risk)">
+     ${o.id} · <span class="mono" style="font-size:12px">${o.mov}</span> · ${money(o.val)} declared
+     <div class="sp"></div><span class="pill risk">pending · dispatch blocked</span></div>
+    <div class="bd">
+     <div class="kv"><span class="k">Provider / store</span><span class="v">${o.prov}</span></div>
+     <div class="kv"><span class="k">Changed by</span><span class="v">${o.who}</span></div>
+     <div class="kv"><span class="k">When</span><span class="v" style="color:var(--risk)">${o.when}</span></div>
+     <div class="kv"><span class="k">Fields changed</span><span class="v">${o.fields} — material</span></div>
+     <div class="kv"><span class="k">Address on ticket</span><span class="v" style="font-weight:600"><s style="color:var(--faint)">${o.from}</s></span></div>
+     <div class="kv"><span class="k">Address as shipping</span><span class="v">${o.to}</span></div>
+     <div class="note warn" style="margin:10px 0"><div><b>Why it is here:</b> ${o.note}</div></div>
+     <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn sm" data-ovap="${o.id}">Approve override</button>
+      <button class="btn sm danger" data-ovfl="${o.id}">Flag · hold the movement</button>
+      <span style="font-size:11px;color:var(--muted);align-self:center">either way: your note, your name, chained</span>
+     </div></div></div>`;}).join('')}
+  ${p.length===0?'<div class="note acc"><div><b>Queue clear.</b> The next material change lands here before its movement can dispatch.</div></div>':''}`);
+ document.querySelectorAll('[data-ovap]').forEach(b=>b.onclick=()=>{
+  const o=S.overrides.find(x=>x.id===b.dataset.ovap);
+  openModal({title:'Approve this address override?',ok:'Approve — chain it',note:'Why you believe this change is genuine',
+   body:`<div class="conseq acc"><b>What happens:</b> <span class="mono">address.override.approved</span> is appended
+    with your name and note · the driver's geofence re-pins to the new address in the same transaction ·
+    ${o.mov} becomes dispatchable. The old and new address hashes stay chained forever.</div>`,
+   onOk:note=>{o.st='approved';
+    appendEvt('address.override.approved',`<span class="mono">${o.mov}</span> · note: ${note}`,{r:false});
+    toast(`${o.id} approved — chained, ${o.mov} released to dispatch`);render();}});});
+ document.querySelectorAll('[data-ovfl]').forEach(b=>b.onclick=()=>{
+  const o=S.overrides.find(x=>x.id===b.dataset.ovfl);
+  openModal({title:'Flag and hold '+o.mov+'?',ok:'Flag · hold movement',danger:true,note:'What looks wrong',
+   body:`<div class="conseq risk"><b>What happens:</b> ${o.mov} is placed on HOLD — it cannot dispatch ·
+    <span class="mono">movement.held</span> chains with your note · the provider's security contact is
+    notified with the before/after hashes. Nothing is deleted; a hold is evidence too.</div>`,
+   onOk:note=>{o.st='flagged';
+    appendEvt('movement.held',`<span class="mono">${o.mov}</span> · address override flagged · ${note}`,{r:true});
+    toast(`${o.id} flagged — ${o.mov} held, provider security notified`,true);render();}});});
+}
+
+/* ── 3 · ANOMALIES ── */
+function vAnomalies(){
+ pane('Anomalies','patterns the chain surfaces on its own — reviewed daily',`
+  <div class="card"><div class="hd">Needs a look <div class="sp"></div><span class="pill risk">2 live</span><span class="pill warn">2 noted</span></div>
+   <div class="anom"><div class="sig risk">!</div><div>
+    <h4>OTP failure cluster — <span class="mono">M-4473</span> · S. Duchesneau</h4>
+    <p>5 failed code attempts at the door, 10:58–11:02 → <span class="mono">otp.exhausted</span>, handover locked.
+     Override code issued by dispatch (R. Aziz) at <b>11:04</b> with reason "client mis-typed, verified by phone".
+     Every attempt and the override are chained — evt 449–455. One-off for this client; no cluster by driver or address.</p>
+    <p style="margin-top:5px"><button class="btn ghost" style="padding:0" data-goled="otp">View in ledger →</button></p></div></div>
+   <div class="anom"><div class="sig risk">!</div><div>
+    <h4>Seal out of range — <span class="mono">CS-91007</span></h4>
+    <p>Scanned at the Anjou dock 09:12 by MTL-01. <b>Not from any issued range</b> (Saint-Laurent holds
+     CS-40001–45000, Anjou CS-45001–46000) — refused at scan, <span class="mono">seal.mismatch</span> chained, box left on the dock.
+     A seal that DLIVERD never issued is either a printing error or a counterfeit; the store manager was asked to photograph it.</p></div></div>
+   <div class="anom"><div class="sig warn">⚠</div><div>
+    <h4>Scan-to-seal gap outlier — <span class="mono">BX-8815</span></h4>
+    <p><b>26 minutes</b> between the last item scan and the seal (median 74 s). A long-open box is a swap
+     window. Flagged to the Saint-Laurent manager; the packer says the customer called mid-pack. Noted, not blocking.</p></div></div>
+   <div class="anom"><div class="sig warn">⚠</div><div>
+    <h4>Label reprint — <span class="mono">BX-1049</span> printed twice</h4>
+    <p>Copy 2 printed 07:29 by K. Haddad, 4 min after copy 1. Two live labels for one box is how a box
+     gets "delivered" twice on paper. Copy count is on the label and chained; alert threshold is 3. Noted.</p></div></div>
+  </div>
+  <div class="grid2">
+   <div class="card"><div class="hd">Mocked GPS <div class="sp"></div><span class="pill acc">none today</span></div>
+    <div class="bd"><div class="note plain" style="margin:0"><div>No mocked-location flags today. When a driver's
+     device reports a mock provider, the movement freezes, the marker flashes red on the dispatch board,
+     and <span class="mono">location.mocked</span> chains here with the reported coordinates. It has fired 0 times in 90 days.</div></div></div></div>
+   <div class="card"><div class="hd">Repeat exceptions · by driver / store <div class="sp"></div><span class="pill acc">0 in 90 days</span></div>
+    <div class="bd"><div class="note plain" style="margin:0"><div>No driver and no store has a repeating exception
+     pattern in 90 days. This panel watches for the slow signals — the same "no answer" address twice,
+     the same packer's discrepancies — the kind an insurer asks about first.</div></div></div></div>
+  </div>`);
+ document.querySelectorAll('[data-goled]').forEach(b=>b.onclick=()=>{S.nav='ledger';S.lf=b.dataset.goled;render();});
+}
+
+/* ── 4 · PROVIDERS ── */
+function insPill(p){
+ if(p.insDays<60)return `<span class="pill warn">${p.ins} · ${p.insDays} days</span>`;
+ return `<span class="pill acc">${p.ins}</span>`;
+}
+function vProviders(){
+ if(S.provSel)return vProviderDetail(S.providers.find(p=>p.id===S.provSel));
+ const warn=S.providers.filter(p=>p.insDays<60);
+ pane('Providers','accounts · stores · users · keys · caps · insurance',`
+  ${warn.map(p=>`<div class="note warn"><div><b>${p.name} — liability insurance expires in ${p.insDays} days (${p.ins}).</b>
+   Under 60 days the account shows here; at 0 days new bookings refuse until a current certificate is on file.</div></div>`).join('')}
+  <div class="card"><div class="hd">Provider accounts <div class="sp"></div><span class="pill">3 accounts</span></div>
+   <div class="tblwrap"><table class="tbl">
+    <tr><th>Provider</th><th>Status</th><th class="num">Stores</th><th class="num">Users</th>
+     <th class="num">Cap / box</th><th>Insurance</th><th class="num">Volume</th></tr>
+    ${S.providers.map(p=>`<tr class="rowbtn" data-prov="${p.id}">
+     <td><b>${p.name}</b></td>
+     <td><span class="pill ${p.st==='ONBOARDING'?'warn':'acc'}">${p.st}</span></td>
+     <td class="num">${p.stores.length}</td><td class="num">${p.users.length}</td>
+     <td class="num">${money(p.cap)}</td><td>${insPill(p)}</td>
+     <td class="num" style="color:var(--muted)">${p.vol}</td></tr>`).join('')}
+   </table></div></div>
+  <div class="note plain"><div>Click a provider for stores, store users, API keys, the declared-value cap and
+   the insurance file. Every key action and cap change is chained — a provider console with no silent switches.</div></div>`);
+ document.querySelectorAll('[data-prov]').forEach(r=>r.onclick=()=>{S.provSel=r.dataset.prov;render();});
+}
+function vProviderDetail(p){
+ pane(p.name,p.st.toLowerCase()+' · provider file',`
+  <div class="crumb"><button id="backProv">← providers</button> / ${p.name}</div>
+  ${p.insDays<60?`<div class="note warn"><div><b>Liability insurance expires ${p.ins} — ${p.insDays} days out.</b>
+   Renewal certificate requested from the broker 21 Aug. At 0 days, new bookings for ${p.name} refuse automatically.</div></div>`:''}
+  <div class="grid2">
+   <div class="card"><div class="hd">Stores <div class="sp"></div><span class="pill">${p.stores.length}</span></div><div class="bd">
+    ${p.stores.map(s=>`<div class="kv"><span class="k"><b style="color:var(--ink)">${s.n}</b><br>
+      <span style="font-size:11.5px">${s.a}</span></span>
+     <span class="v" style="font-weight:600"><span class="pill ${s.range.startsWith('no')?'warn':'acc'}">${s.range}</span></span></div>`).join('')}
+   </div></div>
+   <div class="card"><div class="hd">Store users</div><div class="bd">
+    ${p.users.map(u=>`<div class="kv"><span class="k">${u.n}<br><span style="font-size:11px">${u.s}</span></span>
+     <span class="v"><span class="pill ${u.r==='STORE_MANAGER'?'acc':''}">${u.r}</span></span></div>`).join('')}
+    <div class="note plain" style="margin:10px 0 0"><div>STORE_REP packs and seals; STORE_MANAGER also approves
+     unseals (dual control) and address overrides. The custody-chain view is not rendered for reps at all.</div></div>
+   </div></div>
+  </div>
+  <div class="card"><div class="hd">API keys <div class="sp"></div><span class="pill acc">scoped · masked</span></div>
+   <div class="tblwrap"><table class="tbl">
+    <tr><th>Key</th><th>Created</th><th>Scope</th><th>Status</th><th></th></tr>
+    ${p.keys.map((k,i)=>`<tr><td class="ref">${k.id}</td><td class="ref">${k.made}</td><td>${k.scope}</td>
+     <td><span class="pill ${k.st==='active'?'acc':k.st==='test'?'warn':'risk'}">${k.st}</span></td>
+     <td style="text-align:right;white-space:nowrap">
+      ${k.st!=='revoked'?`<button class="btn sm alt" data-krot="${i}">Rotate</button>
+      <button class="btn sm danger" data-krev="${i}">Revoke</button>`:''}</td></tr>`).join('')}
+   </table></div>
+   <div class="bd" style="border-top:1px solid var(--line)">
+    <button class="btn sm" id="kissue">Issue a new key</button>
+    <span style="font-size:11px;color:var(--muted);margin-left:8px">the secret is shown once at issue, then only the mask · every key event chains</span>
+   </div></div>
+  <div class="grid2">
+   <div class="card"><div class="hd">Declared-value cap</div><div class="bd">
+    <div class="kv"><span class="k">Current cap · per box</span><span class="v mono" style="font-size:16px">${money(p.cap)}</span></div>
+    <div class="note plain" style="margin:10px 0"><div>A box sealed above the cap refuses at booking — the cap is
+     the ceiling our insurance rides on. Raising it is a conversation with the broker first, a button second.</div></div>
+    <button class="btn sm alt" id="capEdit">Edit cap…</button></div></div>
+   <div class="card"><div class="hd">Insurance file</div><div class="bd">
+    <div class="kv"><span class="k">Commercial general liability</span><span class="v">${insPill(p)}</span></div>
+    <div class="kv"><span class="k">Certificate on file</span><span class="v">${p.id==='planete'?'2025–26 · renewal requested':'current ✓'}</span></div>
+    <div class="kv"><span class="k">Named insured matches account</span><span class="v">verified ✓</span></div>
+   </div></div>
+  </div>`);
+ $('#backProv').onclick=()=>{S.provSel=null;render();};
+ document.querySelectorAll('[data-krot]').forEach(b=>b.onclick=()=>{
+  const k=p.keys[+b.dataset.krot];
+  openModal({title:'Rotate '+k.id+'?',ok:'Rotate key',
+   body:`<div class="conseq"><b>What happens:</b> a new key is issued now and shown once · the current key keeps
+    working for a <b>24 h grace window</b>, then dies · ${p.name}'s integration must switch inside that window ·
+    <span class="mono">admin.key_issued</span> + <span class="mono">admin.key_revoked</span> chain with your name.</div>`,
+   onOk:()=>{const nk='ck_live_••••'+(Math.floor(Math.random()*0xEFFF)+0x1000).toString(16).slice(0,4);
+    k.st='grace 24 h';p.keys.push({id:nk,made:'2026-08-24',scope:k.scope,st:'active'});
+    appendEvt('admin.key_issued',`<span class="mono">${nk}</span> · ${p.name} · rotation`,{});
+    toast('Key rotated — old key dies in 24 h · chained');render();}});});
+ document.querySelectorAll('[data-krev]').forEach(b=>b.onclick=()=>{
+  const k=p.keys[+b.dataset.krev];
+  openModal({title:'Revoke '+k.id+'?',ok:'Revoke — immediate',danger:true,note:'Reason for revoking',
+   body:`<div class="conseq risk"><b>What happens, immediately:</b> every API call with this key starts failing —
+    ${p.name}'s booking integration stops until a new key is installed. Store packing desks keep working
+    (session sign-in, not this key). <span class="mono">admin.key_revoked</span> chains with your reason. There is no grace window.</div>`,
+   onOk:note=>{k.st='revoked';
+    appendEvt('admin.key_revoked',`<span class="mono">${k.id}</span> · ${p.name} · ${note}`,{r:true});
+    toast(k.id+' revoked — effective now · chained',true);render();}});});
+ $('#kissue').onclick=()=>openModal({title:'Issue a new key for '+p.name+'?',ok:'Issue key',
+  body:`<div class="conseq"><b>What happens:</b> a live key scoped to <b>bookings + tracking</b> is created and its
+   secret shown once — after this dialog only the mask exists anywhere. <span class="mono">admin.key_issued</span>
+   chains with your name.</div>`,
+  onOk:()=>{const nk='ck_live_••••'+(Math.floor(Math.random()*0xEFFF)+0x1000).toString(16).slice(0,4);
+   p.keys.push({id:nk,made:'2026-08-24',scope:'bookings + tracking',st:'active'});
+   appendEvt('admin.key_issued',`<span class="mono">${nk}</span> · ${p.name}`,{});
+   toast('Key issued — secret shown once, store it now · chained');render();}});
+ $('#capEdit').onclick=()=>openModal({title:'Change '+p.name+'’s declared-value cap?',ok:'Save cap',
+  input:{label:'NEW CAP PER BOX ($ CAD)',value:p.cap},
+  body:`<div class="conseq"><b>What happens:</b> effective immediately for new seals — a box declared above the
+   new cap refuses at booking. Already-sealed boxes keep their booking. <span class="mono">admin.cap_changed</span>
+   chains old → new with your name. Our policy rides on this number; the broker knows before this button does.</div>`,
+  onOk:(n,val)=>{const v=parseInt(val.replace(/[^0-9]/g,''),10);
+   if(!v||v<500)return toast('Enter a cap of at least $500',true);
+   appendEvt('admin.cap_changed',`${p.name} · ${money(p.cap)} → ${money(v)}`,{});
+   p.cap=v;toast(p.name+' cap now '+money(v)+' · chained');render();}});
+}
+
+/* ── 5 · DRIVERS ── */
+function docPill(d){
+ if(d[2]===999)return `<span class="pill acc">${d[1]}</span>`;
+ if(d[2]<30)return `<span class="pill warn">${d[1]} · ${d[2]} days</span>`;
+ return `<span class="pill acc">${d[1]}</span>`;
+}
+function vDrivers(){
+ const expiring=[];
+ S.drivers.forEach(d=>d.docs.forEach(x=>{if(x[2]<30)expiring.push([d,x]);}));
+ pane('Drivers','the underwriter’s file — all five documents stay green or the route locks',`
+  ${expiring.map(([d,x])=>`<div class="note warn"><div><b>${d.n} — ${x[0].toLowerCase()} expires in ${x[2]} days (${x[1]}).</b>
+   Reminder sent to the driver at 30 days; at 0 days ${d.id} cannot accept a route until the renewed
+   document is on file. Nothing about this is discretionary — the insurer reads this screen.</div></div>`).join('')}
+  ${S.drivers.map(d=>`
+  <div class="card"><div class="hd">${d.n} <span class="pill acc">${d.id}</span>
+    <div class="sp"></div><span class="pill">${d.role}</span><span class="pill">${d.veh}</span></div>
+   <div class="bd">
+    <div class="label" style="margin-top:0">ONBOARDING FILE — LIVE STATUS</div>
+    ${d.docs.map(x=>`<div class="kv"><span class="k">${x[0]}</span><span class="v">${docPill(x)}</span></div>`).join('')}
+    <div class="label">LAST 7 DAYS</div>
+    <div class="tiles" style="grid-template-columns:repeat(3,1fr);margin:0">
+     ${d.stats.map((s,i)=>{const[v,...k]=s.split(' ');
+      return `<div class="tile"><div class="v ${i===1?'acc':''}" style="font-size:17px">${v}</div><div class="k">${k.join(' ')}</div></div>`;}).join('')}
+    </div>
+   </div></div>`).join('')}
+  <div class="note acc"><div><b>Year 1: the two owners are the carrier.</b> No employees, no contractors —
+   both files above are the whole fleet, and both are also the people who read this console.</div></div>`);
+}
+
+/* ── 6 · RATE CARD ── */
+function vRates(){
+ pane('Rate card','5 services · a price edit is chained and live — no deploy',`
+  <div class="card"><div class="hd">Services <div class="sp"></div><span class="pill acc">effective immediately on save</span></div>
+   <div class="tblwrap"><table class="tbl">
+    <tr><th>Code</th><th>Service</th><th>Window</th><th class="num">Price</th><th></th></tr>
+    ${S.rates.map((r,i)=>`<tr>
+     <td class="ref">${r.code}</td>
+     <td><b>${r.name}</b>${r.def?' <span class="pill acc">default</span>':''}</td>
+     <td style="color:var(--muted)">${r.win}</td>
+     <td class="num" style="font-weight:800;color:var(--ink)">${money(r.price)}</td>
+     <td style="text-align:right"><button class="btn sm alt" data-redit="${i}">Edit price…</button></td></tr>`).join('')}
+   </table></div></div>
+  <div class="note plain"><div>Morning-only services (NOON, AM) disappear from the packing desk after their
+   cutoff with the reason shown — a store never books a promise the road can no longer keep. Movements
+   already booked always keep the price they were booked at.</div></div>
+  <div class="label">RECENT RATE EVENTS — FROM THE LEDGER</div>
+  <div class="card">${S.evts.filter(e=>e.ty==='rate.updated').map((e,i)=>evtRow(e,i,[])).join('')
+   ||'<div class="bd" style="color:var(--muted);font-size:12.5px">No rate changes yet this session. An edit appends a <span class="mono">rate.updated</span> event here and in the ledger — same chain, same rules as everything else.</div>'}</div>`);
+ document.querySelectorAll('[data-redit]').forEach(b=>b.onclick=()=>{
+  const r=S.rates[+b.dataset.redit];
+  openModal({title:'Change the price of '+r.name+'?',ok:'Save price — chain it',
+   input:{label:'NEW PRICE ($ CAD)',value:r.price.toFixed(2)},
+   body:`<div class="conseq"><b>What happens on save:</b> the new price is <b>chained</b>
+    (<span class="mono">rate.updated</span>, old → new, your name) · <b>effective immediately</b> for new bookings ·
+    <b>no deploy</b>, no cache, nothing to restart. Booked movements keep their price. Providers see it on the
+    packing desk on their next booking.</div>`,
+   onOk:(n,val)=>{const v=parseFloat(val.replace(/[^0-9.]/g,''));
+    if(!v||v<=0)return toast('Enter a valid price',true);
+    appendEvt('rate.updated',`<span class="mono">${r.code}</span> · ${money(r.price)} → ${money(v)}`,{});
+    r.price=v;toast(r.name+' now '+money(v)+' — live, chained');render();}});});
+}
+
+/* ── 7 · SEAL RANGES ── */
+function vSeals(){
+ pane('Seal ranges','issued per store · a seal outside an issued range refuses at scan',`
+  ${S.ranges.map(r=>{
+   const size=r.last-r.first+1,pc=r.used/size,warn=pc>.8;
+   return `<div class="card ${warn?'':''}"><div class="hd">${r.store}
+     <span class="pill">${r.id}</span><div class="sp"></div>
+     <span class="pill ${warn?'warn':'acc'}">${r.used.toLocaleString()} / ${size.toLocaleString()} consumed</span></div>
+    <div class="bd">
+     <div class="kv"><span class="k">Range</span><span class="v mono">CS-${r.first}–CS-${r.last}</span></div>
+     <div class="kv"><span class="k">Next seal up</span><span class="v mono">CS-${r.first+r.used}</span></div>
+     <div style="margin:10px 0 4px" class="meter"><i class="${pc>.9?'risk':warn?'warn':''}" style="width:${(pc*100).toFixed(1)}%"></i></div>
+     <div style="font-family:var(--mono);font-size:10px;color:var(--faint)">${(pc*100).toFixed(1)}% CONSUMED</div>
+     ${warn?`<div class="note warn" style="margin:12px 0 0"><div><b>Past 80% — issue the next range before the store
+      runs dry.</b> A store with no seals left cannot seal a box, and an unsealed box cannot move.
+      <button class="btn sm" style="margin-top:8px" data-rangenew="${r.id}">Issue new range for this store</button></div></div>`:''}
+    </div></div>`;}).join('')}
+  <div class="card"><div class="hd">Issue a range</div><div class="bd">
+   <div class="grid2" style="gap:10px">
+    <div><div class="label" style="margin-top:0">STORE</div>
+     <select id="rgStore">
+      <option value="planete-mc">Planète Mobile · Marché Central (no range yet)</option>
+      <option value="cellcom-laval">Cellcom · Carrefour Laval (no range yet)</option>
+      <option value="cellcom-anjou">Cellcom · Anjou (81.1% consumed)</option>
+      <option value="bmobile-sl">BMobile · entrepôt Saint-Laurent</option>
+     </select></div>
+    <div><div class="label" style="margin-top:0">SIZE</div>
+     <select id="rgSize"><option>1000</option><option>2500</option><option selected>5000</option></select></div>
+   </div>
+   <div class="note plain" style="margin:12px 0"><div>Next unissued number is <span class="mono">CS-46001</span>.
+    The range prints as tamper-evident labels shipped to the store; any seal scanned outside an issued
+    range refuses on the spot and chains a <span class="mono">seal.mismatch</span> — that is how CS-91007 was caught this morning.</div></div>
+   <button class="btn sm" id="rgGo">Issue range…</button>
+  </div></div>`);
+ const issue=(storeLabel)=>{
+  const size=+$('#rgSize').value;
+  const first=Math.max(...S.ranges.map(r=>r.last))+1;
+  openModal({title:'Issue CS-'+first+'–CS-'+(first+size-1)+'?',ok:'Issue — chain it',
+   body:`<div class="conseq"><b>What happens:</b> the range is bound to <b>${storeLabel}</b> ·
+    <span class="mono">admin.seal_range_issued</span> chains with your name · labels print and ship ·
+    from the first scan, any seal outside this store's ranges refuses. A range cannot be un-issued, only exhausted or voided.</div>`,
+   onOk:()=>{S.ranges.push({id:'RNG-000'+(S.ranges.length+6),store:storeLabel,first,last:first+size-1,used:0});
+    appendEvt('admin.seal_range_issued',`<span class="mono">CS-${first}–${first+size-1}</span> · ${storeLabel}`,{});
+    toast('Range CS-'+first+'–'+(first+size-1)+' issued to '+storeLabel+' · chained');render();}});};
+ $('#rgGo').onclick=()=>issue($('#rgStore').selectedOptions[0].textContent.split(' (')[0]);
+ document.querySelectorAll('[data-rangenew]').forEach(b=>b.onclick=()=>issue('Cellcom · Anjou'));
+}
+
+/* ── 8 · PAYOUTS ── */
+function weekCard(name,id,week,today,hi){
+ const t=today.reduce((a,[,v])=>a+v,0);
+ const rows=[...week,['Today',t]];
+ const max=Math.max(...rows.map(w=>w[1]),1);
+ return `<div class="card"><div class="hd">${name} <span class="pill acc">${id}</span>
+   <div class="sp"></div><span class="pill">week ${money(sum(week)+t)}</span></div>
+  <div class="bd">
+   <div class="bars">${rows.map(([d,v],i)=>`<div><div class="b ${i===6?'hi':''}"
+     style="height:${Math.max(6,80*v/max)}px"></div><div class="d">${d}</div></div>`).join('')}</div>
+   <div class="tblwrap" style="margin-top:8px"><table class="tbl">
+    <tr><th>Day</th><th class="num">Paid stops</th><th class="num">Amount</th></tr>
+    ${week.map(([d,v])=>`<tr><td>${d} · settled</td><td class="num">${Math.round(v/12)}</td><td class="num">${money(v)}</td></tr>`).join('')}
+    <tr><td><b>Today · in progress</b> <button class="btn ghost" style="padding:0 0 0 6px;min-height:0;font-size:11px" data-drill="${id}">${S.payDrill===id?'hide stops':'per-stop detail →'}</button></td>
+     <td class="num">${today.length}</td><td class="num" style="color:var(--acc);font-weight:800">${money(t)}</td></tr>
+    ${S.payDrill===id?today.map(([k,v])=>`<tr><td colspan="2" style="padding-left:22px;color:var(--muted);font-size:12px">${k}</td>
+     <td class="num">+${money(v)}</td></tr>`).join(''):''}
+   </table></div>
+  </div></div>`;
+}
+function vPayouts(){
+ const tm=S.todayMaya.reduce((a,[,v])=>a+v,0), tr=S.todayRami.reduce((a,[,v])=>a+v,0);
+ const grand=sum(S.weekMaya)+tm+sum(S.weekRami)+tr;
+ pane('Payouts','driver settlement — every dollar traces to a chained, two-proof handover',`
+  <div class="tiles">
+   <div class="tile"><div class="v acc">${money(grand)}</div><div class="k">Week to date · both drivers</div></div>
+   <div class="tile"><div class="v">${money(tm+tr)}</div><div class="k">Today so far · in progress</div></div>
+   <div class="tile"><div class="v">Fri 28</div><div class="k">Next payout · direct deposit</div></div>
+   <div class="tile"><div class="v">0</div><div class="k">Disputed stops · 90 days</div></div>
+  </div>
+  <div class="grid2">
+   ${weekCard('Maya Chahwan','MTL-03',S.weekMaya,S.todayMaya)}
+   ${weekCard('Rami Aziz','MTL-01',S.weekRami,S.todayRami)}
+  </div>
+  <div class="note acc" style="margin-top:14px"><div><b>Payout runs Fridays · direct deposit.</b> A paid stop is a
+   verified handover — code + signature, both mandatory — there is no other kind. The weekly statement is
+   generated from ledger events, not from a spreadsheet beside them.</div></div>
+  <div class="card"><div class="hd">Contractor invoices</div>
+   <div class="bd" style="color:var(--muted);font-size:12.5px">
+    <b style="color:var(--ink)">Year 1 — no contractors.</b> The two owners are the carrier, so this queue is
+    intentionally empty. The first contractor triggers the legal opinion (employee-vs-contractor under
+    Québec law), budgeted for Year 2 — this screen exists now so that day is a row, not a rebuild.</div></div>`);
+ document.querySelectorAll('[data-drill]').forEach(b=>b.onclick=()=>{
+  S.payDrill=S.payDrill===b.dataset.drill?null:b.dataset.drill;render();});
+}
+
+/* ── 9 · PRIVACY ── */
+function vPrivacy(){
+ pane('Privacy','Law 25 · purge requests · legal holds · breach register · retention',`
+  <div class="grid2">
+   <div class="card"><div class="hd">Purge requests <div class="sp"></div><span class="pill acc">queue empty · 1 completed</span></div>
+    <div class="bd">
+     ${S.purges.map(p=>`
+      <div class="kv"><span class="k">Request</span><span class="v mono">${p.id}</span></div>
+      <div class="kv"><span class="k">Subject</span><span class="v">${p.who}</span></div>
+      <div class="kv"><span class="k">Basis</span><span class="v">${p.law}</span></div>
+      <div class="kv"><span class="k">Completed</span><span class="v">${p.done} <span class="pill acc">done</span></span></div>
+      <div class="kv"><span class="k">What was destroyed</span><span class="v" style="font-weight:600;color:var(--muted)">${p.what}</span></div>`).join('')}
+     <div class="note plain" style="margin:10px 0 0"><div>The ledger stores <b>salted hashes</b>, never plaintext PII —
+      so a purge destroys the plaintext and the per-movement salt while the chain stays intact and still
+      proves the address never changed between confirmation and delivery. Erasure and evidence, both.</div></div>
+    </div></div>
+   <div class="card"><div class="hd">Legal holds <div class="sp"></div><span class="pill acc">none active</span></div>
+    <div class="bd" style="color:var(--muted);font-size:12.5px">
+     No movement is under legal hold. A hold pins a movement's PII, photos and signatures past their
+     retention windows until the hold lifts — both edges chain as <span class="mono">admin.legal_hold</span>.
+     A purge request against a held movement waits, and says why.</div></div>
+  </div>
+  <div class="grid2">
+   <div class="card"><div class="hd">Breach register <div class="sp"></div><span class="pill acc">empty</span></div>
+    <div class="bd">
+     <div style="font-family:var(--mono);font-size:26px;font-weight:800;color:var(--acc)">64 days</div>
+     <div style="font-size:12px;color:var(--muted);margin-top:4px">without an incident — since go-live, 21 Jun.</div>
+     <div class="note plain" style="margin:12px 0 0"><div>A confidentiality incident is registered here first and,
+      when it presents a risk of serious injury, reported to the CAI and the person — that is the Law 25
+      sequence, pre-written so a bad day follows a checklist, not an improvisation.</div></div>
+    </div></div>
+   <div class="card"><div class="hd">Retention job <div class="sp"></div><span class="pill acc">healthy</span></div>
+    <div class="bd">
+     <div class="kv"><span class="k">Last run</span><span class="v">today 03:00 ✓ · 0 rows purged</span></div>
+     <div class="kv"><span class="k">Next run</span><span class="v">tomorrow 03:00</span></div>
+     <div class="kv"><span class="k">Recipient PII</span><span class="v">purged 90 days after delivery</span></div>
+     <div class="kv"><span class="k">First eligible batch</span><span class="v">01 Sep · earliest deliveries turn 90</span></div>
+     <div class="kv"><span class="k">Signatures</span><span class="v">kept as hashes · image purged with PII</span></div>
+     <div class="kv"><span class="k">Seal & exception photos</span><span class="v">24 months · then purged</span></div>
+    </div></div>
+  </div>
+  <div class="note plain"><div><b>Nothing on this screen has a delete button that touches the ledger.</b>
+   Purges remove plaintext from the PII store; the chain itself is append-only for everyone, including
+   the super admin — that is the product.</div></div>`);
+}
+
+/* ── render ── */
+function render(){
+ tickClock();drawSide();
+ if(S.nav==='ledger')return vLedger();
+ if(S.nav==='overrides')return vOverrides();
+ if(S.nav==='anomalies')return vAnomalies();
+ if(S.nav==='providers')return vProviders();
+ if(S.nav==='drivers')return vDrivers();
+ if(S.nav==='rates')return vRates();
+ if(S.nav==='seals')return vSeals();
+ if(S.nav==='payouts')return vPayouts();
+ return vPrivacy();
+}
+setInterval(tickClock,10000);
+render();
+</script>
+</body></html>

@@ -1,6 +1,6 @@
 {
-  "name": "Custode Driver",
-  "short_name": "Custode",
+  "name": "Dliverd Driver",
+  "short_name": "Dliverd",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0C1211",

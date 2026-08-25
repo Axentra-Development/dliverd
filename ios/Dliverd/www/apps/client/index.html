@@ -1,0 +1,954 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dliverd">
+<meta name="theme-color" content="#0C1211">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Dliverd Client</title>
+<style>
+:root{
+  --paper:#F3F6F4;--surface:#FFFFFF;--raise:#FAFBFA;--sunk:#EDF1EF;
+  --ink:#111917;--body:#2B3733;--muted:#65726E;--faint:#8B9793;
+  --line:#DCE1DE;--line-mid:#C3CBC7;
+  --acc:#0F6455;--acc-ink:#0B4E42;--acc-soft:#E3EFEB;--acc-line:#9FC9BE;
+  --risk:#93301F;--risk-soft:#F8E9E5;--risk-line:#DFB6AC;
+  --warn:#7C5A0E;--warn-soft:#F6EEDC;
+  --dark:#0C1211;--dark2:#141C1A;--dkl:#31403C;--dkm:#8B9994;--dka:#54C1A6;--dka2:#7FD5BF;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1a2220}
+body{margin:0;color:var(--body);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;line-height:1.45}
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px 16px;
+  background:radial-gradient(1200px 600px at 50% -10%,#2a3a36 0%,#121816 55%,#0b100f 100%)}
+.phone{width:390px;height:844px;background:#000;border-radius:54px;padding:11px;position:relative;
+  box-shadow:0 0 0 1px #2c3331,0 28px 80px rgba(0,0,0,.55),inset 0 0 0 1px #3d4542}
+.phone-screen{height:100%;background:var(--paper);border-radius:44px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column}
+.island{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:118px;height:34px;
+  background:#0a0d0c;border-radius:20px;z-index:40;pointer-events:none}
+.osbar{position:absolute;top:0;left:0;right:0;height:54px;z-index:30;display:flex;align-items:flex-end;
+  justify-content:space-between;padding:0 28px 10px;color:#111;font-size:14px;font-weight:700;
+  pointer-events:none}
+.osbar.light{color:#EBF1EE}
+.osbar .sig{display:flex;align-items:center;gap:5px}
+.osbar svg{display:block}
+.homeind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:128px;height:5px;
+  background:#111;border-radius:4px;opacity:.28;z-index:30;pointer-events:none}
+.homeind.on-dark{background:#fff;opacity:.45}
+#app,#gate{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#gate{background:var(--dark);color:#C0CCC7}
+@media (max-width:480px){
+  .stage{padding:0;background:#000;min-height:100dvh}
+  .phone{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  .phone-screen{border-radius:0}
+}
+button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
+input{font-family:inherit;font-size:15px;color:var(--ink);border:1.5px solid var(--line-mid);
+  border-radius:6px;padding:12px;background:var(--surface);width:100%}
+input:focus{outline:2px solid var(--acc);outline-offset:1px}
+.mono{font-family:var(--mono)}
+.sp{flex:1 1 auto}
+.bar{flex:0 0 auto;z-index:10;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(16px);
+  -webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--line-mid);padding-top:54px}
+.bar .r1{display:flex;align-items:center;gap:10px;padding:8px 15px 10px}
+.brand{font-weight:800;font-size:13.5px;letter-spacing:.16em;color:var(--ink)}
+.sub{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint)}
+.chip-on{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;
+  padding:8px 14px;border-radius:20px;background:var(--acc);color:#fff}
+.chip-on.off{background:var(--sunk);color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:#7FD5BF;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.main{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 16px}
+.card{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;
+  margin-bottom:12px;overflow:hidden}
+.card .hd{display:flex;align-items:center;gap:9px;padding:12px 15px;background:var(--raise);
+  border-bottom:1px solid var(--line);font-weight:800;color:var(--ink);font-size:14px}
+.card .bd{padding:13px 15px}
+.pill{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 7px;border:1px solid var(--line-mid);border-radius:3px;
+  color:var(--muted);background:var(--surface);white-space:nowrap}
+.pill.acc{color:var(--acc-ink);border-color:var(--acc-line);background:var(--acc-soft)}
+.pill.risk{color:var(--risk);border-color:var(--risk-line);background:var(--risk-soft)}
+.pill.warn{color:var(--warn);border-color:#DDC386;background:var(--warn-soft)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:50px;border-radius:8px;background:var(--acc);color:#fff;font-size:15.5px;font-weight:800}
+.btn:active{transform:scale(.99)}
+.btn.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-mid);font-weight:700}
+.btn.danger{background:var(--surface);color:var(--risk);border:1.5px solid var(--risk-line);font-weight:700}
+.btn.ghost{background:none;color:var(--muted);min-height:40px;font-weight:600;font-size:13px}
+.btn.sm{min-height:40px;font-size:13px;border-radius:7px}
+.note{display:flex;gap:9px;padding:11px 13px;font-size:12.5px;line-height:1.5;border-radius:8px;margin-bottom:12px}
+.note.acc{background:var(--acc-soft);color:var(--acc-ink);border:1px solid var(--acc-line)}
+.note.risk{background:var(--risk-soft);color:var(--risk);border:1px solid var(--risk-line)}
+.note.warn{background:var(--warn-soft);color:var(--warn);border:1px solid #DDC386}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted)} .kv .v{color:var(--ink);font-weight:700;text-align:right}
+.label{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);margin:14px 2px 7px}
+.hero{background:var(--dark);border-radius:12px;color:#C0CCC7;padding:16px;margin-bottom:12px}
+.hero .eyeb{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--dka)}
+.hero h2{color:#fff;font-size:18px;font-weight:800;margin-top:6px;line-height:1.25}
+.hero .m{font-size:12px;color:var(--dkm);margin-top:4px}
+.offbanner{background:var(--risk);color:#fff;border-radius:9px;padding:12px 14px;margin-bottom:12px;
+  font-size:12.5px;line-height:1.5;font-weight:600;animation:slidein .3s}
+@keyframes slidein{0%{transform:translateY(-14px);opacity:0}100%{transform:none;opacity:1}}
+.map{height:130px;border-bottom:1px solid var(--line)}
+.drvdot{animation:pulse 1.4s infinite}
+/* tracker step rail */
+.tsteps{display:flex;background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;
+  padding:13px 8px 10px;margin-bottom:12px}
+.ts{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.ts::before{content:'';position:absolute;top:5px;left:-50%;width:100%;height:2px;background:var(--line)}
+.ts:first-child::before{display:none}
+.ts i{width:12px;height:12px;border-radius:50%;border:2px solid var(--line-mid);background:var(--surface);z-index:1}
+.ts.done i{border-color:var(--acc);background:var(--acc)}
+.ts.now i{border-color:var(--acc);background:var(--surface);box-shadow:0 0 0 4px var(--acc-soft)}
+.ts.done::before,.ts.now::before{background:var(--acc-line)}
+.ts span{font-size:9px;font-weight:700;color:var(--faint);letter-spacing:.03em}
+.ts.now span{color:var(--acc-ink)} .ts.done span{color:var(--muted)}
+/* the code */
+.codecard{background:var(--dark);border-radius:12px;padding:18px 16px 16px;text-align:center;
+  color:#C0CCC7;margin-bottom:12px}
+.codecard .eyeb{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dka)}
+.codebig{font-family:var(--mono);font-size:46px;font-weight:800;color:#fff;letter-spacing:.14em;
+  margin:10px 0 6px;user-select:all;-webkit-user-select:all;cursor:text;line-height:1.1}
+.codemeta{font-family:var(--mono);font-size:10px;color:#6D7B76;letter-spacing:.04em}
+.etarow{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:14px;
+  color:var(--acc-ink);padding:10px 0 2px}
+.etarow .gd{width:9px;height:9px;border-radius:50%;background:var(--acc);animation:pulse 1.4s infinite}
+/* receipt */
+.receipt{font-family:var(--mono);font-size:10.5px;line-height:1.65;background:var(--dark);color:#C8D4CF;
+  border-radius:10px;padding:14px;white-space:pre;overflow-x:auto;margin-bottom:12px;
+  user-select:text;-webkit-user-select:text}
+.receipt .rhead{color:#fff;font-weight:700}
+.receipt .rwarn{color:#E9C46A}
+.receipt .rdim{color:#6D7B76}
+/* NEW tab option cards */
+.optgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.optcard{background:var(--surface);border:1.5px solid var(--line-mid);border-radius:12px;padding:14px;
+  text-align:left;display:flex;flex-direction:column;gap:6px;min-height:124px}
+.optcard:active{background:var(--raise)}
+.optcard svg{width:22px;height:22px;stroke:var(--acc);stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.optcard .t{font-size:15px;font-weight:800;color:var(--ink)}
+.optcard .d{font-size:11px;color:var(--muted);line-height:1.4}
+.optcard .p{font-family:var(--mono);font-size:11px;color:var(--acc-ink);font-weight:700;margin-top:auto}
+/* service rows */
+.svc{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;border:1.5px solid var(--line-mid);
+  border-radius:10px;padding:11px 12px;background:var(--surface);margin-bottom:8px}
+.svc.on{border-color:var(--acc);background:var(--acc-soft)}
+.svc.dis{opacity:.6}
+.svc .nm{font-size:13.5px;font-weight:800;color:var(--ink)}
+.svc .wn{font-size:11px;color:var(--muted);margin-top:1px}
+.svc .why{font-size:10.5px;color:var(--risk);margin-top:4px;font-weight:600;line-height:1.4}
+.svc .pr{margin-left:auto;flex:0 0 auto;font-family:var(--mono);font-weight:800;color:var(--acc-ink);font-size:13px}
+.chips{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+.chipG{flex:1 1 40%;border:1.5px solid var(--line-mid);border-radius:8px;padding:9px 8px;text-align:left;background:var(--surface)}
+.chipG.on{border-color:var(--acc);background:var(--acc-soft)}
+.chipG .g{font-size:12.5px;font-weight:800;color:var(--ink);line-height:1.3}
+.chipG .l{font-size:9.5px;color:var(--muted);margin-top:2px;line-height:1.25}
+/* order rows */
+.orow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:12px 14px;
+  border-bottom:1px solid var(--line);background:var(--surface)}
+.orow:last-child{border-bottom:0}
+.orow:active{background:var(--raise)}
+.orow .ref{font-family:var(--mono);font-weight:800;font-size:13px;color:var(--ink)}
+.orow .sm2{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.35}
+.navrow{display:flex;gap:7px;margin-top:9px}
+.navbtn{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:38px;
+  border:1.5px solid var(--line-mid);border-radius:7px;font-size:12px;font-weight:700;color:var(--ink);
+  background:var(--surface);text-decoration:none}
+.navbtn:active{background:var(--raise)}
+.navbtn svg{width:15px;height:15px;flex:0 0 auto;stroke:currentColor;stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.done-wrap{text-align:center;padding:22px 20px 16px}
+.done-ring{width:86px;height:86px;border-radius:50%;background:var(--acc-soft);margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;color:var(--acc);
+  animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:none;opacity:1}}
+.done-wrap h2{font-size:19px;color:var(--ink)}
+.done-wrap p{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.55}
+/* bottom nav */
+.nav{flex:0 0 auto;z-index:10;display:flex;background:rgba(255,255,255,.9);
+  backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+  border-top:1px solid var(--line-mid);padding:7px 0 22px}
+.nav button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--faint);font-size:9px;font-weight:700;padding:4px 0;position:relative}
+.nav button.on{color:var(--acc)}
+.nav svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:-2px;right:calc(50% - 18px);min-width:16px;height:16px;border-radius:8px;
+  background:var(--risk);color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;
+  justify-content:center;padding:0 4px}
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(120%);
+  background:var(--ink);color:#EBF1EE;font-size:13px;font-weight:700;padding:11px 17px;
+  border-radius:8px;transition:transform .25s,opacity .25s;z-index:60;max-width:86%;text-align:center;
+  opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.splash{height:100%;display:flex;flex-direction:column;align-items:center;padding:120px 28px 36px;text-align:center}
+.splash .mark{width:76px;height:76px;border-radius:18px;background:#0F6455;display:flex;
+  align-items:center;justify-content:center;margin-bottom:18px}
+.splash .mark svg{width:42px;height:20px}
+.splash h1{color:#fff;font-size:28px;letter-spacing:.18em;font-weight:800}
+.splash p{color:var(--dkm);margin-top:8px;font-size:13px;line-height:1.55}
+.splash .tok{font-family:var(--mono);font-size:10px;color:#6D7B76;margin-top:20px;letter-spacing:.06em}
+.sighint{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:#6D7B76;text-align:center;padding:6px 0 8px}
+.sheet{position:absolute;inset:0;background:rgba(12,18,17,.45);z-index:50;display:flex;align-items:flex-end}
+.sheet .panel{width:100%;background:var(--surface);border-radius:16px 16px 0 0;padding:16px 16px 32px}
+.sheet .panel h3{font-size:16px;color:var(--ink)}
+.sheet .body{font-size:12.5px;color:var(--body);line-height:1.55;margin-top:10px}
+.sheet .opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.sheet .opts button{min-height:46px;border-radius:10px;border:1.5px solid var(--line-mid);
+  background:var(--raise);font-weight:700;font-size:14px}
+.sealimg{width:24px;height:24px;border-radius:5px;display:block}.mark>.sealimg{width:100%;height:100%;border-radius:inherit}
+.mark{background:none!important}
+</style></head><body>
+<div class="stage">
+  <div class="phone">
+    <div class="phone-screen">
+      <div class="island"></div>
+      <div class="osbar" id="osbar">
+        <span id="osclock">9:41</span>
+        <span class="sig">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx=".6" fill="currentColor"/><rect x="4.5" y="5.5" width="3" height="6.5" rx=".6" fill="currentColor"/><rect x="9" y="3" width="3" height="9" rx=".6" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx=".6" fill="currentColor" opacity=".35"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12"><path d="M1 7.2A8 8 0 0 1 8 4a8 8 0 0 1 7 3.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.6 9A4.6 4.6 0 0 1 8 7.2 4.6 4.6 0 0 1 12.4 9" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="11" r="1.1" fill="currentColor"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".8" width="21" height="10.4" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="2" y="2.3" width="16.2" height="7.4" rx="1.2" fill="currentColor"/><rect x="22.2" y="3.6" width="1.8" height="4.8" rx=".6" fill="currentColor"/></svg>
+        </span>
+      </div>
+      <div id="gate"></div>
+      <div id="app" style="display:none"></div>
+      <div class="toast" id="toast"></div>
+      <div class="homeind" id="homeind"></div>
+    </div>
+  </div>
+</div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const SEAL=`<img class="sealimg" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABCGVYSWZNTQAqAAAACAAHARIAAwAAAAEAAQAAARoABQAAAAEAAABiARsABQAAAAEAAABqASgAAwAAAAEAAgAAATEAAgAAADkAAAByATsAAgAAAA0AAACsh2kABAAAAAEAAAC6AAAAAAAAASwAAAABAAABLAAAAAFDYW52YSBkb2M9REFIVFV4R2RIWE0gdXNlcj1VQUZWZzhJNU9XQSBicmFuZD1CQUZWZzhCTTBzcwAATWF5YSBDaGFod2FuAAAABpAAAAcAAAAEMDIxMJEBAAcAAAAEAQIDAKAAAAcAAAAEMDEwMKABAAMAAAABAAEAAKACAAQAAAABAAABAKADAAQAAAABAAABAAAAAADonB5tAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj4yNDE2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6RXhpZlZlcnNpb24+MDIxMDwvZXhpZjpFeGlmVmVyc2lvbj4KICAgICAgICAgPGV4aWY6Rmxhc2hQaXhWZXJzaW9uPjAxMDA8L2V4aWY6Rmxhc2hQaXhWZXJzaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MjQxNjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICAgICA8cmRmOlNlcT4KICAgICAgICAgICAgICAgPHJkZjpsaT4xPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGk+MjwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpPjM8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaT4wPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOlNlcT4KICAgICAgICAgPC9leGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkNhbnZhIGRvYz1EQUhUVXhHZEhYTSB1c2VyPVVBRlZnOEk1T1dBIGJyYW5kPUJBRlZnOEJNMHNzPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WVJlc29sdXRpb24+MzAwPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkRsaXZlcmQgLSAyPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOkFsdD4KICAgICAgICAgPC9kYzp0aXRsZT4KICAg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">`;
+const SEALD=`<img class="sealimg" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABCGVYSWZNTQAqAAAACAAHARIAAwAAAAEAAQAAARoABQAAAAEAAABiARsABQAAAAEAAABqASgAAwAAAAEAAgAAATEAAgAAADkAAAByATsAAgAAAA0AAACsh2kABAAAAAEAAAC6AAAAAAAAASwAAAABAAABLAAAAAFDYW52YSBkb2M9REFIVFV4R2RIWE0gdXNlcj1VQUZWZzhJNU9XQSBicmFuZD1CQUZWZzhCTTBzcwAATWF5YSBDaGFod2FuAAAABpAAAAcAAAAEMDIxMJEBAAcAAAAEAQIDAKAAAAcAAAAEMDEwMKABAAMAAAABAAEAAKACAAQAAAABAAABAKADAAQAAAABAAABAAAAAADonB5tAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj4yNDE2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6RXhpZlZlcnNpb24+MDIxMDwvZXhpZjpFeGlmVmVyc2lvbj4KICAgICAgICAgPGV4aWY6Rmxhc2hQaXhWZXJzaW9uPjAxMDA8L2V4aWY6Rmxhc2hQaXhWZXJzaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MjQxNjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICAgICA8cmRmOlNlcT4KICAgICAgICAgICAgICAgPHJkZjpsaT4xPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGk+MjwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpPjM8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaT4wPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOlNlcT4KICAgICAgICAgPC9leGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkNhbnZhIGRvYz1EQUhUVXhHZEhYTSB1c2VyPVVBRlZnOEk1T1dBIGJyYW5kPUJBRlZnOEJNMHNzPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WVJlc29sdXRpb24+MzAwPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkRsaXZlcmQgLSAyPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOkFsdD4KICAgICAgICAgPC9kYzp0aXRsZT4KICAg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">`;
+const I={box:'<path d="M12 3l8 4v10l-8 4-8-4V7z"/><path d="M4 7l8 4 8-4"/><path d="M12 11v10"/>',
+ plus:'<circle cx="12" cy="12" r="8.5"/><line x1="12" y1="8.5" x2="12" y2="15.5"/><line x1="8.5" y1="12" x2="15.5" y2="12"/>',
+ list:'<rect x="4" y="4.5" width="16" height="15" rx="2"/><path d="M8 9h8M8 12.5h8M8 16h5"/>',
+ user:'<circle cx="12" cy="8.5" r="3.7"/><path d="M4.8 20c.7-3.7 3.7-5.6 7.2-5.6s6.5 1.9 7.2 5.6"/>',
+ send:'<path d="M20 4 3.5 10.5l6.5 2.5 2.5 6.5z"/><path d="M20 4 10 14"/>',
+ down:'<path d="M12 3v10"/><path d="m8 9 4 4 4-4"/><rect x="4" y="15" width="16" height="6" rx="1.5"/>',
+ loop:'<path d="M9 5 4 10l5 5"/><path d="M4 10h11a5 5 0 0 1 0 10h-3"/>',
+ x:'<circle cx="12" cy="12" r="8.5"/><path d="m9 9 6 6M15 9l-6 6"/>',
+ phone:'<path d="M6.5 4.5h3l1.2 3-1.7 1.1a12 12 0 0 0 6.4 6.4l1.1-1.7 3 1.2v3A1.5 1.5 0 0 1 18 19 14.5 14.5 0 0 1 5 6a1.5 1.5 0 0 1 1.5-1.5z"/>',
+ sms:'<path d="M5 6.5h14v9.5H9l-3.5 3v-3H5z"/>',
+ shield:'<path d="M12 3 5 6v6c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"/><path d="m8.8 12 2.2 2.2 4.4-4.6"/>'};
+const ic=n=>`<svg viewBox="0 0 24 24">${I[n]}</svg>`;
+const DEMO_CODE='417826';
+const DEMO_CLOCK='09:15'; /* fictional booking clock the cutoffs are evaluated at */
+let toastT;
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.background=bad?'#93301F':'';
+ t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
+function tickClock(){
+ const d=new Date(),h=((d.getHours()+11)%12)+1,m=String(d.getMinutes()).padStart(2,'0');
+ const el=$('#osclock');if(el)el.textContent=h+':'+m;
+}
+function setChrome(dark){
+ const bar=$('#osbar'),ind=$('#homeind');
+ if(bar)bar.classList.toggle('light',!!dark);
+ if(ind)ind.classList.toggle('on-dark',!!dark);
+}
+const fmt$=n=>'$'+n.toFixed(2);
+
+/* ── state ── */
+const S={
+ gate:'splash',
+ tab:'track', view:null, lang:'FR',
+ trk:0, exc:false, etaMin:8, nextRef:4480, nextClaim:3301,
+ alt:null, instructions:null,
+ notif:{close:true,rcpt:true},
+ ship:{name:'Camille Bilodeau',addr:'5155 av. Papineau, app. 3, Montréal, QC',
+   item:'iPhone 13 128 — gift for my sister',val:'980'},
+ shipSvc:'C24',
+ pu:{win:'Today · 13:00 – 17:00',dest:'BMobile Saint-Laurent — trade-in'},
+ ret:{ref:null,reason:null},
+ claims:[],
+ orders:[
+  {ref:'M-4471',kind:'INBOUND',provider:'BMobile',ticket:'BM-1042',box:'BX-1042',seal:'CS-40118',
+   sealCount:1,items:['1 × iPhone 16 Pro 256 Natural'],declared:1449,service:'DLIVERD 24',price:10.75,
+   status:'BOOKED',date:'Mon 24 Aug',window:'Today · before end of day',eta:'08:45',
+   deliveredAt:null,signer:null,geo:null,chain:null,custody:[['06:58','Box sealed at BMobile Saint-Laurent']]},
+  {ref:'M-4402',kind:'INBOUND',provider:'BMobile',ticket:'BM-0977',box:'BX-0977',seal:'CS-39204',
+   sealCount:1,items:['1 × AirPods Pro 2','1 × Chargeur MagSafe 25 W'],declared:329,service:'DLIVERD 24',price:10.75,
+   status:'DELIVERED',date:'Tue 12 Aug',window:'Delivered 10:04',deliveredAt:'10:04',signer:'G. Bilodeau',
+   geo:'45.5501, -73.5721 · within 9 m',chain:'evt 3d81… → c05a… → 6f22…',
+   custody:[['08:12','Box sealed at BMobile Saint-Laurent'],
+    ['08:58','Custody accepted — seal CS-39204 photographed intact'],
+    ['10:04','Delivered — code verified, signed by G. Bilodeau']]},
+  {ref:'M-4318',kind:'INBOUND',provider:'Planète Mobile',ticket:'PM-2210',box:'BX-2210',seal:'CS-33871',
+   sealCount:2,items:['1 × iPhone 15 128 Pink (certifié)'],declared:829,service:'DLIVERD 24 NOON',price:15.50,
+   status:'DELIVERED',date:'Thu 17 Jul',window:'Delivered 11:41',deliveredAt:'11:41',signer:'G. Bilodeau',
+   geo:'45.5501, -73.5721 · within 14 m',chain:'evt b4e0… → 51c9… → e807…',
+   custody:[['09:12','Box sealed at Planète Mobile Beaubien'],
+    ['09:41','Custody accepted — seal CS-33871 photographed intact'],
+    ['11:41','Delivered — code verified, signed by G. Bilodeau']]}],
+};
+const M=()=>S.orders.find(o=>o.ref==='M-4471');
+const SVC=[
+ {id:'C24',name:'DLIVERD 24',price:10.75,win:'Delivered before end of day',def:true},
+ {id:'NOON',name:'DLIVERD 24 NOON',price:15.50,win:'Delivered by 12:00',
+  cutoff:`Booking closed at 09:00 — it is ${DEMO_CLOCK}. By-noon can no longer be promised, so it can no longer be sold.`},
+ {id:'AM',name:'DLIVERD 24 AM',price:21.50,win:'Delivered by 10:30',
+  cutoff:`Morning-only — needs booking before 08:00. It is ${DEMO_CLOCK}.`},
+ {id:'EVE',name:'DLIVERD EVENING',price:23.50,win:'Delivered 17:30 – 21:00'}];
+const STATUS={BOOKED:['BOOKED',''],ASSIGNED:['ASSIGNED',''],PICKED_UP:['IN CUSTODY','acc'],
+ DELIVERED:['DELIVERED','acc'],EXCEPTION:['EXCEPTION','risk'],CANCELLED:['CANCELLED','risk']};
+const statusPill=o=>{const [l,c]=STATUS[o.status]||[o.status,''];return `<span class="pill ${c}">${l}</span>`;};
+const openOrders=()=>S.orders.filter(o=>['BOOKED','ASSIGNED'].includes(o.status));
+const custodyOrders=()=>S.orders.filter(o=>['PICKED_UP','EXCEPTION'].includes(o.status));
+
+/* ── receipt — the signature artifact ── */
+function receiptHtml(o){
+ const P=[];
+ P.push(`<span class="rhead">DLIVERD — Delivery receipt</span>              ${o.ref}`);
+ P.push(`Box ${o.box} · Seal ${o.seal}`);
+ if(o.sealCount>1)P.push(`<span class="rwarn">⚠ This box was opened and re-sealed once before dispatch.</span>`);
+ P.push('');
+ P.push(`Declared contents (declared by ${o.provider} — not verified by DLIVERD)`);
+ o.items.forEach(it=>P.push('  '+it));
+ P.push('');
+ P.push('Custody');
+ o.custody.forEach(c=>P.push(`  ${c[0]}  ${c[1]}`));
+ P.push(`         ${o.geo}`);
+ P.push('');
+ P.push(`<span class="rdim">Chain  ${o.chain}    Verify: dliverd.ca/v/${o.ref}</span>`);
+ return `<div class="receipt">${P.join('\n')}</div>`;
+}
+
+/* ── sheets ── */
+function openSheet(title,opts,onPick){
+ const wrap=document.createElement('div');
+ wrap.className='sheet';
+ wrap.innerHTML=`<div class="panel"><h3>${title}</h3>
+  <div class="opts">${opts.map((o,i)=>`<button data-i="${i}">${o}</button>`).join('')}
+  <button class="btn ghost" id="sheetCancel">Cancel</button></div></div>`;
+ $('.phone-screen').appendChild(wrap);
+ wrap.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{wrap.remove();onPick(opts[+b.dataset.i]);});
+ wrap.querySelector('#sheetCancel').onclick=()=>wrap.remove();
+ wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove();});
+}
+/* consequence stated BEFORE the button — always */
+function confirmSheet(title,body,confirmLabel,onOk,danger){
+ const wrap=document.createElement('div');
+ wrap.className='sheet';
+ wrap.innerHTML=`<div class="panel"><h3>${title}</h3>
+  <div class="body">${body}</div>
+  <div class="opts">
+   <button class="btn ${danger?'danger':''}" id="shOk" style="min-height:48px">${confirmLabel}</button>
+   <button class="btn ghost" id="shNo">Keep it</button></div></div>`;
+ $('.phone-screen').appendChild(wrap);
+ wrap.querySelector('#shOk').onclick=()=>{wrap.remove();onOk();};
+ wrap.querySelector('#shNo').onclick=()=>wrap.remove();
+ wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove();});
+}
+function altSheet(){
+ const wrap=document.createElement('div');
+ wrap.className='sheet';
+ wrap.innerHTML=`<div class="panel"><h3>Authorise an alternate recipient</h3>
+  <div class="body">They receive <b>their own 6-digit code</b> by SMS — you never see theirs, they never
+   see yours. Whoever signs is named on the receipt. <b>Custody stays named, always.</b></div>
+  <div class="opts">
+   <input id="altName" placeholder="Their full name" value="Marc Tremblay">
+   <input id="altPhone" placeholder="Their mobile" value="514 903-2277">
+   <button class="btn" id="altOk" style="min-height:48px">Authorise — send them their code</button>
+   <button class="btn ghost" id="altNo">Cancel</button></div></div>`;
+ $('.phone-screen').appendChild(wrap);
+ wrap.querySelector('#altOk').onclick=()=>{
+  const nm=wrap.querySelector('#altName').value.trim();
+  const ph=wrap.querySelector('#altPhone').value.trim();
+  if(!nm)return toast('A name is required — custody stays named',true);
+  S.alt={name:nm,phone:ph};wrap.remove();
+  toast(nm.split(' ')[0]+' authorised — their own code is on its way');render();};
+ wrap.querySelector('#altNo').onclick=()=>wrap.remove();
+ wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove();});
+}
+function instructionsSheet(){
+ openSheet('Add delivery instructions',
+  ['Ring apt 2 — side door on the lane','Call me when you arrive — 514 328-4419',
+   'Leave it with the concierge','No special instructions'],
+  pick=>{
+   if(pick==='Leave it with the concierge'){
+    toast('Boxes are never left — custody stays named. Authorise the concierge as an alternate recipient instead.',true);
+    return;}
+   S.instructions=pick==='No special instructions'?null:pick;
+   toast(S.instructions?'Instructions saved — Maya sees them at your stop':'Instructions cleared');
+   render();});
+}
+function rescheduleSheet(fromException){
+ openSheet('Pick a new window',
+  ['Tomorrow · 09:00 – 12:00','Tomorrow · 13:00 – 17:00','Wed · 17:30 – 21:00 (evening)'],
+  win=>{const o=M();o.window=win;
+   if(fromException){S.exc=false;S.trk=1;o.status='ASSIGNED';}
+   toast('Rescheduled to '+win+' — BMobile and the driver were notified');render();});
+}
+function reportSheet(o){
+ const reasons=['The box arrived open','Wrong item inside','Something is missing','The device is damaged'];
+ openSheet('Report an issue — '+o.ref,reasons,reason=>{
+  const custodySide=(reason==='The box arrived open'||reason==='The device is damaged');
+  const binding=custodySide?`custody = DLIVERD’s seal record`:`contents = ${o.provider}’s attestation`;
+  confirmSheet('Open a claim on '+o.ref+'?',
+   `<b>${reason}.</b> This claim lands on <b>${binding}</b>.<br><br>
+    Every claim is filed against one of two bindings —
+    <b>contents = ${o.provider}’s attestation · custody = DLIVERD’s</b>.
+    DLIVERD never opens a box, so what is inside is always the shipper’s declaration;
+    whether it travelled sealed is ours.`,
+   'File the claim',()=>{
+    const id='CL-'+(S.nextClaim++);
+    S.claims.push({id,ref:o.ref,reason,binding});
+    toast('Claim '+id+' opened · '+binding);render();},true);});
+}
+function cancelFlow(o){
+ if(o.status==='BOOKED'){
+  confirmSheet('Cancel '+o.ref+'?',
+   `<b>Free.</b> No driver is assigned to ${o.ref} yet, so cancelling costs nothing.
+    The label is voided, ${o.kind==='INBOUND'?o.provider+' is notified':'the pickup is released'},
+    and the ledger records the cancellation.`,
+   'Cancel '+o.ref+' · free',()=>doCancel(o),true);
+ }else if(o.status==='ASSIGNED'){
+  confirmSheet('Cancel '+o.ref+'?',
+   `<b>$3.50 fee.</b> A driver has already planned a route around ${o.ref} — the fee covers her detour.
+    After she picks the box up, cancelling becomes impossible: a movement in custody can only be
+    delivered or come back as a REPRISE.`,
+   'Cancel '+o.ref+' · $3.50',()=>doCancel(o),true);
+ }
+}
+function doCancel(o){
+ o.status='CANCELLED';o.window='Cancelled · Mon 24 Aug';
+ toast(o.ref+' cancelled — confirmed by SMS');
+ render();
+}
+
+/* ── shell ── */
+function shell(inner){
+ document.getElementById('app').innerHTML=`
+  <div class="bar"><div class="r1">${SEAL}
+    <div><div class="brand">CLIENT</div><div class="sub">G. Bilodeau · Rosemont · Mon 24 Aug</div></div>
+    <div class="sp"></div>
+    <button class="chip-on" id="langBtn" style="min-height:32px;padding:6px 13px">${S.lang}</button>
+   </div></div>
+  <div class="main">${inner}</div>
+  <div class="nav">
+   ${[['track','box','Track'],['new','plus','New'],['orders','list','Orders'],['profile','user','Profile']]
+    .map(([t,i2,l])=>`<button data-tab="${t}" class="${S.tab===t?'on':''}">${ic(i2)}<span>${l}</span>
+     ${t==='track'&&S.exc?'<span class="badge">!</span>':''}</button>`).join('')}
+  </div>`;
+ $('#langBtn').onclick=()=>{S.lang=S.lang==='FR'?'EN':'FR';
+  toast(S.lang==='FR'?'Préférence enregistrée — vos textos arriveront en français':'Preference saved — your texts will arrive in English');render();};
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.view=null;render();});
+}
+
+/* small live map — Maya approaching Rosemont */
+function trackMap(){
+ const t=Math.max(0,Math.min(1,(8-S.etaMin)/6));
+ const dx=Math.round(96+t*250), dy=Math.round(88-t*26);
+ return `<svg viewBox="0 0 430 130" style="width:100%;height:130px;display:block" preserveAspectRatio="xMidYMid slice">
+  <rect width="430" height="130" fill="#EDF1EF"/>
+  <g stroke="#DCE1DE"><path d="M0 38H430M0 84H430"/><path d="M86 0V130M188 0V130M290 0V130M372 0V130"/></g>
+  <path d="M0 98 C100 86 200 110 300 94 C360 84 400 98 430 90" fill="none" stroke="#B9CCD6" stroke-width="9" opacity=".55"/>
+  <path d="M36 96 L120 70 L210 84 L300 52 L402 58" fill="none" stroke="#0F6455" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="1 7"/>
+  <circle cx="36" cy="96" r="4.5" fill="#F3F6F4" stroke="#9EA9A5" stroke-width="2"/>
+  <circle class="drvdot" cx="${dx}" cy="${dy}" r="7" fill="#0F6455"/>
+  <circle cx="${dx}" cy="${dy}" r="2.6" fill="#F3F6F4"/>
+  <g transform="translate(402 58)"><circle r="6.5" fill="#F3F6F4" stroke="#0F6455" stroke-width="2.2"/>
+   <path d="M-2.6 .8 0 -2.4 2.6 .8z" fill="#0F6455"/></g>
+  <text x="14" y="20" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#8B9793" letter-spacing="1.2">MAYA · KIA NIRO · SAINT-LAURENT → PETITE-PATRIE → 6321 BEAUBIEN E</text>
+ </svg>`;
+}
+function preDispatchBtns(){
+ return `
+  <div class="label">Before the driver has your box</div>
+  <button class="btn alt sm" id="paResched">Reschedule the delivery</button>
+  <button class="btn alt sm" id="paInstr" style="margin-top:8px">Add delivery instructions${S.instructions?' · saved ✓':''}</button>
+  <button class="btn alt sm" id="paAlt" style="margin-top:8px">Authorise an alternate recipient${S.alt?' · '+S.alt.name.split(' ')[0]+' ✓':''}</button>
+  ${S.instructions?`<div class="kv" style="margin-top:8px"><span class="k">Instructions</span><span class="v" style="font-weight:600">${S.instructions}</span></div>`:''}
+  ${altLine()}`;
+}
+function altLine(){
+ return S.alt?`<div class="note acc" style="margin-top:10px"><div><b>Also authorised: ${S.alt.name}</b> (${S.alt.phone}).
+  They got their own code — codes are never shared, not even with you. The receipt will name whoever signs.
+  Custody stays named.</div></div>`:'';
+}
+function wirePreDispatch(){
+ if($('#paResched'))$('#paResched').onclick=()=>rescheduleSheet(false);
+ if($('#paInstr'))$('#paInstr').onclick=instructionsSheet;
+ if($('#paAlt'))$('#paAlt').onclick=altSheet;
+}
+function tsteps(){
+ const steps=['Booked','Assigned','Nearby','Delivered'];
+ return `<div class="tsteps">${steps.map((s,i)=>
+  `<div class="ts ${i<S.trk?'done':i===S.trk?'now':''}"><i></i><span>${s}</span></div>`).join('')}</div>`;
+}
+
+/* ── TRACK ── */
+function advanceTrack(){
+ const o=M();
+ if(S.trk===0){S.trk=1;o.status='ASSIGNED';o.window='Today · 08:30 – 09:00';
+  toast('Driver assigned — Maya · Kia Niro');}
+ else if(S.trk===1){S.trk=2;o.status='PICKED_UP';S.etaMin=8;
+  o.custody.push(['07:52','Custody accepted — seal CS-40118 photographed intact']);
+  toast('Custody accepted at BMobile — Maya has your sealed box');}
+ else if(S.trk===2){S.trk=3;o.status='DELIVERED';
+  o.deliveredAt='08:47';o.signer='G. Bilodeau';o.window='Delivered 08:47';
+  o.geo='45.5501, -73.5721 · within 12 m';o.chain='evt 9f2c… → 07a7… → 944e…';
+  o.custody.push(['08:47','Delivered — code verified, signed by G. Bilodeau']);
+  toast('Delivered — signed at the door. Merci!');}
+ render();
+}
+function restartDemo(){
+ const o=M();
+ S.trk=0;S.exc=false;S.etaMin=8;S.alt=null;S.instructions=null;
+ o.status='BOOKED';o.window='Today · before end of day';o.deliveredAt=null;o.signer=null;
+ o.geo=null;o.chain=null;o.custody=[['06:58','Box sealed at BMobile Saint-Laurent']];
+ S.claims=S.claims.filter(c=>c.ref!=='M-4471');
+ toast('DEMO · M-4471 reset to booked');render();
+}
+function vTrack(){
+ const o=M();
+ if(o.status==='CANCELLED'){
+  shell(`
+   <div class="note risk"><div><b>M-4471 was cancelled.</b> The label is void and BMobile was notified.
+    The full history stays in Orders — nothing is ever deleted from the ledger.</div></div>
+   <div class="card"><div class="hd">M-4471 ${statusPill(o)}</div><div class="bd">
+    <div class="kv"><span class="k">Provider</span><span class="v">BMobile · ticket BM-1042</span></div>
+    <div class="kv"><span class="k">Box · seal</span><span class="v mono">BX-1042 · CS-40118</span></div>
+   </div></div>
+   <button class="btn" id="goNew">Book a new movement</button>
+   <button class="btn ghost" id="restart">DEMO · restart the day</button>`);
+  $('#goNew').onclick=()=>{S.tab='new';S.view=null;render();};
+  $('#restart').onclick=restartDemo;
+  return;
+ }
+ if(S.exc)return vTrackException(o);
+ if(S.trk===0)return vTrackBooked(o);
+ if(S.trk===1)return vTrackAssigned(o);
+ if(S.trk===2)return vTrackApproaching(o);
+ return vTrackDelivered(o);
+}
+function vTrackBooked(o){
+ shell(`
+  ${tsteps()}
+  <div class="hero"><div class="eyeb">M-4471 · BMobile · booked</div>
+   <h2>Bonjour Geneviève — your iPhone is packed and sealed.</h2>
+   <div class="m">BMobile Saint-Laurent · ticket BM-1042 · sealed 06:58 · DLIVERD never opens a box.</div></div>
+  <div class="card"><div class="hd">Today's window <div class="sp"></div><span class="pill acc">${o.service}</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Window</span><span class="v">${o.window}</span></div>
+    <div class="kv"><span class="k">Box · seal</span><span class="v mono">${o.box} · ${o.seal}</span></div>
+    <div class="kv"><span class="k">Contents</span><span class="v" style="font-weight:600">${o.items.join(' · ')}</span></div>
+    <div class="kv"><span class="k">Declared value</span><span class="v">$${o.declared.toLocaleString()} — declared by BMobile</span></div>
+   </div></div>
+  <div class="note acc"><div><b>We'll text you when the driver is close.</b> Nothing to install, nothing to sign up for —
+   this page <i>is</i> your tokenised link.</div></div>
+  <div class="note" style="background:var(--sunk);color:var(--muted);border:1px solid var(--line)"><div>
+   <b>Privacy (Loi 25).</b> BMobile shared your name and address with DLIVERD only to deliver this order —
+   nothing else, and it purges automatically. Shipper-attested contents, seal-verified custody.</div></div>
+  ${preDispatchBtns()}
+  <button class="btn ghost" id="adv" style="margin-top:14px">DEMO · advance — a driver takes the route</button>`);
+ wirePreDispatch();
+ $('#adv').onclick=advanceTrack;
+}
+function vTrackAssigned(o){
+ shell(`
+  ${tsteps()}
+  <div class="hero"><div class="eyeb">M-4471 · BMobile · driver assigned</div>
+   <h2>Maya is driving today — Kia Niro.</h2>
+   <div class="m">Your window narrowed to <b style="color:#fff">08:30 – 09:00</b>. First name only, always —
+    and Maya never sees your code: her app can't show it.</div></div>
+  <div class="card"><div class="hd">Narrowed window <div class="sp"></div><span class="pill acc">${o.service}</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Window</span><span class="v">${o.window}</span></div>
+    <div class="kv"><span class="k">Driver</span><span class="v">Maya · Kia Niro</span></div>
+    <div class="kv"><span class="k">Box · seal</span><span class="v mono">${o.box} · ${o.seal}</span></div>
+    <div class="kv"><span class="k">Contents</span><span class="v" style="font-weight:600">${o.items.join(' · ')}</span></div>
+   </div></div>
+  <div class="note acc"><div><b>Your code appears here when Maya is close</b> — 6 digits, valid 10 minutes,
+   5 attempts. Both proofs are mandatory at the door: the code, then your signature.</div></div>
+  ${preDispatchBtns()}
+  <button class="btn ghost" id="adv" style="margin-top:14px">DEMO · advance — Maya picks up your box</button>
+  <button class="btn ghost" id="excBtn">DEMO · trigger an exception</button>`);
+ wirePreDispatch();
+ $('#adv').onclick=advanceTrack;
+ $('#excBtn').onclick=()=>{S.exc=true;M().status='EXCEPTION';toast('Exception — see what happens next',true);render();};
+}
+function vTrackApproaching(o){
+ shell(`
+  ${tsteps()}
+  <div class="card"><div class="map">${trackMap()}</div>
+   <div class="etarow"><span class="gd"></span>Arriving in about ${S.etaMin} minutes</div>
+   <div class="bd" style="padding-top:4px;text-align:center;font-size:11.5px;color:var(--muted)">
+    Maya · Kia Niro · seal ${o.seal} photographed intact at pickup, 07:52</div></div>
+  <div class="codecard">
+   <div class="eyeb">Your delivery code · say it at the door</div>
+   <div class="codebig">${DEMO_CODE}</div>
+   <div class="codemeta">VALID 10 MIN · 5 ATTEMPTS · MAYA'S APP NEVER SHOWS IT — ONLY YOURS DOES</div>
+  </div>
+  <div class="note warn"><div><b>Check the seal is intact before you sign.</b> Seal ${o.seal} —
+   tape unbroken, number matching. If anything looks wrong, refuse to sign and report it right here.</div></div>
+  ${altLine()}
+  <div class="sighint" style="color:var(--faint)">PRE-DISPATCH CHANGES ARE CLOSED — THE BOX IS IN CUSTODY</div>
+  <button class="btn ghost" id="adv">DEMO · advance — handover at the door</button>
+  <button class="btn ghost" id="excBtn">DEMO · trigger an exception</button>`);
+ $('#adv').onclick=advanceTrack;
+ $('#excBtn').onclick=()=>{S.exc=true;M().status='EXCEPTION';toast('Exception — see what happens next',true);render();};
+}
+function vTrackDelivered(o){
+ const claim=S.claims.find(c=>c.ref===o.ref);
+ shell(`
+  ${tsteps()}
+  <div class="done-wrap"><div class="done-ring"><svg width="34" height="34" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><polyline points="4 12.5 9.5 18 20 6"/></svg></div>
+   <h2>Delivered — signed by G. Bilodeau</h2>
+   <p>Today at <b>08:47</b> · code verified · seal ${o.seal} intact · à tantôt!</p></div>
+  <div class="label">Your receipt — keep it, it verifies itself</div>
+  ${receiptHtml(o)}
+  ${claim?`<div class="note risk"><div><b>Claim ${claim.id} is open.</b> ${claim.reason} · filed on
+   <b>${claim.binding}</b>. We reply by SMS within 4 business hours.</div></div>`:''}
+  <button class="btn alt" id="report">Report an issue · open until Tue 25 Aug, 08:47</button>
+  <div class="sighint" style="color:var(--faint)">BOX OPEN · WRONG ITEM · MISSING ITEM · DAMAGE — 24 H WINDOW</div>
+  <button class="btn ghost" id="restart" style="margin-top:6px">DEMO · restart the day</button>`);
+ $('#report').onclick=()=>reportSheet(o);
+ $('#restart').onclick=restartDemo;
+}
+function vTrackException(o){
+ shell(`
+  <div class="offbanner">⚠ DELIVERY EXCEPTION · M-4471 — your box is safe and still sealed.</div>
+  <div class="card"><div class="hd">What happened ${statusPill(o)}</div><div class="bd" style="font-size:13px;line-height:1.6">
+   At <b>08:41</b> Maya reached your building but the front door was locked and the intercom went
+   unanswered. She waited, called your number twice, then logged an exception.
+   <b>The box never left her custody</b> — drivers never leave a device, anywhere, ever.</div></div>
+  <div class="card"><div class="hd">What happens next</div><div class="bd">
+   <div class="kv"><span class="k">Right now</span><span class="v" style="font-weight:600">${o.box} stays sealed in Maya's car</span></div>
+   <div class="kv"><span class="k">If you pick a window</span><span class="v" style="font-weight:600">She (or tomorrow's driver) retries then</span></div>
+   <div class="kv"><span class="k">If you do nothing</span><span class="v" style="font-weight:600">Back to the DLIVERD depot tonight · we retry tomorrow</span></div>
+   <div class="kv"><span class="k">Your code</span><span class="v" style="font-weight:600">Reissued for the new attempt</span></div>
+  </div></div>
+  <button class="btn" id="resched">Reschedule — pick a new window</button>
+  <button class="btn alt sm" id="callC" style="margin-top:8px">Call DLIVERD · 24/7</button>
+  <button class="btn ghost" id="resolve" style="margin-top:10px">DEMO · resolve — Maya got in after all</button>`);
+ $('#resched').onclick=()=>rescheduleSheet(true);
+ $('#callC').onclick=()=>toast('Calling DLIVERD · 24/7');
+ $('#resolve').onclick=()=>{S.exc=false;S.trk=2;M().status='PICKED_UP';S.etaMin=3;
+  toast('Exception cleared — Maya is at your door');render();};
+}
+
+/* ── NEW ── */
+function vNew(){
+ if(S.view==='ship')return vShip();
+ if(S.view==='pickup')return vPickup();
+ if(S.view==='return')return vReturn();
+ if(S.view==='cancel')return vCancel();
+ const nOpen=openOrders().length+custodyOrders().length;
+ shell(`
+  <div class="hero"><div class="eyeb">Book a movement</div>
+   <h2>Anything valuable, moved sealed.</h2>
+   <div class="m">Every movement gets a box, a seal, a code and a receipt. DLIVERD never opens a box.</div></div>
+  <div class="optgrid">
+   <button class="optcard" data-new="ship">${ic('send')}<span class="t">Ship</span>
+    <span class="d">Send a device to someone — a driver brings a sealed box.</span><span class="p">from $10.75</span></button>
+   <button class="optcard" data-new="pickup">${ic('down')}<span class="t">Pick-up</span>
+    <span class="d">A driver collects at your door — trade-in, sale, anything.</span><span class="p">REPRISE · $9.75</span></button>
+   <button class="optcard" data-new="return">${ic('loop')}<span class="t">Return</span>
+    <span class="d">Send an order back to the store (RMA) — its own movement.</span><span class="p">REPRISE · $9.75</span></button>
+   <button class="optcard" data-new="cancel">${ic('x')}<span class="t">Cancel</span>
+    <span class="d">Cancel an open booking — consequences shown first.</span><span class="p">${nOpen} open movement${nOpen===1?'':'s'}</span></button>
+  </div>
+  <div class="sighint" style="color:var(--faint)">DEMO · SERVICE CUTOFFS ARE EVALUATED AT ${DEMO_CLOCK}</div>`);
+ document.querySelectorAll('[data-new]').forEach(b=>b.onclick=()=>{S.view=b.dataset.new;render();});
+}
+function svcPicker(){
+ return SVC.map(s=>`<button class="svc ${S.shipSvc===s.id?'on':''} ${s.cutoff?'dis':''}" data-svc="${s.id}">
+   <div><div class="nm">${s.name}${s.def?' <span class="pill acc" style="margin-left:4px">default</span>':''}</div>
+    <div class="wn">${s.win}</div>
+    ${s.cutoff?`<div class="why">Unavailable — ${s.cutoff}</div>`:''}</div>
+   <div class="pr">${fmt$(s.price)}</div></button>`).join('');
+}
+function wireSvcPicker(){
+ document.querySelectorAll('[data-svc]').forEach(b=>b.onclick=()=>{
+  const s=SVC.find(x=>x.id===b.dataset.svc);
+  if(s.cutoff)return toast(s.cutoff,true);
+  S.shipSvc=s.id;render();});
+}
+function vShip(){
+ const svc=SVC.find(s=>s.id===S.shipSvc);
+ shell(`
+  <div class="card"><div class="hd">Ship a device <div class="sp"></div><span class="pill">new movement</span></div>
+   <div class="bd">
+    <div class="label" style="margin-top:0">Recipient</div>
+    <input id="shipName" value="${S.ship.name}" placeholder="Full name">
+    <input id="shipAddr" value="${S.ship.addr}" placeholder="Address" style="margin-top:8px">
+    <div class="label">What's going in the box</div>
+    <input id="shipItem" value="${S.ship.item}" placeholder="Item — 1 line">
+    <input id="shipVal" value="${S.ship.val}" placeholder="Declared value ($)" inputmode="numeric" style="margin-top:8px">
+    <div class="kv" style="margin-top:6px;border:0;padding-bottom:0"><span class="k">Cover</span>
+     <span class="v" style="font-weight:600">Up to declared value · max $3,000 per box</span></div>
+   </div></div>
+  <div class="label">Service — closed options stay visible, with the reason</div>
+  ${svcPicker()}
+  <div class="note acc"><div><b>You declare, we seal.</b> The receipt will read
+   "declared by you — not verified by DLIVERD". Shipper-attested contents, seal-verified custody.</div></div>
+  <button class="btn" id="book">Book ${svc.name} · ${fmt$(svc.price)}</button>
+  <button class="btn ghost" id="back">Back</button>`);
+ wireSvcPicker();
+ [['shipName','name'],['shipAddr','addr'],['shipItem','item'],['shipVal','val']]
+  .forEach(([id,k])=>{$('#'+id).oninput=e=>{S.ship[k]=e.target.value;};});
+ $('#back').onclick=()=>{S.view=null;render();};
+ $('#book').onclick=()=>{
+  const v=parseFloat(S.ship.val);
+  if(!S.ship.name.trim()||!S.ship.addr.trim())return toast('Recipient name and address are required',true);
+  if(!(v>0))return toast('A declared value is required — it sets the cover',true);
+  if(v>3000)return toast('Above $3,000 per box — call DLIVERD for a quoted movement',true);
+  const ref='M-'+(S.nextRef++);
+  S.orders.unshift({ref,kind:'SHIP',provider:'You',to:S.ship.name,addr:S.ship.addr,ticket:'—',
+   box:'assigned at pickup',seal:'assigned at pickup',sealCount:1,items:['1 × '+S.ship.item],
+   declared:v,service:svc.name,price:svc.price,status:'BOOKED',date:'Mon 24 Aug',
+   window:svc.win,deliveredAt:null,signer:null,geo:null,chain:null,custody:[]});
+  toast(ref+' booked · '+svc.name+' · '+fmt$(svc.price)+' — the driver brings the sealed box');
+  S.tab='orders';S.view=ref;render();};
+}
+function vPickup(){
+ const wins=['Today · 13:00 – 17:00','Tomorrow · 09:00 – 12:00','Tomorrow · 13:00 – 17:00'];
+ const dests=['BMobile Saint-Laurent — trade-in','Cellcom Anjou — buyback','Planète Mobile Beaubien — sale'];
+ shell(`
+  <div class="card"><div class="hd">Schedule a pick-up <div class="sp"></div><span class="pill warn">REPRISE</span></div>
+   <div class="bd">
+    <div class="kv" style="padding-top:0"><span class="k">Pick-up at</span><span class="v" style="font-weight:600">6321 rue Beaubien E, Montréal</span></div>
+    <div class="kv"><span class="k">Service</span><span class="v">REPRISE · reverse pickup · $9.75</span></div>
+    <div class="label">Where is it going?</div>
+    <div class="chips">${dests.map(d=>`<button class="chipG ${S.pu.dest===d?'on':''}" data-dest="${d}" style="flex:1 1 100%">
+      <div class="g">${d}</div></button>`).join('')}</div>
+    <div class="label">Pick a window</div>
+    <div class="chips">${wins.map(w=>`<button class="chipG ${S.pu.win===w?'on':''}" data-win="${w}">
+      <div class="g">${w}</div></button>`).join('')}</div>
+   </div></div>
+  <div class="note acc"><div><b>The driver seals it at your door.</b> You watch the box close, the seal
+   number goes on your receipt, and the store signs for it on arrival — code + signature, both directions.</div></div>
+  <button class="btn" id="book">Book the pick-up · $9.75</button>
+  <button class="btn ghost" id="back">Back</button>`);
+ document.querySelectorAll('[data-win]').forEach(b=>b.onclick=()=>{S.pu.win=b.dataset.win;render();});
+ document.querySelectorAll('[data-dest]').forEach(b=>b.onclick=()=>{S.pu.dest=b.dataset.dest;render();});
+ $('#back').onclick=()=>{S.view=null;render();};
+ $('#book').onclick=()=>{
+  const ref='M-'+(S.nextRef++);
+  S.orders.unshift({ref,kind:'PICKUP',provider:'You',to:S.pu.dest,ticket:'—',
+   box:'assigned at pickup',seal:'sealed at your door',sealCount:1,items:['1 × device — sealed at pick-up'],
+   declared:0,service:'REPRISE',price:9.75,status:'BOOKED',date:'Mon 24 Aug',
+   window:S.pu.win,deliveredAt:null,signer:null,geo:null,chain:null,custody:[]});
+  toast(ref+' booked · REPRISE · $9.75 · '+S.pu.win);
+  S.tab='orders';S.view=ref;render();};
+}
+function vReturn(){
+ const delivered=S.orders.filter(o=>o.status==='DELIVERED');
+ const reasons=['Wrong item received','Defective on arrival','Changed my mind — 14 days','Damage found in the box'];
+ shell(`
+  <div class="card"><div class="hd">Return to the store <div class="sp"></div><span class="pill warn">RMA</span></div>
+   <div class="bd">
+    <div class="label" style="margin-top:0">Which order is going back?</div>
+    ${delivered.map(o=>`<button class="chipG ${S.ret.ref===o.ref?'on':''}" data-rref="${o.ref}" style="flex:1 1 100%;margin-bottom:7px">
+      <div class="g mono">${o.ref} · ${o.provider}</div>
+      <div class="l">${o.items.join(' · ')} · delivered ${o.date}</div></button>`).join('')}
+    <div class="label">Why is it going back?</div>
+    <div class="chips">${reasons.map(r=>`<button class="chipG ${S.ret.reason===r?'on':''}" data-rr="${r}">
+      <div class="g">${r}</div></button>`).join('')}</div>
+   </div></div>
+  <div class="note acc"><div><b>A return is its own movement</b> — a REPRISE with its own box, its own seal,
+   its own code and its own receipt. It is not a leg of the original delivery; the original's chain stays closed.</div></div>
+  <button class="btn" id="book">Book the return leg · $9.75</button>
+  <button class="btn ghost" id="back">Back</button>`);
+ document.querySelectorAll('[data-rref]').forEach(b=>b.onclick=()=>{S.ret.ref=b.dataset.rref;render();});
+ document.querySelectorAll('[data-rr]').forEach(b=>b.onclick=()=>{S.ret.reason=b.dataset.rr;render();});
+ $('#back').onclick=()=>{S.view=null;render();};
+ $('#book').onclick=()=>{
+  if(!S.ret.ref)return toast('Pick the order that is going back',true);
+  if(!S.ret.reason)return toast('Pick a reason — the store sees it on the RMA',true);
+  const orig=S.orders.find(o=>o.ref===S.ret.ref);
+  const ref='M-'+(S.nextRef++);
+  S.orders.unshift({ref,kind:'RETURN',provider:'You',to:orig.provider,linked:orig.ref,ticket:'RMA · '+orig.ticket,
+   box:'assigned at pickup',seal:'sealed at your door',sealCount:1,items:orig.items.slice(),
+   declared:orig.declared,service:'REPRISE',price:9.75,status:'BOOKED',date:'Mon 24 Aug',
+   window:'Tomorrow · 09:00 – 12:00',reason:S.ret.reason,deliveredAt:null,signer:null,geo:null,chain:null,custody:[]});
+  toast(ref+' booked — a separate movement returning '+orig.ref+"'s items to "+orig.provider);
+  S.ret={ref:null,reason:null};S.tab='orders';S.view=ref;render();};
+}
+function vCancel(){
+ const open=openOrders(), held=custodyOrders();
+ shell(`
+  <div class="card"><div class="hd">Cancel a movement</div><div class="bd" style="font-size:12.5px;color:var(--muted);line-height:1.55">
+   Free before a driver is assigned · $3.50 once assigned · impossible after pickup.
+   The consequence is always shown <b>before</b> the button.</div></div>
+  ${open.length?`<div class="label">Open — can still be cancelled</div>
+   <div class="card">${open.map(o=>`<div class="orow" style="cursor:default">
+    <div style="flex:1 1 auto"><div class="ref">${o.ref} ${statusPill(o)}</div>
+     <div class="sm2">${o.items.join(' · ')} · ${o.window}</div>
+     <div class="sm2" style="color:var(--acc-ink);font-weight:700">${o.status==='BOOKED'?'Free — no driver assigned yet':'$3.50 — a driver planned around it'}</div></div>
+    <button class="btn danger sm" style="width:auto;padding:0 14px" data-cx="${o.ref}">Cancel</button></div>`).join('')}</div>`
+  :`<div class="card"><div class="bd" style="color:var(--muted);font-size:13px">Nothing to cancel — no open bookings right now. Book one from New, or check Orders for history.</div></div>`}
+  ${held.map(o=>`<div class="note warn"><div><b>${o.ref} can't be cancelled — it's in custody.</b>
+    Maya has the sealed box in her car. A movement in custody only goes forward (delivery) or comes back
+    (a REPRISE return). Once it's delivered, book a Return.</div></div>`).join('')}
+  <button class="btn ghost" id="back">Back</button>`);
+ document.querySelectorAll('[data-cx]').forEach(b=>b.onclick=()=>cancelFlow(S.orders.find(o=>o.ref===b.dataset.cx)));
+ $('#back').onclick=()=>{S.view=null;render();};
+}
+
+/* ── ORDERS ── */
+function orderRow(o){
+ const who=o.kind==='INBOUND'?o.provider+' → you':o.kind==='SHIP'?'You → '+o.to:o.kind==='RETURN'?'You → '+o.to+' (RMA)':'You → '+o.to;
+ return `<button class="orow" data-open="${o.ref}">
+  <div style="flex:1 1 auto"><div class="ref">${o.ref} ${statusPill(o)}${o.sealCount>1?' <span class="pill warn">re-sealed</span>':''}</div>
+   <div class="sm2">${who} · ${o.items[0]}${o.items.length>1?' +'+(o.items.length-1):''}</div>
+   <div class="sm2">${o.date} · ${o.window}</div></div>
+  <span style="color:var(--faint)">›</span></button>`;
+}
+function vOrders(){
+ if(S.view){const o=S.orders.find(x=>x.ref===S.view);if(o)return vOrderDetail(o);}
+ const live=S.orders.filter(o=>['BOOKED','ASSIGNED','PICKED_UP','EXCEPTION'].includes(o.status));
+ const hist=S.orders.filter(o=>!live.includes(o));
+ shell(`
+  ${live.length?`<div class="label" style="margin-top:2px">In motion</div>
+   <div class="card">${live.map(orderRow).join('')}</div>`:''}
+  <div class="label">History — every movement keeps its receipt</div>
+  <div class="card">${hist.length?hist.map(orderRow).join(''):'<div class="bd" style="color:var(--muted);font-size:13px">No closed movements yet.</div>'}</div>
+  <div class="note acc"><div><b>Receipts verify themselves.</b> Each carries its hash chain —
+   paste the Verify link anywhere, anytime, no account needed.</div></div>`);
+ document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{S.view=b.dataset.open;render();});
+}
+function vOrderDetail(o){
+ const claim=S.claims.find(c=>c.ref===o.ref);
+ const canCancel=['BOOKED','ASSIGNED'].includes(o.status);
+ const isToday=o.ref==='M-4471';
+ shell(`
+  <button class="btn ghost" id="back" style="justify-content:flex-start;padding-left:2px">‹ All orders</button>
+  <div class="card"><div class="hd">${o.ref} <div class="sp"></div>${statusPill(o)}</div>
+   <div class="bd">
+    <div class="kv"><span class="k">${o.kind==='INBOUND'?'From':'To'}</span>
+     <span class="v">${o.kind==='INBOUND'?o.provider:o.to}</span></div>
+    ${o.linked?`<div class="kv"><span class="k">Returns</span><span class="v mono">${o.ref===o.linked?'—':o.linked}</span></div>`:''}
+    <div class="kv"><span class="k">Ticket</span><span class="v mono">${o.ticket}</span></div>
+    <div class="kv"><span class="k">Box · seal</span><span class="v mono">${o.box} · ${o.seal}</span></div>
+    <div class="kv"><span class="k">Contents</span><span class="v" style="font-weight:600">${o.items.join(' · ')}</span></div>
+    <div class="kv"><span class="k">Declared by</span><span class="v" style="font-weight:600">${o.kind==='INBOUND'?o.provider:'you'} — not verified by DLIVERD</span></div>
+    ${o.declared?`<div class="kv"><span class="k">Declared value</span><span class="v">$${o.declared.toLocaleString()}</span></div>`:''}
+    <div class="kv"><span class="k">Service</span><span class="v">${o.service} · ${fmt$(o.price)}</span></div>
+    <div class="kv"><span class="k">${o.status==='DELIVERED'?'Delivered':'Window'}</span><span class="v">${o.window} · ${o.date}</span></div>
+    ${o.reason?`<div class="kv"><span class="k">RMA reason</span><span class="v" style="font-weight:600">${o.reason}</span></div>`:''}
+   </div></div>
+  ${o.sealCount>1?`<div class="note warn"><div><b>⚠ This box was opened and re-sealed once before dispatch.</b>
+   The store broke seal CS-33802 to correct the contents, and the ledger kept both events. You see it
+   because honesty is the product.</div></div>`:''}
+  ${claim?`<div class="note risk"><div><b>Claim ${claim.id} is open.</b> ${claim.reason} · filed on <b>${claim.binding}</b>.</div></div>`:''}
+  ${o.status==='DELIVERED'?`<div class="label">Receipt</div>${receiptHtml(o)}
+   ${isToday?`<button class="btn alt" id="report">Report an issue · open until Tue 25 Aug, 08:47</button>`
+   :`<div class="sighint" style="color:var(--faint)">REPORT WINDOW CLOSED — 24 H AFTER DELIVERY</div>`}`:''}
+  ${canCancel?`<button class="btn danger sm" id="cx" style="margin-top:10px">Cancel ${o.ref}${o.status==='BOOKED'?' · free':' · $3.50'}</button>`:''}
+  ${o.status==='PICKED_UP'?`<div class="note warn"><div><b>In custody — can't be cancelled.</b> The sealed box is
+   in the driver's car: forward (delivery) or back (REPRISE) are the only moves left.</div></div>`:''}`);
+ $('#back').onclick=()=>{S.view=null;render();};
+ if($('#report'))$('#report').onclick=()=>reportSheet(o);
+ if($('#cx'))$('#cx').onclick=()=>cancelFlow(o);
+}
+
+/* ── PROFILE ── */
+function vProfile(){
+ shell(`
+  <div class="card"><div class="hd">Geneviève Bilodeau <div class="sp"></div><span class="pill acc">Recipient</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Address</span><span class="v" style="font-weight:600">6321 rue Beaubien E, Montréal, QC</span></div>
+    <div class="kv"><span class="k">Mobile</span><span class="v mono">514 3•• ••19</span></div>
+    <div class="kv"><span class="k">Email</span><span class="v mono">g.b••••••@icloud.com</span></div>
+    <div class="kv"><span class="k">Sign-in</span><span class="v">None — tokenised SMS link</span></div>
+    <div class="kv"><span class="k">Language / Langue</span><span class="v">
+     <span style="display:inline-flex;border:1.5px solid var(--line-mid);border-radius:7px;overflow:hidden">
+      ${['FR','EN'].map(l=>`<button data-lang="${l}" style="padding:6px 14px;font-size:12px;font-weight:800;
+       ${S.lang===l?'background:var(--acc);color:#fff':'color:var(--muted)'}">${l}</button>`).join('')}
+     </span></span></div>
+   </div></div>
+  <div class="card"><div class="hd">Notifications — SMS only, nothing to install</div><div class="bd">
+   <div class="kv"><span class="k">Text when the driver is close</span><span class="v">
+    <button class="pill ${S.notif.close?'acc':''}" data-nt="close">${S.notif.close?'ON':'OFF'}</button></span></div>
+   <div class="kv"><span class="k">Text the receipt after delivery</span><span class="v">
+    <button class="pill ${S.notif.rcpt?'acc':''}" data-nt="rcpt">${S.notif.rcpt?'ON':'OFF'}</button></span></div>
+   <div class="kv"><span class="k">Marketing</span><span class="v">Never — we don't collect for it</span></div>
+  </div></div>
+  <div class="card"><div class="hd">Privacy · Loi 25</div><div class="bd" style="font-size:12.5px;line-height:1.6;color:var(--body)">
+    No account exists for you — this page opens from a tokenised SMS link, and the token dies with the
+    movement. The shipper shares your name and address <b>only to deliver</b>; everything purges
+    automatically 30 days after your last movement closes. DLIVERD never opens a box —
+    <b>shipper-attested contents, seal-verified custody.</b>
+    <div style="display:flex;gap:8px;margin-top:12px">
+     <button class="btn alt sm" id="dataReq">Request my data</button>
+     <button class="btn danger sm" id="purge">Purge my data now</button></div>
+  </div></div>
+  <div class="card"><div class="hd">Help</div><div class="bd">
+   <div class="kv" style="padding-top:0"><span class="k">A box, a seal, a code</span>
+    <span class="v" style="font-weight:600">Both proofs, both directions</span></div>
+   <div class="navrow">
+    <button class="navbtn" id="hCall">${ic('phone')}Call DLIVERD</button>
+    <button class="navbtn" id="hSms">${ic('sms')}SMS 24/7</button>
+    <button class="navbtn" id="hVer">${ic('shield')}Verify a receipt</button>
+   </div>
+  </div></div>
+  <div class="sighint" style="color:var(--faint)">DLIVERD · CHAIN OF CUSTODY · MONTRÉAL</div>`);
+ document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{S.lang=b.dataset.lang;
+  toast(S.lang==='FR'?'Textos en français — parfait':'Texts in English — done');render();});
+ document.querySelectorAll('[data-nt]').forEach(b=>b.onclick=()=>{const k=b.dataset.nt;
+  S.notif[k]=!S.notif[k];toast(S.notif[k]?'SMS on':'SMS off');render();});
+ $('#dataReq').onclick=()=>toast('Data export queued — an SMS link arrives within 24 h');
+ $('#purge').onclick=()=>confirmSheet('Purge your data now?',
+  `<b>Everything personal goes.</b> Tracking links stop working and receipts already texted to you stay
+   yours, but DLIVERD keeps only the anonymised ledger hashes the law requires. Open movements must
+   finish first. Confirmed by SMS within 24 h — that's your Loi 25 right, no forms, no phone tree.`,
+  'Purge my data',()=>toast('Purge request filed — SMS confirmation within 24 h'),true);
+ $('#hCall').onclick=()=>toast('Calling DLIVERD · 24/7');
+ $('#hSms').onclick=()=>toast('Opening SMS · réponse en ~5 min');
+ $('#hVer').onclick=()=>toast('dliverd.ca/v/… — paste any receipt chain, no account needed');
+}
+
+/* ── gate / splash — no PIN: the SMS token IS the auth ── */
+function vGate(){
+ $('#app').style.display='none';
+ $('#gate').style.display='flex';
+ setChrome(true);
+ $('#gate').innerHTML=`<div class="splash">
+   <div class="mark">${SEALD}</div>
+   <h1>DLIVERD</h1>
+   <p>Opens from the SMS link · no account, no app store.<br>Secure delivery services · Montréal</p>
+   <div class="tok">dliverd.ca/t/8f3k2q… · TOKENISED · LOI 25</div>
+  </div>`;
+ setTimeout(()=>{if(S.gate==='splash'){S.gate='app';render();}},1400);
+}
+
+/* approaching countdown — the arrival creeps closer */
+setInterval(()=>{
+ if(S.gate==='app'&&S.trk===2&&!S.exc&&S.etaMin>2){
+  S.etaMin--;
+  if(S.tab==='track')render();
+ }
+},20000);
+
+function render(){
+ tickClock();
+ if(S.gate!=='app')return vGate();
+ $('#gate').style.display='none';
+ $('#app').style.display='flex';
+ setChrome(false);
+ if(S.tab==='track')return vTrack();
+ if(S.tab==='new')return vNew();
+ if(S.tab==='orders')return vOrders();
+ return vProfile();
+}
+setInterval(tickClock,10000);
+render();
+</script>
+</body></html>

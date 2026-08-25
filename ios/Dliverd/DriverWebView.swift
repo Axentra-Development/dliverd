@@ -20,6 +20,7 @@ struct DriverWebView: UIViewRepresentable {
         webView.scrollView.bounces = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.alwaysBounceVertical = false
+        webView.allowsBackForwardNavigationGestures = true
         if #available(iOS 16.4, *) {
             webView.isInspectable = true
         }
@@ -86,7 +87,7 @@ struct DriverWebView: UIViewRepresentable {
                 completion(false)
                 return
             }
-            ctx.evaluatePolicy(policy, localizedReason: "Unlock Custode") { success, _ in
+            ctx.evaluatePolicy(policy, localizedReason: "Unlock Dliverd") { success, _ in
                 completion(success)
             }
         }

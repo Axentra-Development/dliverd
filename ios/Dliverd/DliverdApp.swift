@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct CustodeApp: App {
+struct DliverdApp: App {
     var body: some Scene {
         WindowGroup {
             DriverWebView()

@@ -1,5 +1,5 @@
 {
-  "name": "Dliverd Driver",
+  "name": "Dliverd Client",
   "short_name": "Dliverd",
   "start_url": "./index.html",
   "display": "standalone",
