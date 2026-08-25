@@ -2,11 +2,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Custode">
+<meta name="apple-mobile-web-app-title" content="Dliverd">
 <meta name="theme-color" content="#0C1211">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Custode</title>
+<link rel="apple-touch-icon" href="icon.png">
+<title>Dliverd</title>
 <style>
 :root{
   --paper:#F3F6F4;--surface:#FFFFFF;--raise:#FAFBFA;--sunk:#EDF1EF;
@@ -63,6 +64,8 @@ html.native .dock{padding-bottom:8px}
 .loginwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   display:flex;flex-direction:column;justify-content:center;padding:62px 22px 36px}
 .loginwrap .lg{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+.loginwrap .lg .dmark{width:28px;height:21px}
+.bar .r1 .dmark{width:22px;height:17px}
 .loginwrap h1{font-size:24px;color:var(--ink);letter-spacing:-.02em;line-height:1.2}
 .loginwrap .sub2{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.55}
 .loginwrap .field{margin-top:20px}
@@ -322,10 +325,10 @@ html.native .phone-screen:has(.dock) .toast{bottom:calc(176px + env(safe-area-in
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 /* lock / splash */
 .splash,.lock{height:100%;width:100%;display:flex;flex-direction:column;align-items:center;padding:88px 28px 36px;text-align:center}
-.splash .mark,.lock .mark{width:76px;height:76px;border-radius:18px;background:#0F6455;display:flex;
-  align-items:center;justify-content:center;margin-bottom:18px}
-.splash .mark svg,.lock .mark svg{width:42px;height:20px}
-.splash h1,.lock h1{color:#fff;font-size:28px;letter-spacing:.18em;font-weight:800}
+.splash .lockup,.lock .lockup{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px}
+.splash .lockup .dmark,.lock .lockup .dmark{width:48px;height:36px}
+.dmark{display:block;flex:0 0 auto;width:22px;height:17px}
+.splash h1,.lock h1{color:#fff;font-size:28px;letter-spacing:.18em;font-weight:800;margin:0}
 .splash p{color:var(--dkm);margin-top:8px;font-size:13px}
 .lock .who{color:var(--dka2);font-size:13px;margin-top:6px;font-weight:600}
 .lock .hint{color:var(--dkm);font-size:12px;margin-top:22px}
@@ -371,7 +374,7 @@ if(new URLSearchParams(location.search).has('native')||navigator.standalone===tr
  document.documentElement.classList.add('native');
 }
 const $=s=>document.querySelector(s);
-const SEAL=`<svg width="24" height="12" viewBox="0 0 26 13"><rect width="13" height="13" fill="#0F6455"/><rect x="15" y="1.6" width="9.8" height="9.8" fill="none" stroke="#0F6455" stroke-width="1.7"/></svg>`;
+const SEAL=`<svg class="dmark" viewBox="0 0 294 225" aria-hidden="true"><path fill="#0B4F42" d="M185 0h88v88H105v47h189v90H0v-77l20-13 72-50 83-45z"/></svg>`;
 const I={home:'<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>',
  route:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H14a4 4 0 0 1 0 8H10a4 4 0 0 0 0 8h.5"/>',
  plus:'<circle cx="12" cy="12" r="8.5"/><line x1="12" y1="8.5" x2="12" y2="15.5"/><line x1="8.5" y1="12" x2="15.5" y2="12"/>',
@@ -387,8 +390,8 @@ const ic=n=>`<svg viewBox="0 0 24 24">${I[n]}</svg>`;
 const DEMO_CODE='417826';
 const LOGIN_CODE='246810';
 const DEMO_IDS={
- '514-555-0199':'Maya C.','5145550199':'Maya C.','maya@custode.ca':'Maya C.',
- '514-555-0244':'Rami C.','5145550244':'Rami C.','rami@custode.ca':'Rami C.'
+ '514-555-0199':'Maya C.','5145550199':'Maya C.','maya@dliverd.ca':'Maya C.','maya@custode.ca':'Maya C.',
+ '514-555-0244':'Rami C.','5145550244':'Rami C.','rami@dliverd.ca':'Rami C.','rami@custode.ca':'Rami C.'
 };
 let toastT;
 function toast(m,bad){
@@ -536,7 +539,7 @@ function lookupDriver(v){
  const digits=key.replace(/\D/g,'');
  return DEMO_IDS[key]||DEMO_IDS[key.replace(/\s/g,'')]||DEMO_IDS[digits]||null;
 }
-const DEVICE_KEY='custode.device';
+const DEVICE_KEY='dliverd.device';
 function loadDevice(){
  try{return JSON.parse(localStorage.getItem(DEVICE_KEY)||'null');}catch(e){return null;}
 }
@@ -554,10 +557,10 @@ function restoreDeviceAuth(){
 }
 function requestFaceId(){
  return new Promise(res=>{
-  const native=window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.custode;
+  const native=window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.dliverd;
   if(native){
    const t=setTimeout(()=>res(false),25000);
-   window.__custodeFaceCb=ok=>{clearTimeout(t);res(!!ok);};
+   window.__dliverdFaceCb=ok=>{clearTimeout(t);res(!!ok);};
    native.postMessage({action:'faceId'});
    return;
   }
@@ -604,8 +607,7 @@ function vSplash(){
  $('#gate').style.display='flex';
  setChrome(true);
  $('#gate').innerHTML=`<div class="splash">
-   <div class="mark">${SEAL}</div>
-   <h1>CUSTODE</h1>
+   <div class="lockup"><h1>DLIVERD</h1>${SEAL}</div>
    <p>Chain of custody · Montréal</p>
   </div>`;
  setTimeout(()=>{if(S.gate==='splash'){S.gate='app';render();}},1100);
@@ -632,9 +634,9 @@ function vLogin(){
   id:`<h1>Sign in to drive</h1>
     <div class="sub2">First time on this iPhone: use your <b>phone number</b> or <b>work email</b>. We’ll send a one-time code. Then you set Face ID or a 4-digit PIN.</div>
     <div class="field"><input id="lid" inputmode="email" autocomplete="username"
-      placeholder="514-555-0199  or  you@custode.ca" value="${A.id}"></div>
+      placeholder="514-555-0199  or  you@dliverd.ca" value="${A.id}"></div>
     <div class="actions"><button class="btn" id="lgo">Send my code</button></div>
-    <div class="note acc" style="margin-top:18px;margin-bottom:0"><div><b>Demo accounts:</b> 514-555-0199 or maya@custode.ca (Maya) · 514-555-0244 or rami@custode.ca (Rami)</div></div>`,
+    <div class="note acc" style="margin-top:18px;margin-bottom:0"><div><b>Demo accounts:</b> 514-555-0199 or maya@dliverd.ca (Maya) · 514-555-0244 or rami@dliverd.ca (Rami)</div></div>`,
   code:otpBlock(true),
   returnOtp:`<h1>Confirm it’s you</h1>
     <div class="sub2">PIN unlock needs a one-time code first — sent by ${A.method==='phone'?'SMS':'email'}.</div>
@@ -647,7 +649,7 @@ function vLogin(){
     <div class="note acc" style="margin-top:14px;margin-bottom:0"><div><b>Demo code:</b> 2 4 6 8 1 0</div></div>
     <button class="btn ghost" id="unlink" type="button">Use a different driver</button>`,
   setup:`<h1>Protect this iPhone</h1>
-    <div class="sub2">Next time you open Custode:</div>
+    <div class="sub2">Next time you open Dliverd:</div>
     <div class="choices">
      <button class="choice" id="chFace" type="button"><span class="ic">${ic('face')}</span><div>
       <b>Face ID</b><span>Opens the app directly — your face is the login.</span></div></button>
@@ -661,7 +663,7 @@ function vLogin(){
     <div class="sub2">Enter the same 4 digits again.</div>
     ${pinUI()}`,
   faceEnroll:`<h1>Turn on Face ID</h1>
-    <div class="sub2">Next time Custode opens with your face — no code, no PIN.</div>
+    <div class="sub2">Next time Dliverd opens with your face — no code, no PIN.</div>
     <div class="actions" style="margin-top:22px"><button class="btn" id="enFace">Enable Face ID</button>
      <button class="btn ghost" id="backSetup" type="button">Choose PIN instead</button></div>`,
   returnPin:`<h1>Enter your PIN</h1>
@@ -671,7 +673,7 @@ function vLogin(){
  };
  $('#app').innerHTML=`
   <div class="loginwrap">
-   <div class="lg">${SEAL}<span style="font-weight:800;letter-spacing:.16em;color:var(--ink)">CUSTODE DRIVER</span></div>
+   <div class="lg">${SEAL}<span style="font-weight:800;letter-spacing:.16em;color:var(--ink)">DLIVERD DRIVER</span></div>
    ${body[A.stage]||body.id}
   </div>`;
  if(A.stage==='returnOtp'&&!A.otpSent){
@@ -736,8 +738,7 @@ function vReturnFace(){
  $('#app').style.display='none';
  $('#gate').style.display='flex';
  $('#gate').innerHTML=`<div class="lock">
-   <div class="mark">${SEAL}</div>
-   <h1>CUSTODE</h1>
+   <div class="lockup"><h1>DLIVERD</h1>${SEAL}</div>
    <div class="who">${d.short} · ${d.code}</div>
    <button class="face" id="facebtn" type="button" aria-label="Face ID">${ic('face')}</button>
    <div class="hint" id="facehint">Look at iPhone to unlock</div>
@@ -818,7 +819,7 @@ function shell(inner,dock){
  const n=openAddons().length, d=currentDriver();
  document.getElementById('app').innerHTML=`
   <div class="bar"><div class="r1">${SEAL}
-    <div><div class="brand">DRIVER</div><div class="sub">${d.short} · ${d.code} · Mon 24 Aug</div></div>
+    <div><div class="brand">DLIVERD</div><div class="sub">${d.short} · ${d.code} · Mon 24 Aug</div></div>
     <div class="sp"></div>
     <button class="chip-on ${S.online?'':'off'}" id="onoff"><span class="dot"></span>${S.online?'ONLINE':'OFFLINE'}</button>
    </div></div>

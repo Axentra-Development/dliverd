@@ -9,7 +9,7 @@ struct DriverWebView: UIViewRepresentable {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         config.defaultWebpagePreferences.allowsContentJavaScript = true
-        config.userContentController.add(context.coordinator, name: "custode")
+        config.userContentController.add(context.coordinator, name: "dliverd")
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
@@ -31,7 +31,7 @@ struct DriverWebView: UIViewRepresentable {
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
-        uiView.configuration.userContentController.removeScriptMessageHandler(forName: "custode")
+        uiView.configuration.userContentController.removeScriptMessageHandler(forName: "dliverd")
     }
 
     private func loadDriver(in webView: WKWebView) {
@@ -50,14 +50,14 @@ struct DriverWebView: UIViewRepresentable {
         weak var webView: WKWebView?
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            guard message.name == "custode",
+            guard message.name == "dliverd",
                   let body = message.body as? [String: Any],
                   let action = body["action"] as? String,
                   action == "faceId" else { return }
             authenticate { [weak self] ok in
                 DispatchQueue.main.async {
                     let flag = ok ? "true" : "false"
-                    self?.webView?.evaluateJavaScript("window.__custodeFaceCb && window.__custodeFaceCb(\(flag))", completionHandler: nil)
+                    self?.webView?.evaluateJavaScript("window.__dliverdFaceCb && window.__dliverdFaceCb(\(flag))", completionHandler: nil)
                 }
             }
         }
@@ -86,7 +86,7 @@ struct DriverWebView: UIViewRepresentable {
                 completion(false)
                 return
             }
-            ctx.evaluatePolicy(policy, localizedReason: "Unlock Custode") { success, _ in
+            ctx.evaluatePolicy(policy, localizedReason: "Unlock Dliverd") { success, _ in
                 completion(success)
             }
         }
