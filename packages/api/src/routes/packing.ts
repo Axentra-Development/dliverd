@@ -651,6 +651,59 @@ export function packingRoutes(app: FastifyInstance, pool: pg.Pool) {
     return rows[0] ? !rows[0].live : false;
   }
 
+  // ------------------------------------------------------------------- label
+  app.get('/v1/movements/:id/label.pdf', { preHandler: requires('box.pack') }, async (req, reply) => {
+    return tx(pool, async (c) => {
+      const mv = (await c.query(`SELECT * FROM custode.movement WHERE id = $1 OR movement_ref = $1`,
+        [(req.params as { id: string }).id])).rows[0];
+      if (!mv) return problem(reply, 404, 'movement_not_found', 'No such movement.');
+      const box = await loadBox(c, mv.box_id);
+      if (box.status === 'OPEN') {
+        return problem(reply, 409, 'box_not_sealed', 'A label exists only for a sealed box.');
+      }
+      const seal = (await c.query(`SELECT seal_no FROM custode.seal WHERE id=$1`,
+        [box.current_seal_id])).rows[0];
+      if (!seal) return problem(reply, 409, 'seal_voided', 'The label was voided with its seal — re-seal first.');
+
+      const rcp = (await c.query(
+        `SELECT full_name, phone_e164, locale FROM pii.recipient WHERE id=$1`, [mv.recipient_id])).rows[0];
+      const adr = await loadAddress(c, mv.address_id);
+      const store = (await c.query(`SELECT name FROM custode.store WHERE id=$1`, [mv.store_id])).rows[0];
+      const svc = (await c.query(
+        `SELECT name, window_label FROM custode.service WHERE code=$1`, [mv.service_code])).rows[0];
+      if (!rcp?.full_name || !adr) {
+        return problem(reply, 409, 'recipient_incomplete', 'No recipient on file for this movement.');
+      }
+
+      const copies = (await c.query(
+        `SELECT count(*)::int AS n FROM custode.ledger_event
+          WHERE movement_id=$1 AND type='label.printed'`, [mv.id])).rows[0].n;
+      const copy_number = copies + 1;
+
+      const { renderLabel } = await import('../label.js');
+      const pdf = await renderLabel({
+        movement_ref: mv.movement_ref,
+        service_name: svc.name, service_window: svc.window_label,
+        recipient_name: rcp.full_name, recipient_locale: rcp.locale,
+        recipient_phone: rcp.phone_e164,
+        address: adr, from_store: store.name,
+        box_ref: box.box_ref, seal_no: seal.seal_no, seal_count: box.seal_count,
+        copy_number,
+      });
+
+      await append(c, {
+        type: 'label.printed',
+        detail: { box_ref: box.box_ref, copy_number,
+                  ...(copy_number > 1 ? { reprint: true } : {}) },
+        actor: req.auth.actor, movement_id: mv.id, box_id: box.id,
+        provider_id: mv.provider_id, store_id: mv.store_id,
+      });
+
+      reply.type('application/pdf');
+      return Buffer.from(pdf);
+    });
+  });
+
   // ------------------------------------------------------------------ ledger
   app.get('/v1/ledger', { preHandler: requires('ledger.read') }, async (req, reply) => {
     // scope: store roles see their store, provider admins their provider, CUSTODE all
