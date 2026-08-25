@@ -1,0 +1,786 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dliverd">
+<meta name="theme-color" content="#0C1211">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Dliverd</title>
+<style>
+:root{
+  --paper:#F3F6F4;--surface:#FFFFFF;--raise:#FAFBFA;--sunk:#EDF1EF;
+  --ink:#111917;--body:#2B3733;--muted:#65726E;--faint:#8B9793;
+  --line:#DCE1DE;--line-mid:#C3CBC7;
+  --acc:#0F6455;--acc-ink:#0B4E42;--acc-soft:#E3EFEB;--acc-line:#9FC9BE;
+  --risk:#93301F;--risk-soft:#F8E9E5;--risk-line:#DFB6AC;
+  --warn:#7C5A0E;--warn-soft:#F6EEDC;
+  --dark:#0C1211;--dark2:#141C1A;--dkl:#31403C;--dkm:#8B9994;--dka:#54C1A6;--dka2:#7FD5BF;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1a2220}
+body{margin:0;color:var(--body);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;line-height:1.45}
+.stage{min-height:100%;display:flex;align-items:center;justify-content:center;padding:28px 16px;
+  background:radial-gradient(1200px 600px at 50% -10%,#2a3a36 0%,#121816 55%,#0b100f 100%)}
+.phone{width:390px;height:844px;background:#000;border-radius:54px;padding:11px;position:relative;
+  box-shadow:0 0 0 1px #2c3331,0 28px 80px rgba(0,0,0,.55),inset 0 0 0 1px #3d4542}
+.phone-screen{height:100%;background:var(--paper);border-radius:44px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column}
+.island{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:118px;height:34px;
+  background:#0a0d0c;border-radius:20px;z-index:40;pointer-events:none}
+.osbar{position:absolute;top:0;left:0;right:0;height:54px;z-index:30;display:flex;align-items:flex-end;
+  justify-content:space-between;padding:0 28px 10px;color:#111;font-size:14px;font-weight:700;
+  pointer-events:none}
+.osbar.light{color:#EBF1EE}
+.osbar .sig{display:flex;align-items:center;gap:5px}
+.osbar svg{display:block}
+.homeind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:128px;height:5px;
+  background:#111;border-radius:4px;opacity:.28;z-index:30;pointer-events:none}
+.homeind.on-dark{background:#fff;opacity:.45}
+#app,#gate{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#gate{background:var(--dark);color:#C0CCC7}
+@media (max-width:480px){
+  .stage{padding:0;background:#000;min-height:100dvh}
+  .phone{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  .phone-screen{border-radius:0}
+}
+html.native,html.native body{background:var(--paper);height:100%;overflow:hidden}
+html.native .stage{padding:0;background:var(--paper);min-height:100%;min-height:100dvh}
+html.native .phone{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none;background:var(--paper)}
+html.native .phone-screen{border-radius:0;height:100%}
+html.native .island,html.native .osbar,html.native .homeind{display:none}
+html.native .bar{padding-top:max(10px,env(safe-area-inset-top))}
+html.native .nav{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+html.native .splash,html.native .lock{padding-top:max(72px,calc(env(safe-area-inset-top) + 36px))}
+html.native .toast{bottom:calc(108px + env(safe-area-inset-bottom))}
+html.native .loginwrap{padding-top:max(36px,calc(env(safe-area-inset-top) + 20px));
+  padding-bottom:max(28px,calc(env(safe-area-inset-bottom) + 16px))}
+html.native .dock{padding-bottom:8px}
+.loginwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  display:flex;flex-direction:column;justify-content:center;padding:62px 22px 36px}
+.loginwrap .lg{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+.loginwrap .lg .dmark{width:28px;height:21px}
+.bar .r1 .dmark{width:22px;height:17px}
+.loginwrap h1{font-size:24px;color:var(--ink);letter-spacing:-.02em;line-height:1.2}
+.loginwrap .sub2{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.55}
+.loginwrap .field{margin-top:20px}
+.loginwrap .actions{margin-top:16px}
+.loginwrap .pindots{margin-top:22px}
+.loginwrap .pindots i{border-color:var(--line-mid)}
+.loginwrap .pindots i.on{background:var(--acc);border-color:var(--acc)}
+.loginwrap .pindots.err i{border-color:var(--risk);background:var(--risk-soft)}
+.pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px auto 0;width:100%;max-width:280px}
+.pinpad button{height:54px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line-mid);
+  color:var(--ink);font-family:var(--mono);font-size:22px;font-weight:700}
+.pinpad button:active{background:var(--raise)}
+.pinpad button.fn{font-size:16px;color:var(--muted)}
+.pinpad .gap{visibility:hidden}
+.choices{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.choice{display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;
+  padding:14px;border:1.5px solid var(--line-mid);border-radius:12px;background:var(--surface)}
+.choice:active{background:var(--raise)}
+.choice .ic{width:40px;height:40px;border-radius:10px;background:var(--acc-soft);color:var(--acc);
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.choice .ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.choice b{display:block;color:var(--ink);font-size:15px;font-weight:800}
+.choice span{display:block;color:var(--muted);font-size:12.5px;margin-top:3px;line-height:1.45;font-weight:500}
+.idpill{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);
+ border:1px solid var(--acc-line);border-radius:20px;padding:7px 14px;font-size:13px;
+ font-weight:700;color:var(--acc-ink);margin-top:4px}
+button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
+input{font-family:inherit;font-size:15px;color:var(--ink);border:1.5px solid var(--line-mid);
+  border-radius:6px;padding:12px;background:var(--surface);width:100%}
+input:focus{outline:2px solid var(--acc);outline-offset:1px}
+.mono{font-family:var(--mono)}
+.sp{flex:1 1 auto}
+.bar{flex:0 0 auto;z-index:10;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(16px);
+  -webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--line-mid);padding-top:54px}
+.bar .r1{display:flex;align-items:center;gap:10px;padding:8px 15px 10px}
+.brand{font-weight:800;font-size:13.5px;letter-spacing:.16em;color:var(--ink)}
+.sub{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint)}
+.main{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 16px}
+.card{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;
+  margin-bottom:12px;overflow:hidden}
+.card .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;background:var(--raise);
+  border-bottom:1px solid var(--line);font-weight:800;color:var(--ink);font-size:14px;line-height:1.3}
+.card .bd{padding:13px 14px}
+.main>:last-child{margin-bottom:0}
+.pill{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 7px;border:1px solid var(--line-mid);border-radius:3px;
+  color:var(--muted);background:var(--surface);white-space:nowrap}
+.pill.acc{color:var(--acc-ink);border-color:var(--acc-line);background:var(--acc-soft)}
+.pill.risk{color:var(--risk);border-color:var(--risk-line);background:var(--risk-soft)}
+.pill.warn{color:var(--warn);border-color:#DDC386;background:var(--warn-soft)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:48px;border-radius:10px;background:var(--acc);color:#fff;font-size:15px;font-weight:800;
+  padding:10px 14px;line-height:1.2;text-align:center}
+.btn:active{transform:scale(.99)}
+.btn.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-mid);font-weight:700}
+.btn.danger{background:var(--surface);color:var(--risk);border:1.5px solid var(--risk-line);font-weight:700}
+.btn.ghost{background:none;color:var(--muted);min-height:44px;font-weight:600;font-size:13.5px;padding:8px 12px}
+.btn.sm{min-height:44px;font-size:13.5px}
+.btn:disabled{opacity:.4;pointer-events:none}
+.actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.dock{flex:0 0 auto;padding:10px 12px 8px;background:rgba(255,255,255,.94);
+  backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+  border-top:1px solid var(--line-mid);display:flex;flex-direction:column;gap:8px}
+.dock .btn{margin:0}
+.navrow{display:flex;gap:7px;margin-top:9px}
+.navbtn{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:5px;min-height:40px;
+  border:1.5px solid var(--line-mid);border-radius:8px;font-size:11.5px;font-weight:700;color:var(--ink);
+  background:var(--surface);text-decoration:none;padding:0 6px;white-space:nowrap;min-width:0}
+.navbtn:active{background:var(--raise)}
+.navbtn svg{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.note{display:flex;gap:9px;padding:11px 13px;font-size:12.5px;line-height:1.5;border-radius:8px;margin-bottom:12px}
+.note.acc{background:var(--acc-soft);color:var(--acc-ink);border:1px solid var(--acc-line)}
+.note.risk{background:var(--risk-soft);color:var(--risk);border:1px solid var(--risk-line)}
+.note.warn{background:var(--warn-soft);color:var(--warn);border:1px solid #DDC386}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted)} .kv .v{color:var(--ink);font-weight:700;text-align:right}
+.label{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);margin:14px 2px 7px}
+.hero{background:var(--dark);border-radius:12px;color:#C0CCC7;padding:16px;margin-bottom:12px}
+.hero .eyeb{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--dka)}
+.hero h2{color:#fff;font-size:18px;font-weight:800;margin-top:6px;line-height:1.25}
+.hero .m{font-size:12px;color:var(--dkm);margin-top:4px;line-height:1.45}
+.hero .row{display:flex;gap:8px;margin-top:14px;align-items:stretch}
+.hero .b1{flex:1 1 auto;min-height:48px;border-radius:10px;background:var(--dka);color:var(--dark);
+  font-weight:800;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;line-height:1.2;text-align:center}
+.hero .b2{flex:0 0 auto;min-height:48px;border-radius:10px;border:1.5px solid var(--dkl);color:#C0CCC7;
+  font-weight:700;font-size:14px;padding:10px 16px;display:flex;align-items:center;justify-content:center}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;padding:14px;
+  min-height:78px;display:flex;flex-direction:column;justify-content:space-between}
+.tile .v{font-family:var(--mono);font-size:22px;font-weight:800;color:var(--ink);line-height:1.1}
+.tile .v.acc{color:var(--acc)}
+.tile .k{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.25}
+.step{display:flex;gap:12px;padding:0 4px}
+.step .rail{width:22px;flex:0 0 auto;display:flex;flex-direction:column;align-items:center}
+.step .node{width:12px;height:12px;border-radius:50%;border:2px solid var(--line-mid);background:var(--surface);flex:0 0 auto;margin-top:4px}
+.step.on .node{background:var(--acc);border-color:var(--acc)}
+.step.now .node{border-color:var(--acc);box-shadow:0 0 0 4px var(--acc-soft);background:var(--surface)}
+.step .line{flex:1 1 auto;width:2px;background:var(--line);min-height:18px;margin:4px 0}
+.step.on .line{background:var(--acc-line)}
+.step .body{flex:1 1 auto;min-width:0;padding-bottom:14px}
+.step .body b{display:block;font-size:13.5px;color:var(--ink)}
+.step.now .body b{color:var(--acc-ink)}
+.step .body span{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+.codebox{background:var(--dark);border-radius:12px;padding:22px 16px 18px;text-align:center;margin-bottom:12px;color:#C0CCC7}
+.codebox .eyeb{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dka)}
+.codebox .digits{display:flex;gap:7px;justify-content:center;margin:16px 0 10px}
+.codebox .digits i{width:42px;height:56px;border-radius:8px;background:var(--dark2);border:1px solid var(--dkl);
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:26px;font-weight:800;color:#EBF1EE}
+.codebox p{font-size:12.5px;color:var(--dkm);line-height:1.5}
+.lockcard{background:var(--sunk);border:1.5px solid var(--line-mid);border-radius:10px;
+  padding:22px 16px;text-align:center;margin-bottom:12px}
+.lockcard h3{color:var(--ink);font-size:16px;margin-top:4px}
+.lockcard p{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+.done-wrap{text-align:center;padding:28px 16px 8px}
+.done-ring{width:86px;height:86px;border-radius:50%;background:var(--acc-soft);margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;color:var(--acc)}
+.done-wrap h2{font-size:19px;color:var(--ink)}
+.done-wrap p{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.55}
+.nav{flex:0 0 auto;z-index:10;display:flex;background:rgba(255,255,255,.9);
+  backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+  border-top:1px solid var(--line-mid);padding:7px 0 22px}
+.nav button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--faint);font-size:9px;font-weight:700;padding:4px 0;position:relative}
+.nav button.on{color:var(--acc)}
+.nav svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:-2px;right:calc(50% - 18px);min-width:16px;height:16px;border-radius:8px;
+  background:var(--risk);color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;
+  justify-content:center;padding:0 4px}
+.toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(120%);
+  background:var(--ink);color:#EBF1EE;font-size:13px;font-weight:700;padding:11px 17px;
+  border-radius:8px;transition:transform .25s,opacity .25s;z-index:60;max-width:86%;text-align:center;
+  opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+.phone-screen:has(.dock) .toast{bottom:176px}
+html.native .phone-screen:has(.dock) .toast{bottom:calc(176px + env(safe-area-inset-bottom))}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.splash,.lock{height:100%;width:100%;display:flex;flex-direction:column;align-items:center;padding:88px 28px 36px;text-align:center}
+.splash .lockup,.lock .lockup{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px}
+.splash .lockup .dmark,.lock .lockup .dmark{width:48px;height:36px}
+.dmark{display:block;flex:0 0 auto;width:22px;height:17px}
+.splash h1,.lock h1{color:#fff;font-size:28px;letter-spacing:.18em;font-weight:800;margin:0}
+.splash p{color:var(--dkm);margin-top:8px;font-size:13px}
+.lock .who{color:var(--dka2);font-size:13px;margin-top:6px;font-weight:600}
+.lock .hint{color:var(--dkm);font-size:12px;margin-top:22px}
+.lock .altlink{margin-top:auto;padding-top:28px;color:#8B9994;font-size:13px;font-weight:600}
+.face{width:64px;height:64px;border-radius:50%;border:1.5px solid var(--dkl);background:var(--dark2);
+  color:var(--dka2);display:flex;align-items:center;justify-content:center;margin:22px auto 0}
+.face:active,.face.busy{background:#1E2C29}
+.face.busy{animation:pulse 1.2s infinite}
+.face svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.pindots{display:flex;gap:12px;justify-content:center;margin:18px 0 8px}
+.pindots i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--dkl);display:block}
+.pindots i.on{background:var(--dka);border-color:var(--dka)}
+.pindots.err i{border-color:#A63A26;background:#2C1A16}
+.map{height:120px;border-bottom:1px solid var(--line)}
+</style></head><body>
+<div class="stage">
+  <div class="phone">
+    <div class="phone-screen">
+      <div class="island"></div>
+      <div class="osbar" id="osbar">
+        <span id="osclock">9:41</span>
+        <span class="sig">
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="8" width="3" height="4" rx=".6" fill="currentColor"/><rect x="4.5" y="5.5" width="3" height="6.5" rx=".6" fill="currentColor"/><rect x="9" y="3" width="3" height="9" rx=".6" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx=".6" fill="currentColor" opacity=".35"/></svg>
+          <svg width="16" height="12" viewBox="0 0 16 12"><path d="M1 7.2A8 8 0 0 1 8 4a8 8 0 0 1 7 3.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M3.6 9A4.6 4.6 0 0 1 8 7.2 4.6 4.6 0 0 1 12.4 9" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="11" r="1.1" fill="currentColor"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".8" width="21" height="10.4" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="2" y="2.3" width="16.2" height="7.4" rx="1.2" fill="currentColor"/><rect x="22.2" y="3.6" width="1.8" height="4.8" rx=".6" fill="currentColor"/></svg>
+        </span>
+      </div>
+      <div id="gate"></div>
+      <div id="app" style="display:none"></div>
+      <div class="toast" id="toast"></div>
+      <div class="homeind" id="homeind"></div>
+    </div>
+  </div>
+</div>
+<script>
+'use strict';
+if(new URLSearchParams(location.search).has('native')||navigator.standalone===true){
+ document.documentElement.classList.add('native');
+}
+const $=s=>document.querySelector(s);
+const SEAL=`<svg class="dmark" viewBox="0 0 294 225" aria-hidden="true"><path fill="#0B4F42" d="M185 0h88v88H105v47h189v90H0v-77l20-13 72-50 83-45z"/></svg>`;
+const I={home:'<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>',
+ code:'<rect x="4" y="7" width="16" height="12" rx="2"/><circle cx="12" cy="13" r="2"/><path d="M8 7V5.5a4 4 0 0 1 8 0V7"/>',
+ box:'<path d="M4 8.5 12 4l8 4.5v11L12 20l-8-4.5z"/><path d="M12 4v16"/><path d="M4 8.5h16"/>',
+ user:'<circle cx="12" cy="8.5" r="3.7"/><path d="M4.8 20c.7-3.7 3.7-5.6 7.2-5.6s6.5 1.9 7.2 5.6"/>',
+ phone:'<path d="M6.5 4.5h3l1.2 3-1.7 1.1a12 12 0 0 0 6.4 6.4l1.1-1.7 3 1.2v3A1.5 1.5 0 0 1 18 19 14.5 14.5 0 0 1 5 6a1.5 1.5 0 0 1 1.5-1.5z"/>',
+ sms:'<path d="M5 6.5h14v9.5H9l-3.5 3v-3H5z"/>',
+ face:'<path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M9 15c.8 1.2 2 1.8 3 1.8s2.2-.6 3-1.8"/>',
+ key:'<circle cx="8" cy="12" r="3.2"/><path d="M11 12h9v3"/><path d="M16 12v2.5"/>',
+ check:'<polyline points="4 12.5 9.5 18 20 6"/>'};
+const ic=n=>`<svg viewBox="0 0 24 24">${I[n]}</svg>`;
+const LOGIN_CODE='246810';
+const DOOR_CODE='417826';
+const DEVICE_KEY='dliverd.client.device';
+const CLIENTS={
+ gb:{id:'gb',short:'Geneviève B.',full:'Geneviève Bilodeau',phone:'514 328-4419',tel:'5143284419',
+  email:'g.bilodeau@icloud.com',order:'BM-1042',provider:'BMobile',box:'BX-1042',eta:'08:45',
+  deadline:null,addr:'6321 rue Beaubien E, Montréal, QC',n:1,value:1449,
+  devices:[{imei:'356938035643809',model:'iPhone 16 Pro 256 · Natural'}],
+  tradeIn:null},
+ gp:{id:'gp',short:'Gino P.',full:'Gino Pensato',phone:'450 681-2274',tel:'4506812274',
+  email:'gino.pensato@gmail.com',order:'CE-8815',provider:'Cellcom',box:'BX-8815',eta:'09:50',
+  deadline:'10:30',addr:'1600 boul. Le Corbusier, app. 407, Laval, QC',n:1,value:1299,
+  devices:[{imei:'490154203237518',model:'Galaxy S25+ 256 · Silver'}],
+  tradeIn:{model:'iPhone 14 Pro',imei:'351984406220071',cover:520}},
+ sd:{id:'sd',short:'Samuel D.',full:'Samuel Duchesneau',phone:'514 907-1183',tel:'5149071183',
+  email:'samuel.duchesneau@proton.me',order:'BM-1049',provider:'BMobile',box:'BX-1049',eta:'11:20',
+  deadline:'12:00',addr:'380 rue Saint-Paul O, app. 12, Montréal, QC',n:2,value:1908,
+  devices:[
+   {imei:'352099001761481',model:'iPhone 16e 128 · White'},
+   {imei:'358241077331855',model:'Pixel 10 Pro 128 · Obsidian'}],
+  tradeIn:null}
+};
+const DRIVER={short:'Maya C.',full:'Maya Chahwan',code:'MTL-03',phone:'514 555-0199',tel:'5145550199',
+ vehicle:'Kia Niro · dark grey'};
+function lookupClient(v){
+ const key=(v||'').trim().toLowerCase();
+ const digits=key.replace(/\D/g,'');
+ const map={
+  '514-328-4419':'gb','5143284419':'gb','g.bilodeau@icloud.com':'gb',
+  '450-681-2274':'gp','4506812274':'gp','gino.pensato@gmail.com':'gp',
+  '514-907-1183':'sd','5149071183':'sd','samuel.duchesneau@proton.me':'sd'
+ };
+ const id=map[key]||map[key.replace(/\s/g,'')]||map[digits];
+ return id?CLIENTS[id]:null;
+}
+let toastT;
+function toast(m,bad){
+ const t=$('#toast');if(!t)return;
+ t.textContent=m;t.style.background=bad?'#93301F':'';
+ t.classList.add('show');clearTimeout(toastT);
+ toastT=setTimeout(()=>t.classList.remove('show'),2800);
+}
+function tickClock(){
+ const d=new Date(),h=((d.getHours()+11)%12)+1,m=String(d.getMinutes()).padStart(2,'0');
+ const el=$('#osclock');if(el)el.textContent=h+':'+m;
+}
+function setChrome(dark){
+ const bar=$('#osbar'),ind=$('#homeind');
+ if(bar)bar.classList.toggle('light',!!dark);
+ if(ind)ind.classList.toggle('on-dark',!!dark);
+}
+const S={
+ gate:'splash',
+ auth:{logged:false,stage:'id',id:'',method:'',code:'',lock:null,pin:'',pinOnce:'',pinErr:false,otpSent:false,faceTried:false},
+ tab:'live', leg:'packed', reprise:'idle'
+};
+function me(){return lookupClient(S.auth.id)||CLIENTS.gb;}
+function loadDevice(){try{return JSON.parse(localStorage.getItem(DEVICE_KEY)||'null');}catch(e){return null;}}
+function saveDevice(d){localStorage.setItem(DEVICE_KEY,JSON.stringify(d));}
+function clearDevice(){localStorage.removeItem(DEVICE_KEY);}
+function blankAuth(){
+ return {logged:false,stage:'id',id:'',method:'',code:'',lock:null,pin:'',pinOnce:'',pinErr:false,otpSent:false,faceTried:false};
+}
+function restoreDeviceAuth(){
+ const d=loadDevice();
+ if(!d||!d.lock){S.auth=blankAuth();return;}
+ S.auth=blankAuth();
+ S.auth.id=d.id;S.auth.method=d.method;S.auth.lock=d.lock;
+ S.auth.stage=d.lock==='face'?'returnFace':'returnOtp';
+}
+function requestFaceId(){
+ return new Promise(res=>{
+  const native=window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.dliverd;
+  if(native){
+   const t=setTimeout(()=>res(false),25000);
+   window.__dliverdFaceCb=ok=>{clearTimeout(t);res(!!ok);};
+   native.postMessage({action:'faceId'});
+   return;
+  }
+  setTimeout(()=>res(true),900);
+ });
+}
+function pinUI(){
+ const A=S.auth;
+ return `<div class="pindots ${A.pinErr?'err':''}">${[0,1,2,3].map(i=>`<i class="${i<A.pin.length?'on':''}"></i>`).join('')}</div>
+  <div class="pinpad">
+   ${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-p="${n}">${n}</button>`).join('')}
+   <span class="gap"></span><button type="button" data-p="0">0</button>
+   <button type="button" class="fn" data-p="del">⌫</button>
+  </div>`;
+}
+function wirePinPad(onFull){
+ document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{
+  const A=S.auth,k=b.dataset.p;A.pinErr=false;
+  if(k==='del')A.pin=A.pin.slice(0,-1);
+  else if(A.pin.length<4)A.pin+=k;
+  if(A.pin.length===4)onFull(A.pin);
+  else vLogin();
+ });
+}
+function unlinkPhone(){
+ clearDevice();S.auth=blankAuth();S.leg='packed';S.reprise='idle';
+ toast('This iPhone is no longer linked');vLogin();
+}
+function finishLogin(returning){
+ S.auth.logged=true;S.auth.pin='';S.auth.code='';
+ toast((returning?'Welcome back, ':'You’re in, ')+me().short);
+ render();
+}
+function vSplash(){
+ $('#app').style.display='none';
+ $('#gate').style.display='flex';
+ setChrome(true);
+ $('#gate').innerHTML=`<div class="splash">
+   <div class="lockup"><h1>DLIVERD</h1>${SEAL}</div>
+   <p>Your device is in custody</p>
+  </div>`;
+ setTimeout(()=>{if(S.gate==='splash'){S.gate='app';render();}},1100);
+}
+function vLogin(){
+ const A=S.auth;
+ if(A.stage==='returnFace')return vReturnFace();
+ setChrome(false);
+ $('#gate').style.display='none';
+ $('#app').style.display='flex';
+ const otpBlock=(chg)=>{
+  const who=A.method==='phone'?'SMS to':'email to';
+  return `<h1>Enter the 6-digit code</h1>
+    <div class="sub2">Sent by ${who}</div>
+    <div class="idpill">${A.id}${chg?` <button id="chg" type="button" style="font-size:11px;color:var(--acc);text-decoration:underline">change</button>`:''}</div>
+    <div class="field"><input id="lcode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+      placeholder="••••••" style="font-family:var(--mono);font-size:24px;letter-spacing:.4em;text-align:center" value="${A.code}"></div>
+    <div class="actions">
+     <button class="btn" id="lver">${A.stage==='returnOtp'?'Verify identity':'Verify code'}</button>
+     <button class="btn ghost" id="lre">Resend the code</button></div>
+    <div class="note acc" style="margin-top:14px;margin-bottom:0"><div><b>Demo code:</b> <button type="button" id="fillDemo" style="font:inherit;font-weight:800;color:var(--acc-ink);text-decoration:underline">2 4 6 8 1 0</button></div></div>`;
+ };
+ const body={
+  id:`<h1>Track your delivery</h1>
+    <div class="sub2">First time on this iPhone: use the <b>phone</b> or <b>email</b> on the order. We’ll send a one-time code. Then you set Face ID or a 4-digit PIN.</div>
+    <div class="field"><input id="lid" inputmode="email" autocomplete="username"
+      placeholder="514-328-4419  or  you@icloud.com" value="${A.id}"></div>
+    <div class="actions"><button class="btn" id="lgo">Send my code</button></div>
+    <div class="note acc" style="margin-top:18px;margin-bottom:0"><div><b>Demo accounts</b> — tap one to fill:</div></div>
+    <div class="navrow" style="margin-top:10px">
+     <button class="navbtn" type="button" data-demo="514-328-4419">Geneviève</button>
+     <button class="navbtn" type="button" data-demo="450-681-2274">Gino</button>
+     <button class="navbtn" type="button" data-demo="514-907-1183">Samuel</button>
+    </div>`,
+  code:otpBlock(true),
+  returnOtp:`<h1>Confirm it’s you</h1>
+    <div class="sub2">PIN unlock needs a one-time code first — sent by ${A.method==='phone'?'SMS':'email'}.</div>
+    <div class="idpill">${A.id}</div>
+    <div class="field"><input id="lcode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+      placeholder="••••••" style="font-family:var(--mono);font-size:24px;letter-spacing:.4em;text-align:center" value="${A.code}"></div>
+    <div class="actions">
+     <button class="btn" id="lver">Verify identity</button>
+     <button class="btn ghost" id="lre">Resend the code</button></div>
+    <div class="note acc" style="margin-top:14px;margin-bottom:0"><div><b>Demo code:</b> <button type="button" id="fillDemo" style="font:inherit;font-weight:800;color:var(--acc-ink);text-decoration:underline">2 4 6 8 1 0</button></div></div>
+    <button class="btn ghost" id="unlink" type="button">Use a different account</button>`,
+  setup:`<h1>Protect this iPhone</h1>
+    <div class="sub2">Next time you open Dliverd:</div>
+    <div class="choices">
+     <button class="choice" id="chFace" type="button"><span class="ic">${ic('face')}</span><div>
+      <b>Face ID</b><span>Opens the app directly — your face is the login.</span></div></button>
+     <button class="choice" id="chPin" type="button"><span class="ic">${ic('key')}</span><div>
+      <b>4-digit PIN</b><span>We’ll send an OTP each time, then you enter the PIN.</span></div></button>
+    </div>`,
+  pinCreate:`<h1>Create a 4-digit PIN</h1>
+    <div class="sub2">You’ll need this PIN after the identity code, every time you open the app.</div>
+    ${pinUI()}`,
+  pinConfirm:`<h1>Confirm your PIN</h1>
+    <div class="sub2">Enter the same 4 digits again.</div>
+    ${pinUI()}`,
+  faceEnroll:`<h1>Turn on Face ID</h1>
+    <div class="sub2">Next time Dliverd opens with your face — no code, no PIN.</div>
+    <div class="actions" style="margin-top:22px"><button class="btn" id="enFace">Enable Face ID</button>
+     <button class="btn ghost" id="backSetup" type="button">Choose PIN instead</button></div>`,
+  returnPin:`<h1>Enter your PIN</h1>
+    <div class="sub2">Identity confirmed. Unlock with your 4-digit PIN.</div>
+    ${pinUI()}
+    <button class="btn ghost" id="unlink" type="button">Use a different account</button>`
+ };
+ $('#app').innerHTML=`
+  <div class="loginwrap">
+   <div class="lg">${SEAL}<span style="font-weight:800;letter-spacing:.16em;color:var(--ink)">DLIVERD</span></div>
+   ${body[A.stage]||body.id}
+  </div>`;
+ if(A.stage==='returnOtp'&&!A.otpSent){
+  A.otpSent=true;
+  toast(A.method==='phone'?'Code sent by SMS':'Code sent by email');
+ }
+ if(A.stage==='id'){
+  const go=()=>{
+   const v=$('#lid').value.trim().toLowerCase();
+   const isPhone=/^[\d\s().+-]{10,}$/.test(v)&&v.replace(/\D/g,'').length>=10;
+   const isEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+   if(!isPhone&&!isEmail)return toast('Enter a valid phone number or email',true);
+   if(!lookupClient(v))return toast('No order on this number or email',true);
+   A.id=v;A.method=isPhone?'phone':'email';A.stage='code';A.code='';
+   toast(isPhone?'Code sent by SMS':'Code sent by email');vLogin();};
+  $('#lgo').onclick=go;
+  document.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>{
+   A.id=b.dataset.demo;$('#lid').value=A.id;go();
+  });
+  $('#lid').addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+  setTimeout(()=>$('#lid')&&$('#lid').focus(),50);
+ } else if(A.stage==='code'||A.stage==='returnOtp'){
+  const ver=()=>{
+   if($('#lcode').value.trim()!==LOGIN_CODE)return toast('Wrong code — try again or resend',true);
+   if(A.stage==='returnOtp'){A.stage='returnPin';A.pin='';A.code='';vLogin();return;}
+   A.stage='setup';A.code='';vLogin();};
+  $('#lver').onclick=ver;
+  $('#lcode').addEventListener('keydown',e=>{if(e.key==='Enter')ver();});
+  $('#lcode').addEventListener('input',e=>{A.code=e.target.value;});
+  const chg=$('#chg');if(chg)chg.onclick=()=>{A.stage='id';vLogin();};
+  $('#lre').onclick=()=>toast('New code sent — the old one is dead');
+  const fill=$('#fillDemo');if(fill)fill.onclick=()=>{A.code=LOGIN_CODE;const inp=$('#lcode');if(inp)inp.value=LOGIN_CODE;};
+  const un=$('#unlink');if(un)un.onclick=unlinkPhone;
+  setTimeout(()=>$('#lcode')&&$('#lcode').focus(),50);
+ } else if(A.stage==='setup'){
+  $('#chFace').onclick=()=>{A.stage='faceEnroll';vLogin();};
+  $('#chPin').onclick=()=>{A.stage='pinCreate';A.pin='';A.pinOnce='';A.pinErr=false;vLogin();};
+ } else if(A.stage==='pinCreate'){
+  wirePinPad(p=>{A.pinOnce=p;A.pin='';A.stage='pinConfirm';vLogin();});
+ } else if(A.stage==='pinConfirm'){
+  wirePinPad(p=>{
+   if(p!==A.pinOnce){A.pinErr=true;A.pin='';A.pinOnce='';A.stage='pinCreate';
+    toast('PINs didn’t match — try again',true);vLogin();return;}
+   saveDevice({id:A.id,method:A.method,lock:'pin',pin:p});
+   A.lock='pin';finishLogin(false);});
+ } else if(A.stage==='faceEnroll'){
+  $('#enFace').onclick=()=>{
+   const b=$('#enFace');if(b){b.disabled=true;b.textContent='Look at iPhone…';}
+   requestFaceId().then(ok=>{
+    if(!ok){if(b){b.disabled=false;b.textContent='Enable Face ID';}return toast('Face ID didn’t match — try again',true);}
+    saveDevice({id:A.id,method:A.method,lock:'face'});
+    A.lock='face';finishLogin(false);});
+  };
+  $('#backSetup').onclick=()=>{A.stage='setup';vLogin();};
+ } else if(A.stage==='returnPin'){
+  const un=$('#unlink');if(un)un.onclick=unlinkPhone;
+  wirePinPad(p=>{
+   const d=loadDevice();
+   if(!d||p!==d.pin){A.pinErr=true;A.pin='';toast('Wrong PIN',true);vLogin();return;}
+   finishLogin(true);});
+ }
+}
+function vReturnFace(){
+ const A=S.auth,c=lookupClient(A.id)||{short:'Client'};
+ setChrome(true);
+ $('#app').style.display='none';
+ $('#gate').style.display='flex';
+ $('#gate').innerHTML=`<div class="lock">
+   <div class="lockup"><h1>DLIVERD</h1>${SEAL}</div>
+   <div class="who">${c.short}</div>
+   <button class="face" id="facebtn" type="button" aria-label="Face ID">${ic('face')}</button>
+   <div class="hint" id="facehint">Look at iPhone to unlock</div>
+   <button class="altlink" id="unlink" type="button">Use a different account</button>
+  </div>`;
+ const go=()=>{
+  if(A.faceBusy)return;A.faceBusy=true;
+  const btn=$('#facebtn'),h=$('#facehint');
+  if(btn)btn.classList.add('busy');
+  if(h)h.textContent='Recognizing…';
+  requestFaceId().then(ok=>{
+   A.faceBusy=false;
+   if(ok){finishLogin(true);return;}
+   if(btn)btn.classList.remove('busy');
+   if(h)h.textContent='Didn’t match — tap to try again';
+   toast('Face ID didn’t match',true);
+  });
+ };
+ $('#facebtn').onclick=go;
+ $('#unlink').onclick=unlinkPhone;
+ if(!A.faceTried){A.faceTried=true;setTimeout(go,400);}
+}
+
+const LEGS=['packed','pickup','enroute','door','done'];
+const LEG_COPY={
+ packed:{eyeb:'Order confirmed',h:'Packed and sealed at the warehouse',m:'Your driver has not left yet. The handover code stays hidden until she is at your door.'},
+ pickup:{eyeb:'In custody',h:'Maya scanned your box at BMobile',m:'IMEIs were sealed by the provider. Dliverd now holds the chain of custody.'},
+ enroute:{eyeb:'On the way',h:'Maya is heading to you',m:'Live ETA from her route. Stay nearby — the code unlocks inside 100 m of your address.'},
+ door:{eyeb:'At the door',h:'Show Maya your code',m:'She cannot see these digits in her app. You show, she types, then you sign on her screen.'},
+ done:{eyeb:'Delivered',h:'Custody transferred to you',m:'Box scan + code + signature are on the ledger. The device is yours.'}
+};
+function mapSvg(){
+ return `<svg viewBox="0 0 430 120" style="width:100%;height:120px;display:block" preserveAspectRatio="xMidYMid slice">
+  <rect width="430" height="120" fill="#EDF1EF"/>
+  <g stroke="#DCE1DE"><path d="M0 40H430M0 84H430"/><path d="M70 0V120M180 0V120M290 0V120M380 0V120"/></g>
+  <path d="M20 96 L120 70 L210 52 L310 58 L400 36" fill="none" stroke="#0F6455" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="20" cy="96" r="5" fill="#0F6455"/>
+  <circle cx="400" cy="36" r="7" fill="#F3F6F4" stroke="#0F6455" stroke-width="2.4"/>
+  <text x="14" y="20" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#8B9793" letter-spacing="1.2">MAYA · MTL-03 · EN ROUTE TO YOU</text>
+ </svg>`;
+}
+function shell(inner,dock){
+ const c=me(), door=S.leg==='door';
+ document.getElementById('app').innerHTML=`
+  <div class="bar"><div class="r1">${SEAL}
+    <div><div class="brand">DLIVERD</div><div class="sub">${c.short} · ${c.order} · Mon 24 Aug</div></div>
+   </div></div>
+  <div class="main">${inner}</div>
+  ${dock?`<div class="dock">${dock}</div>`:''}
+  <div class="nav">
+   ${[['live','home','Live'],['code','code','Code'],['order','box','Order'],['profile','user','You']].map(([t,i2,l])=>
+    `<button data-tab="${t}" class="${S.tab===t?'on':''}">${ic(i2)}<span>${l}</span>
+     ${t==='code'&&door?`<span class="badge">1</span>`:''}</button>`).join('')}
+  </div>`;
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;render();});
+}
+function contactDriver(){
+ return `<div class="navrow">
+  <a class="navbtn" href="tel:+1${DRIVER.tel}">${ic('phone')}Call Maya</a>
+  <a class="navbtn" href="sms:+1${DRIVER.tel}">${ic('sms')}Text Maya</a>
+ </div>`;
+}
+function timeline(){
+ const labels={
+  packed:['Confirmed','Provider sealed the IMEIs'],
+  pickup:['Picked up','Maya scanned box '+me().box],
+  enroute:['En route','Heading to your address'],
+  door:['At your door','Inside the 100 m geofence'],
+  done:['Signed over','Code + signature on the ledger']
+ };
+ const idx=LEGS.indexOf(S.leg);
+ return `<div class="card"><div class="hd">Chain of custody</div><div class="bd" style="padding-bottom:4px">
+  ${LEGS.map((id,i)=>{
+   const on=i<idx, now=i===idx, last=i===LEGS.length-1;
+   return `<div class="step ${on?'on':''} ${now?'now':''}">
+    <div class="rail"><div class="node"></div>${last?'':`<div class="line"></div>`}</div>
+    <div class="body"><b>${labels[id][0]}</b><span>${labels[id][1]}</span></div>
+   </div>`;
+  }).join('')}
+ </div></div>`;
+}
+function nextDemo(){
+ const i=LEGS.indexOf(S.leg);
+ if(i<LEGS.length-1){
+  S.leg=LEGS[i+1];
+  const t={pickup:'Maya left the warehouse with your box',enroute:'Maya is 8 min out',
+   door:'Maya is at your door — open the Code tab',done:'Signed. The phone is yours.'}[S.leg];
+  toast(t);
+  if(S.leg==='door')S.tab='code';
+  render();
+ }
+}
+function vLive(){
+ const c=me(), copy=LEG_COPY[S.leg];
+ const eta=S.leg==='enroute'?'8 min · 2.1 km':S.leg==='door'?'Now · 12 m':S.leg==='done'?'Delivered · '+c.eta:c.eta;
+ shell(`
+  <div class="hero">
+   <div class="eyeb">${copy.eyeb}${c.deadline&&S.leg!=='done'?` · by ${c.deadline}`:''}</div>
+   <h2>${copy.h}</h2>
+   <div class="m">${copy.m}</div>
+   ${S.leg!=='done'?`<div class="row"><button class="b1" id="goCode">${S.leg==='door'?'Show my handover code':'Handover code'}</button>
+     <button class="b2" id="goOrder">Order</button></div>`:''}
+  </div>
+  <div class="tiles">
+   <div class="tile"><div class="v">${eta}</div><div class="k">${S.leg==='done'?'Closed at':'Window · ETA'}</div></div>
+   <div class="tile"><div class="v acc">${c.n}</div><div class="k">Device${c.n>1?'s':''} in this visit</div></div>
+  </div>
+  ${S.leg==='enroute'||S.leg==='door'?`<div class="card"><div class="map">${mapSvg()}</div>
+    <div class="bd"><div class="kv"><span class="k">Driver</span><span class="v">${DRIVER.full} · ${DRIVER.code}</span></div>
+     <div class="kv"><span class="k">Vehicle</span><span class="v">${DRIVER.vehicle}</span></div>
+     ${contactDriver()}
+    </div></div>`:
+   `<div class="card"><div class="hd">Your driver</div><div class="bd">
+     <div class="kv"><span class="k">Assigned</span><span class="v">${DRIVER.full} · ${DRIVER.code}</span></div>
+     <div class="kv"><span class="k">Vehicle</span><span class="v">${DRIVER.vehicle}</span></div>
+     ${S.leg==='packed'?'<div class="m" style="font-size:12px;color:var(--muted);margin-top:8px">You’ll be able to call her once she has your box.</div>':contactDriver()}
+    </div></div>`}
+  ${c.tradeIn&&S.leg==='done'&&S.reprise!=='done'?`<div class="note warn"><div><b>Same visit · trade-in.</b> Maya still needs your ${c.tradeIn.model}. Same door code, then you sign the release.</div></div>
+    <button class="btn" id="rep" style="margin-bottom:12px">Hand over the ${c.tradeIn.model}</button>`:''}
+  ${timeline()}
+  ${S.leg!=='done'?`<button class="btn ghost" id="sim">DEMO · ${
+    {packed:'Maya leaves the warehouse',pickup:'Maya is 8 min out',enroute:'Maya arrives at the door',door:'Sign on Maya’s phone'}[S.leg]
+   }</button>`:''}`,
+  S.leg==='door'?`<button class="btn" id="dockCode">Show Maya the code</button>`:'');
+ if($('#goCode'))$('#goCode').onclick=()=>{S.tab='code';render();};
+ if($('#goOrder'))$('#goOrder').onclick=()=>{S.tab='order';render();};
+ if($('#sim'))$('#sim').onclick=nextDemo;
+ if($('#dockCode'))$('#dockCode').onclick=()=>{S.tab='code';render();};
+ if($('#rep'))$('#rep').onclick=()=>{S.reprise='ready';S.tab='code';toast('Same code — this time to release the trade-in');render();};
+}
+function vCode(){
+ const c=me();
+ const trade=c.tradeIn&&S.leg==='done'&&S.reprise==='ready';
+ if(S.leg==='done'&&!trade){
+  shell(`<div class="done-wrap">
+    <div class="done-ring">${ic('check')}</div>
+    <h2>${S.reprise==='done'?'Visit complete':'It’s yours'}</h2>
+    <p>Code ${DOOR_CODE.split('').join(' ')} was verified, then you signed on Maya’s screen. Both proofs are on the ledger.</p>
+   </div>
+   <div class="card"><div class="bd">
+    <div class="kv"><span class="k">Box</span><span class="v mono">${c.box}</span></div>
+    <div class="kv"><span class="k">Driver</span><span class="v">${DRIVER.short} · ${DRIVER.code}</span></div>
+    ${S.reprise==='done'?`<div class="kv"><span class="k">Trade-in</span><span class="v">${c.tradeIn.model} released</span></div>`:''}
+   </div></div>`);
+  return;
+ }
+ if(S.leg!=='door'&&!trade){
+  shell(`
+   <div class="lockcard">
+    <h3>Code locked</h3>
+    <p>The 6-digit handover code only appears when Maya is <b>inside 100 m</b> of ${c.addr.split(',')[0]}. That is the same geofence that unlocks her scanner — a delivery cannot complete anywhere else.</p>
+   </div>
+   <div class="note acc"><div><b>Maya never sees this code in her app.</b> You show it. She types it. Then you sign. Both, every time.</div></div>
+   <div class="card"><div class="hd">When it unlocks</div><div class="bd">
+    <div class="kv"><span class="k">Now</span><span class="v">${LEG_COPY[S.leg].eyeb}</span></div>
+    <div class="kv"><span class="k">ETA</span><span class="v">${c.eta}${c.deadline?' · by '+c.deadline:''}</span></div>
+   </div></div>
+   <button class="btn ghost" id="sim">DEMO · jump to “at the door”</button>`);
+  $('#sim').onclick=()=>{S.leg='door';toast('Maya is at your door');render();};
+  return;
+ }
+ shell(`
+  <div class="codebox">
+   <div class="eyeb">${trade?'Trade-in release':'Show Maya'}</div>
+   <div class="digits">${DOOR_CODE.split('').map(d=>`<i>${d}</i>`).join('')}</div>
+   <p>${trade
+    ?`Same digits as the delivery. Maya types them, then you sign the ${c.tradeIn.model} away.`
+    :'She cannot see these digits. Keep the screen facing her until she confirms, then sign on her iPhone.'}</p>
+  </div>
+  <div class="note acc"><div><b>Expires with this visit.</b> Attempt 1 of 5 on her side. If you close the app, the code is still valid until she leaves the geofence.</div></div>
+  <div class="card"><div class="hd">${trade?'Releasing':'Receiving'} <div class="sp"></div><span class="pill acc">${c.box}</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Photo ID name</span><span class="v">${c.full}</span></div>
+    <div class="kv"><span class="k">Address</span><span class="v">${c.addr}</span></div>
+   </div></div>
+  ${contactDriver()}`,
+  `<button class="btn" id="signed">${trade?'I signed the trade-in release':'I signed on Maya’s screen'}</button>
+   <button class="btn danger" id="exc">I’m not here / problem</button>`);
+ $('#signed').onclick=()=>{
+  if(trade){S.reprise='done';toast('Trade-in in Maya’s custody · grade pending');}
+  else {S.leg='done';toast('Delivered · chain of custody closed');}
+  render();
+ };
+ $('#exc').onclick=()=>{
+  S.leg='enroute';S.reprise='idle';
+  toast('Told Maya to keep custody — she will not leave the device',true);S.tab='live';render();
+ };
+}
+function vOrder(){
+ const c=me();
+ shell(`
+  <div class="card"><div class="hd">${c.provider} · ${c.order} <div class="sp"></div>
+    <span class="pill ${S.leg==='done'?'acc':'warn'}">${S.leg==='done'?'Delivered':'In custody'}</span></div>
+   <div class="bd">
+    <div class="kv"><span class="k">Box</span><span class="v mono">${c.box}</span></div>
+    <div class="kv"><span class="k">Deliver to</span><span class="v">${c.addr}</span></div>
+    <div class="kv"><span class="k">Window</span><span class="v">${c.eta}${c.deadline?' · by '+c.deadline:''}</span></div>
+    <div class="kv"><span class="k">Declared value</span><span class="v">$${c.value.toLocaleString()} · covered</span></div>
+   </div></div>
+  <div class="label">Device${c.devices.length>1?'s':''} in the box</div>
+  <div class="card"><div class="bd">
+   ${c.devices.map(d=>`<div class="kv"><span class="k">${d.model}</span>
+     <span class="v mono">${S.leg==='done'?d.imei:'IMEI sealed'}</span></div>`).join('')}
+  </div></div>
+  ${c.tradeIn?`<div class="label">Same visit · trade-in</div>
+   <div class="card"><div class="bd">
+    <div class="kv"><span class="k">Device</span><span class="v">${c.tradeIn.model}</span></div>
+    <div class="kv"><span class="k">IMEI</span><span class="v mono">${c.tradeIn.imei}</span></div>
+    <div class="kv"><span class="k">Return-leg cover</span><span class="v">$${c.tradeIn.cover} · grade B est.</span></div>
+    <div class="kv"><span class="k">Status</span><span class="v">${S.reprise==='done'?'Released to Maya':S.leg==='done'?'Ready at the door':'After the new phone'}</span></div>
+   </div></div>`:''}
+  <div class="note acc"><div><b>Guarantee:</b> if Maya misses ${c.deadline||'the window'}, this visit is free. The device still cannot change hands outside the geofence.</div></div>`);
+}
+function vProfile(){
+ const c=me();
+ shell(`
+  <div class="card"><div class="hd">${c.full}</div>
+   <div class="bd">
+    <div class="kv"><span class="k">Phone</span><span class="v">${c.phone}</span></div>
+    <div class="kv"><span class="k">Email</span><span class="v" style="word-break:break-all">${c.email}</span></div>
+    <div class="kv"><span class="k">Unlock on this iPhone</span><span class="v">${S.auth.lock==='face'?'Face ID':'PIN · OTP each open'}</span></div>
+    <div class="kv"><span class="k">Language</span><span class="v">Français / English</span></div>
+   </div></div>
+  <div class="card"><div class="hd">Past visits</div><div class="bd">
+   <div class="kv"><span class="k">12 Aug · BMobile BM-0988</span><span class="v"><span class="pill acc">Delivered</span></span></div>
+   <div class="kv"><span class="k">Today · ${c.order}</span><span class="v"><span class="pill ${S.leg==='done'?'acc':'warn'}">${S.leg==='done'?'Delivered':'Live'}</span></span></div>
+  </div></div>
+  <div class="note acc" style="margin-bottom:0"><div><b>Your code is never in Maya’s app.</b> If someone at the door cannot show these six digits, she keeps the box.</div></div>`,
+  `<button class="btn alt" id="callDisp">Help · 24/7</button>
+   <button class="btn ghost" id="signout">Lock the app</button>
+   <button class="btn ghost" id="unlink">Unlink this iPhone</button>`);
+ $('#callDisp').onclick=()=>toast('Calling Dliverd support');
+ $('#signout').onclick=()=>{restoreDeviceAuth();toast('Locked');render();};
+ $('#unlink').onclick=unlinkPhone;
+}
+function render(){
+ tickClock();
+ if(S.gate==='splash')return vSplash();
+ if(!S.auth.logged)return vLogin();
+ $('#gate').style.display='none';
+ $('#gate').innerHTML='';
+ $('#app').style.display='flex';
+ setChrome(false);
+ if(S.tab==='live')return vLive();
+ if(S.tab==='code')return vCode();
+ if(S.tab==='order')return vOrder();
+ return vProfile();
+}
+setInterval(tickClock,10000);
+(function bootDemo(){
+ const q=new URLSearchParams(location.search);
+ const demo=q.get('demo');
+ if(!demo){restoreDeviceAuth();return;}
+ const c=CLIENTS[demo]||lookupClient(demo);
+ if(!c){restoreDeviceAuth();return;}
+ S.gate='app';
+ S.auth.logged=true;
+ S.auth.id=c.phone;
+ S.auth.lock='face';
+ S.auth.method='phone';
+ if(LEGS.includes(q.get('leg')))S.leg=q.get('leg');
+ if(['live','code','order','profile'].includes(q.get('tab')))S.tab=q.get('tab');
+ if(q.get('reprise'))S.reprise=q.get('reprise');
+})();
+render();
+</script></body></html>
