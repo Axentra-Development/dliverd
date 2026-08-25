@@ -5,8 +5,5 @@
   "display": "standalone",
   "background_color": "#0C1211",
   "theme_color": "#0C1211",
-  "lang": "en-CA",
-  "icons": [
-    { "src": "icon.png", "sizes": "180x180", "type": "image/png" }
-  ]
+  "lang": "en-CA"
 }

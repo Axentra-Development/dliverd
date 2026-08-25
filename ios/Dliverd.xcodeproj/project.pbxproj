@@ -7,13 +7,18 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		C0DE00000000000000000002 /* Custode.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Custode.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0DE00000000000000000002 /* Dliverd.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dliverd.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C0DE00000000000000000001 /* Custode */ = {
+		C0DE00000000000000000001 /* Dliverd */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Custode;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+				www,
+			);
+			path = Dliverd;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +37,7 @@
 		C0DE00000000000000000004 = {
 			isa = PBXGroup;
 			children = (
-				C0DE00000000000000000001 /* Custode */,
+				C0DE00000000000000000001 /* Dliverd */,
 				C0DE00000000000000000005 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +45,7 @@
 		C0DE00000000000000000005 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C0DE00000000000000000002 /* Custode.app */,
+				C0DE00000000000000000002 /* Dliverd.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +53,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C0DE00000000000000000006 /* Custode */ = {
+		C0DE00000000000000000006 /* Dliverd */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C0DE0000000000000000000B /* Build configuration list for PBXNativeTarget "Custode" */;
+			buildConfigurationList = C0DE0000000000000000000B /* Build configuration list for PBXNativeTarget "Dliverd" */;
 			buildPhases = (
 				C0DE00000000000000000010 /* Sync driver web */,
 				C0DE00000000000000000008 /* Sources */,
@@ -62,11 +67,11 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				C0DE00000000000000000001 /* Custode */,
+				C0DE00000000000000000001 /* Dliverd */,
 			);
-			name = Custode;
-			productName = Custode;
-			productReference = C0DE00000000000000000002 /* Custode.app */;
+			name = Dliverd;
+			productName = Dliverd;
+			productReference = C0DE00000000000000000002 /* Dliverd.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -79,7 +84,7 @@
 				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1600;
 			};
-			buildConfigurationList = C0DE0000000000000000000A /* Build configuration list for PBXProject "Custode" */;
+			buildConfigurationList = C0DE0000000000000000000A /* Build configuration list for PBXProject "Dliverd" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -93,7 +98,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C0DE00000000000000000006 /* Custode */,
+				C0DE00000000000000000006 /* Dliverd */,
 			);
 		};
 /* End PBXProject section */
@@ -119,14 +124,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Sync driver web";
+			name = "Sync web suite";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -a --delete \"${SRCROOT}/../apps/driver/\" \"${SRCROOT}/Custode/www/\"\n";
+			shellScript = "mkdir -p \"${SRCROOT}/Dliverd/www\"\nrsync -a --delete \"${SRCROOT}/../apps/\" \"${SRCROOT}/Dliverd/www/apps/\"\nrsync -a \"${SRCROOT}/../index.html\" \"${SRCROOT}/Dliverd/www/index.html\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -206,7 +211,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ca.axentra.custode.driver;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.axentra.dliverd;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -240,7 +245,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ca.axentra.custode.driver;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.axentra.dliverd;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -254,7 +259,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C0DE0000000000000000000A /* Build configuration list for PBXProject "Custode" */ = {
+		C0DE0000000000000000000A /* Build configuration list for PBXProject "Dliverd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0DE0000000000000000000C /* Debug */,
@@ -263,7 +268,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C0DE0000000000000000000B /* Build configuration list for PBXNativeTarget "Custode" */ = {
+		C0DE0000000000000000000B /* Build configuration list for PBXNativeTarget "Dliverd" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0DE0000000000000000000E /* Debug */,

@@ -9,7 +9,7 @@ struct DriverWebView: UIViewRepresentable {
         let config = WKWebViewConfiguration()
         config.allowsInlineMediaPlayback = true
         config.defaultWebpagePreferences.allowsContentJavaScript = true
-        config.userContentController.add(context.coordinator, name: "dliverd")
+        config.userContentController.add(context.coordinator, name: "custode")
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
@@ -20,6 +20,7 @@ struct DriverWebView: UIViewRepresentable {
         webView.scrollView.bounces = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.alwaysBounceVertical = false
+        webView.allowsBackForwardNavigationGestures = true
         if #available(iOS 16.4, *) {
             webView.isInspectable = true
         }
@@ -31,7 +32,7 @@ struct DriverWebView: UIViewRepresentable {
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
-        uiView.configuration.userContentController.removeScriptMessageHandler(forName: "dliverd")
+        uiView.configuration.userContentController.removeScriptMessageHandler(forName: "custode")
     }
 
     private func loadDriver(in webView: WKWebView) {
@@ -50,14 +51,14 @@ struct DriverWebView: UIViewRepresentable {
         weak var webView: WKWebView?
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            guard message.name == "dliverd",
+            guard message.name == "custode",
                   let body = message.body as? [String: Any],
                   let action = body["action"] as? String,
                   action == "faceId" else { return }
             authenticate { [weak self] ok in
                 DispatchQueue.main.async {
                     let flag = ok ? "true" : "false"
-                    self?.webView?.evaluateJavaScript("window.__dliverdFaceCb && window.__dliverdFaceCb(\(flag))", completionHandler: nil)
+                    self?.webView?.evaluateJavaScript("window.__custodeFaceCb && window.__custodeFaceCb(\(flag))", completionHandler: nil)
                 }
             }
         }

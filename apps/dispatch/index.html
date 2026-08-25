@@ -1,0 +1,910 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0C1211">
+<title>Dliverd — Dispatch</title>
+<style>
+:root{
+  --paper:#F3F6F4;--surface:#FFFFFF;--raise:#FAFBFA;--sunk:#EDF1EF;
+  --ink:#111917;--body:#2B3733;--muted:#65726E;--faint:#8B9793;
+  --line:#DCE1DE;--line-mid:#C3CBC7;
+  --acc:#0F6455;--acc-ink:#0B4E42;--acc-soft:#E3EFEB;--acc-line:#9FC9BE;
+  --risk:#93301F;--risk-soft:#F8E9E5;--risk-line:#DFB6AC;
+  --warn:#7C5A0E;--warn-soft:#F6EEDC;
+  --dark:#0C1211;--dark2:#141C1A;--dkl:#31403C;--dkm:#8B9994;--dka:#54C1A6;--dka2:#7FD5BF;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:radial-gradient(1400px 700px at 50% -10%,#2a3a36 0%,#121816 55%,#0b100f 100%) fixed,#121816;
+  color:var(--body);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;line-height:1.45;overflow:hidden}
+button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
+input,select{font-family:inherit;font-size:13.5px;color:var(--ink);border:1.5px solid var(--line-mid);
+  border-radius:6px;padding:9px 10px;background:var(--surface);width:100%}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:1px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.mono{font-family:var(--mono)} .sp{flex:1 1 auto}
+/* ── app frame on the dark stage ── */
+.frame{display:flex;flex-direction:column;height:calc(100vh - 20px);margin:10px auto;max-width:1760px;
+  min-width:0;border-radius:14px;overflow:hidden;position:relative;
+  box-shadow:0 0 0 1px #2c3331,0 30px 90px rgba(0,0,0,.55)}
+@media (min-width:1781px){.frame{width:1760px}}
+@media (max-width:1780px){.frame{margin:10px}}
+/* ── top bar ── */
+.top{flex:0 0 auto;display:flex;align-items:center;gap:12px;background:var(--dark);color:#C0CCC7;
+  padding:0 16px;height:56px;border-bottom:1px solid #1E2C29}
+.top .mark{width:34px;height:34px;border-radius:8px;background:#0F6455;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.brand{font-weight:800;font-size:14.5px;letter-spacing:.2em;color:#fff}
+.sub{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--dkm)}
+.demob{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  border:1px solid var(--dkl);border-radius:7px;padding:8px 11px;color:var(--dkm);background:var(--dark2)}
+.demob:hover{color:#C0CCC7;border-color:#465752}
+.demob.on{border-color:var(--risk-line);color:#F0B4A6;background:#2C1A16}
+.demob.sos{border-color:#5c2a1f;color:#E89B87}
+.demob.sos:hover{background:#2C1A16;color:#F0B4A6}
+.clock{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--dka2);letter-spacing:.04em;min-width:78px;text-align:right}
+/* ── status strip ── */
+.strip{flex:0 0 auto;display:flex;align-items:center;gap:20px;background:var(--dark2);color:var(--dkm);
+  border-bottom:1px solid #1E2C29;padding:0 16px;height:38px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.06em;overflow-x:auto;white-space:nowrap}
+.strip b{color:#EBF1EE;font-weight:700} .strip .acc{color:var(--dka2)} .strip .bad{color:#F0B4A6}
+.strip .it{display:inline-flex;align-items:center;gap:7px}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--dka);animation:pulse 1.6s infinite;flex:0 0 auto}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+/* ── workspace grid ── */
+.work{flex:1 1 auto;min-height:0;display:grid;background:var(--paper);position:relative;
+  grid-template-columns:minmax(0,1fr) 430px;grid-template-rows:minmax(0,1.3fr) minmax(0,1fr);
+  gap:12px;padding:12px}
+#mapR{grid-column:1;grid-row:1;min-height:0}
+#alertR{grid-column:1;grid-row:2;min-height:0}
+#railR{grid-column:2;grid-row:1 / 3;min-height:0}
+.card{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;overflow:hidden;
+  display:flex;flex-direction:column;min-height:0}
+.card .hd{display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--raise);flex:0 0 auto;
+  border-bottom:1px solid var(--line);font-weight:800;color:var(--ink);font-size:13.5px}
+.card .bd{padding:12px 14px;overflow-y:auto;flex:1 1 auto;min-height:0}
+.hint{font-family:var(--mono);font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);font-weight:700}
+#mapR .hd{flex-wrap:wrap;row-gap:6px}
+.dchip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9.5px;font-weight:700;
+  letter-spacing:.03em;border:1px solid var(--line-mid);border-radius:14px;padding:5px 10px;color:var(--muted);background:var(--surface)}
+.dchip b{color:var(--ink)}
+.dchip.on{border-color:var(--acc);background:var(--acc-soft)}
+.dchip.bad{border-color:var(--risk-line);background:var(--risk-soft)}
+.dcd{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:pulse 1.6s infinite;flex:0 0 auto}
+.dcd.bad{background:var(--risk)}
+.pill{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 7px;border:1px solid var(--line-mid);border-radius:3px;
+  color:var(--muted);background:var(--surface);white-space:nowrap}
+.pill.acc{color:var(--acc-ink);border-color:var(--acc-line);background:var(--acc-soft)}
+.pill.risk{color:var(--risk);border-color:var(--risk-line);background:var(--risk-soft)}
+.pill.warn{color:var(--warn);border-color:#DDC386;background:var(--warn-soft)}
+.note{display:flex;gap:9px;padding:10px 12px;font-size:12.5px;line-height:1.5;border-radius:8px;margin-bottom:10px}
+.note.acc{background:var(--acc-soft);color:var(--acc-ink);border:1px solid var(--acc-line)}
+.note.risk{background:var(--risk-soft);color:var(--risk);border:1px solid var(--risk-line)}
+.note.warn{background:var(--warn-soft);color:var(--warn);border:1px solid #DDC386}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted)} .kv .v{color:var(--ink);font-weight:700;text-align:right}
+.label{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--faint);margin:13px 2px 6px;font-weight:700}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:44px;border-radius:8px;background:var(--acc);color:#fff;font-size:14px;font-weight:800}
+.btn:active{transform:scale(.99)}
+.btn.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-mid);font-weight:700}
+.btn.danger{background:var(--surface);color:var(--risk);border:1.5px solid var(--risk-line);font-weight:700}
+.btn.ghost{background:none;color:var(--muted);min-height:36px;font-weight:600;font-size:12.5px}
+.btn.sm{min-height:36px;font-size:12.5px;border-radius:7px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+/* ── map ── */
+.mapwrap{flex:1 1 auto;min-height:0;position:relative;background:#EDF1EF}
+.mapwrap svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mapchips{position:absolute;left:10px;top:10px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.mapchips .dchip{box-shadow:0 2px 8px rgba(12,18,17,.08)}
+.stopdot circle{stroke-width:3;cursor:pointer}
+.stopdot.done circle{fill:#0F6455;stroke:#0F6455}
+.stopdot.on circle{fill:#F3F6F4;stroke:#0F6455}
+.stopdot.warn circle{fill:#F6EEDC;stroke:#7C5A0E;animation:stpulse 1.7s infinite}
+.stopdot.offer circle{fill:#fff;stroke:#7C5A0E;stroke-dasharray:3.5 3;animation:stpulse 1.7s infinite}
+.stopdot.exc circle{fill:#F8E9E5;stroke:#93301F}
+@keyframes stpulse{0%,100%{stroke-width:3}50%{stroke-width:6}}
+.stopdot text,.drv text,.maplab{font-family:var(--mono);font-weight:700;fill:#65726E;
+  paint-order:stroke;stroke:#EDF1EF;stroke-width:3.5px;letter-spacing:.06em}
+.stopdot text{font-size:9px}
+.drv{cursor:pointer}
+.drv .body{fill:#0C1211;stroke:#fff;stroke-width:2.5}
+.drv .hd2{fill:#0F6455;stroke:#fff;stroke-width:1}
+.drv text{font-size:10px;fill:#111917}
+.drv.selr .body{stroke:#54C1A6;stroke-width:3.5}
+.drv.mocked .body{animation:mockflash .8s infinite}
+.drv.mocked .hd2{fill:#93301F}
+@keyframes mockflash{0%,100%{fill:#0C1211;stroke:#fff}50%{fill:#93301F;stroke:#F8E9E5}}
+.mockring{fill:none;stroke:#93301F;stroke-width:2;animation:ringout 1.2s infinite}
+@keyframes ringout{0%{r:14;opacity:.9}100%{r:30;opacity:0}}
+.offline1{stroke:#93301F;stroke-width:1.8;stroke-dasharray:5 4}
+/* ── movement rail ── */
+.mrow{display:grid;width:100%;text-align:left;grid-template-columns:86px 56px 1fr 44px auto;
+  gap:3px 8px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.mrow:hover{background:var(--raise)}
+.mrow.sel{background:var(--acc-soft);box-shadow:inset 3px 0 0 var(--acc)}
+.mrow.r{box-shadow:inset 3px 0 0 var(--risk)}
+.mrow.r.sel{box-shadow:inset 3px 0 0 var(--risk);background:var(--risk-soft)}
+.mrow .c1 b{display:block;font-family:var(--mono);font-size:12px;color:var(--ink)}
+.mrow .c1 i{display:block;font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+.mrow .c2{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--muted)}
+.mrow .c3 b{display:block;font-size:11.5px;color:var(--ink);font-weight:700}
+.mrow .c3 i{display:block;font-style:normal;font-size:10.5px;color:var(--muted)}
+.mrow .c4{font-family:var(--mono);font-size:12px;font-weight:800;text-align:right;color:var(--faint)}
+.mrow .c4.bad{color:var(--risk)} .mrow .c4.good{color:var(--acc)}
+.mrow .c6{grid-column:1 / -1;font-size:11px;color:var(--muted);line-height:1.4}
+.mrow .c6 b{color:var(--risk)}
+.breach{flex:0 0 auto;padding:8px 12px;background:var(--risk-soft);border-bottom:1px solid var(--risk-line);
+  font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--risk);font-weight:700}
+.breach b{font-weight:800}
+.ghead{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--sunk);
+  border-bottom:1px solid var(--line);font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  font-weight:800;color:var(--muted);position:sticky;top:0;z-index:2}
+.ghead .gdot{width:8px;height:8px;border-radius:2px;flex:0 0 auto}
+.railbd{overflow-y:auto;flex:1 1 auto;min-height:0}
+/* ── alert inbox ── */
+.arow{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--line)}
+.arow:last-child{border-bottom:0}
+.arow.res{opacity:.55}
+.adot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:0 0 auto;background:var(--warn)}
+.arow.sev-risk .adot{background:var(--risk);animation:pulse 1.4s infinite}
+.arow .atxt{flex:1 1 auto;font-size:12.5px;line-height:1.5;min-width:0}
+.arow .atxt b{color:var(--ink)}
+.arow .atag{font-family:var(--mono);font-size:8.5px;letter-spacing:.09em;font-weight:800;text-transform:uppercase;
+  color:var(--faint);display:block;margin-bottom:2px}
+.arow.sev-risk .atag{color:var(--risk)}
+.arow.sev-warn .atag{color:var(--warn)}
+.abtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.abtn{min-height:30px;padding:0 11px;border-radius:6px;font-size:11.5px;font-weight:800;
+  background:var(--acc);color:#fff;display:inline-flex;align-items:center}
+.abtn.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-mid);font-weight:700}
+.abtn.risk{background:var(--surface);color:var(--risk);border:1.5px solid var(--risk-line);font-weight:700}
+/* ── detail drawer ── */
+.drawer{position:absolute;top:12px;right:12px;bottom:12px;width:470px;max-width:calc(100% - 24px);z-index:40;
+  background:var(--surface);border:1px solid var(--line-mid);border-radius:12px;
+  box-shadow:-18px 0 50px rgba(12,18,17,.28);display:flex;flex-direction:column;overflow:hidden;
+  transform:translateX(calc(100% + 26px));transition:transform .28s cubic-bezier(.2,1,.3,1)}
+.drawer.open{transform:none}
+.drawer .dhd{display:flex;align-items:center;gap:9px;padding:13px 15px;background:var(--dark);color:#fff;flex:0 0 auto}
+.drawer .dhd .ref{font-family:var(--mono);font-size:16px;font-weight:800}
+.drawer .dhd .sub{color:var(--dkm)}
+.xbtn{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  color:var(--dkm);border:1px solid var(--dkl);font-size:15px;font-weight:700;flex:0 0 auto}
+.xbtn:hover{color:#fff}
+.drawer .dbd{flex:1 1 auto;min-height:0;overflow-y:auto;padding:13px 15px 20px}
+.prow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.prow:last-child{border-bottom:0}
+.prow .pi{width:18px;height:18px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;background:var(--acc-soft);color:var(--acc-ink)}
+.prow.pend .pi{background:var(--sunk);color:var(--faint)}
+.prow .pk{color:var(--ink);font-weight:700} .prow .pv{margin-left:auto;color:var(--muted);text-align:right}
+.ledger{background:var(--dark);border-radius:9px;padding:11px 13px;font-family:var(--mono);font-size:10.5px;
+  color:var(--dkm);line-height:1.8;overflow-x:auto}
+.ledger b{color:var(--dka2);font-weight:700} .ledger .h{color:#6D7B76}
+.ledger .head{color:#EBF1EE}
+.actgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.actb{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:1.5px solid var(--line-mid);
+  border-radius:8px;padding:9px 11px;background:var(--surface);text-align:left}
+.actb:hover{background:var(--raise)}
+.actb b{font-size:12.5px;color:var(--ink)} .actb i{font-style:normal;font-size:10px;color:var(--muted);line-height:1.35}
+.actb[disabled]{opacity:.45;cursor:not-allowed}
+.actb[disabled]:hover{background:var(--surface)}
+.actb.warn{border-color:#DDC386} .actb.warn b{color:var(--warn)}
+.actb.risk{border-color:var(--risk-line)} .actb.risk b{color:var(--risk)}
+/* ── dialog ── */
+.dlgwrap{position:fixed;inset:0;z-index:80;background:rgba(12,18,17,.5);display:flex;align-items:center;justify-content:center;padding:20px}
+.dlg{width:520px;max-width:100%;max-height:92vh;overflow-y:auto;background:var(--surface);border-radius:12px;
+  border:1px solid var(--line-mid);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.dlg .dh{padding:14px 16px;background:var(--raise);border-bottom:1px solid var(--line);font-weight:800;font-size:15px;color:var(--ink)}
+.dlg .db{padding:14px 16px}
+.dlg .chainline{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--faint);
+  background:var(--sunk);border-radius:6px;padding:8px 10px;margin-top:12px;line-height:1.6}
+.dlg .row2{display:flex;gap:8px;margin-top:14px}
+.chkrow{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--body);margin-top:11px;line-height:1.45}
+.chkrow input{width:17px;height:17px;flex:0 0 auto;margin-top:1px}
+.codebox{font-family:var(--mono);font-size:30px;font-weight:800;letter-spacing:.28em;color:var(--acc-ink);
+  background:var(--acc-soft);border:1px solid var(--acc-line);border-radius:9px;text-align:center;padding:15px 0;margin:12px 0 4px}
+/* ── SOS full takeover ── */
+.soswrap{position:fixed;inset:0;z-index:120;background:var(--risk);color:#fff;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:30px;animation:sosin .25s}
+@keyframes sosin{0%{opacity:0}100%{opacity:1}}
+.soswrap::before{content:'';position:absolute;inset:0;background:#6E2114;animation:sosflash 1s infinite;pointer-events:none}
+@keyframes sosflash{0%,100%{opacity:0}50%{opacity:.55}}
+.sosin{position:relative;max-width:640px;width:100%}
+.sosin .eyeb{font-family:var(--mono);font-size:12px;letter-spacing:.35em;font-weight:800}
+.sosin h1{font-size:64px;font-weight:800;letter-spacing:.1em;margin:8px 0 4px}
+.sosin .who{font-size:22px;font-weight:800}
+.sosin .meta{font-family:var(--mono);font-size:12.5px;line-height:2;opacity:.92;margin-top:14px}
+.sosin .meta b{font-weight:800}
+.sosbtns{display:flex;gap:10px;margin-top:26px}
+.sosbtns .b1{flex:1.4 1 0;min-height:62px;border-radius:10px;background:#fff;color:var(--risk);font-size:18px;font-weight:800}
+.sosbtns .b2{flex:1 1 0;min-height:62px;border-radius:10px;border:2px solid rgba(255,255,255,.75);font-size:15px;font-weight:800;color:#fff}
+.sosack{font-family:var(--mono);font-size:12px;margin-top:18px;background:rgba(0,0,0,.28);border-radius:8px;padding:11px 14px;line-height:1.7}
+/* ── toast ── */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120%);
+  background:var(--ink);color:#EBF1EE;font-size:13px;font-weight:700;padding:11px 17px;
+  border-radius:8px;transition:transform .25s,opacity .25s;z-index:140;max-width:640px;text-align:center;
+  opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+/* ── stacking below 800px ── */
+@media (max-width:800px){
+  body{overflow:auto}
+  .frame{height:auto;min-height:calc(100vh - 20px)}
+  .work{grid-template-columns:1fr;grid-template-rows:none}
+  #mapR{grid-column:1;grid-row:auto;height:380px}
+  #alertR{grid-column:1;grid-row:auto;max-height:440px}
+  #railR{grid-column:1;grid-row:auto;max-height:560px}
+  .drawer{position:fixed;top:10px;right:10px;bottom:10px}
+  .top{flex-wrap:wrap;height:auto;padding:10px 14px;row-gap:8px}
+}
+.sealimg{width:24px;height:24px;border-radius:5px;display:block}.mark>.sealimg{width:100%;height:100%;border-radius:inherit}
+
+.top .langsw{border-color:#31403C}
+.top .langsw button{color:var(--dkm)}
+
+.langsw{display:inline-flex;border:1.5px solid var(--line-mid,#31403C);border-radius:8px;overflow:hidden;flex:0 0 auto}
+.langsw button{min-width:40px;padding:6px 11px;font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.06em;background:transparent;color:var(--muted,#8B9994)}
+.langsw button.on{background:var(--acc,#0F6455);color:#fff}
+</style></head><body>
+<div class="frame">
+  <div class="top">
+    <div class="mark"><img class="sealimg" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABCGVYSWZNTQAqAAAACAAHARIAAwAAAAEAAQAAARoABQAAAAEAAABiARsABQAAAAEAAABqASgAAwAAAAEAAgAAATEAAgAAADkAAAByATsAAgAAAA0AAACsh2kABAAAAAEAAAC6AAAAAAAAASwAAAABAAABLAAAAAFDYW52YSBkb2M9REFIVFV4R2RIWE0gdXNlcj1VQUZWZzhJNU9XQSBicmFuZD1CQUZWZzhCTTBzcwAATWF5YSBDaGFod2FuAAAABpAAAAcAAAAEMDIxMJEBAAcAAAAEAQIDAKAAAAcAAAAEMDEwMKABAAMAAAABAAEAAKACAAQAAAABAAABAKADAAQAAAABAAABAAAAAADonB5tAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGV4aWY6Q29sb3JTcGFjZT4xPC9leGlmOkNvbG9yU3BhY2U+CiAgICAgICAgIDxleGlmOlBpeGVsWERpbWVuc2lvbj4yNDE2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6RXhpZlZlcnNpb24+MDIxMDwvZXhpZjpFeGlmVmVyc2lvbj4KICAgICAgICAgPGV4aWY6Rmxhc2hQaXhWZXJzaW9uPjAxMDA8L2V4aWY6Rmxhc2hQaXhWZXJzaW9uPgogICAgICAgICA8ZXhpZjpQaXhlbFlEaW1lbnNpb24+MjQxNjwvZXhpZjpQaXhlbFlEaW1lbnNpb24+CiAgICAgICAgIDxleGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICAgICA8cmRmOlNlcT4KICAgICAgICAgICAgICAgPHJkZjpsaT4xPC9yZGY6bGk+CiAgICAgICAgICAgICAgIDxyZGY6bGk+MjwvcmRmOmxpPgogICAgICAgICAgICAgICA8cmRmOmxpPjM8L3JkZjpsaT4KICAgICAgICAgICAgICAgPHJkZjpsaT4wPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOlNlcT4KICAgICAgICAgPC9leGlmOkNvbXBvbmVudHNDb25maWd1cmF0aW9uPgogICAgICAgICA8eG1wOkNyZWF0b3JUb29sPkNhbnZhIGRvYz1EQUhUVXhHZEhYTSB1c2VyPVVBRlZnOEk1T1dBIGJyYW5kPUJBRlZnOEJNMHNzPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlhSZXNvbHV0aW9uPjMwMDwvdGlmZjpYUmVzb2x1dGlvbj4KICAgICAgICAgPHRpZmY6WVJlc29sdXRpb24+MzAwPC90aWZmOllSZXNvbHV0aW9uPgogICAgICAgICA8ZGM6dGl0bGU+CiAgICAgICAgICAgIDxyZGY6QWx0PgogICAgICAgICAgICAgICA8cmRmOmxpIHhtbDpsYW5nPSJ4LWRlZmF1bHQiPkRsaXZlcmQgLSAyPC9yZGY6bGk+CiAgICAgICAgICAgIDwvcmRmOkFsdD4KICAgICAgICAgPC9kYzp0aXRsZT4KICAg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"></div>
+    <div><div class="brand">DISPATCH</div><div class="sub">Rami A. · Route manager · Mon 24 Aug</div></div>
+    <span class="pill" style="border-color:var(--dkl);background:var(--dark2);color:var(--dkm)">CO-OWNER · HIS OWN ROUTE MTL-01 RUNS TODAY</span>
+    <div class="sp"></div>
+    <button class="demob" id="demoMock">DEMO · MOCK MTL-01 GPS</button>
+    <button class="demob sos" id="demoSos">DEMO · DRIVER SOS</button>
+    <span id="langslot"></span>
+    <div class="clock" id="clock">09:52:04</div>
+  </div>
+  <div class="strip" id="strip"></div>
+  <div class="work">
+    <section class="card" id="mapR" aria-label="Live map"></section>
+    <section class="card" id="alertR" aria-label="Alert inbox"></section>
+    <aside class="card" id="railR" aria-label="Movement rail"></aside>
+    <div class="drawer" id="drawer"></div>
+  </div>
+</div>
+<div id="dlgroot"></div>
+<div id="sosroot"></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+
+const LANG_KEY='dliverd.lang';
+function loadLang(){
+ try{
+  const q=new URLSearchParams(location.search).get('lang');
+  if(q==='FR'||q==='EN'){try{localStorage.setItem(LANG_KEY,q);}catch(e){}return q;}
+  const v=localStorage.getItem(LANG_KEY);
+  if(v==='FR'||v==='EN')return v;
+ }catch(e){}
+ return 'FR';
+}
+function saveLang(l){
+ try{localStorage.setItem(LANG_KEY,l);}catch(e){}
+ try{const u=new URL(location.href);u.searchParams.set('lang',l);history.replaceState(null,'',u);}catch(e){}
+}
+let LANG=loadLang();
+function tx(en,fr){return LANG==='FR'?fr:en;}
+function langSw(){
+ return `<span class="langsw" role="group" aria-label="${tx('Language','Langue')}">${['FR','EN'].map(l=>`<button type="button" data-setlang="${l}" class="${LANG===l?'on':''}">${l}</button>`).join('')}</span>`;
+}
+function wireLang(){
+ document.querySelectorAll('[data-setlang]').forEach(b=>b.onclick=()=>{
+  LANG=b.dataset.setlang;saveLang(LANG);
+  if(typeof S!=='undefined')S.lang=LANG;
+  document.documentElement.lang=LANG==='FR'?'fr':'en';
+  render();
+ });
+}
+document.documentElement.lang=LANG==='FR'?'fr':'en';
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+let toastT;
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.background=bad?'#93301F':'';
+ t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3400);}
+const rnd4=()=>[...Array(4)].map(()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join('');
+/* simulated clock — anchored Mon 24 Aug 09:52:04, ticks in real time */
+const T0=Date.now(), BASE_S=9*3600+52*60+4;
+const simS=()=>BASE_S+Math.floor((Date.now()-T0)/1000);
+const nowMin=()=>simS()/60;
+const clockTxt=()=>{const s=simS();const p=n=>String(n).padStart(2,'0');
+ return p(Math.floor(s/3600))+':'+p(Math.floor(s/60)%60)+':'+p(s%60);};
+
+/* ── state ── */
+const S={
+ sel:null, selDrv:null, dlg:null, sos:null, mock:false, age:5, needRender:false,
+ offer:{left:30, fee:12.50, state:'open'},
+ onTime:'11/12 · 92%',
+ drivers:[
+  {id:'MTL-03',name:'Maya Chahwan',veh:'Kia Niro',prog:'6 stops · 2 done · stop 3 in progress',
+   ping:6,every:9,x:556,y:178,hdg:-38,tx:472,ty:106,off:2.4,thresh:2},
+  {id:'MTL-01',name:'Rami Aziz',veh:'Transit Connect',prog:'8 stops · 5 done',
+   ping:41,every:45,x:322,y:314,hdg:-14,tx:334,ty:244,off:0,thresh:2}],
+ movements:[
+  {ref:'M-4472',ticket:'CE-8815',box:'BX-8815',seal:'CS-40119',drv:'MTL-03',prov:'Cellcom',
+   dest:'1600 boul. Le Corbusier, app. 407, Laval',rcpt:'Gino Pensato',rmask:'G••o P•••••o',pmask:'+1 450 ••• ••74',
+   service:'DLIVERD 24 · AM',win:'by 10:30',pMin:630,eta:'09:58',drift:12,n:1,val:1299,
+   status:'PICKED_UP',risk:true,otpFails:0,
+   note:'<b>12 min drift — will miss 10:30.</b> Reprise M-4475 rides on the same visit.',
+   proofs:[['ok','Pickup OTP','provider release · 07:41'],['ok','Pickup signature','release signed · 07:41'],
+    ['ok','Seal photo CS-40119','intact at pickup — after a refused CS-40120 scan'],
+    ['pend','Delivery OTP','waits at the door · never shown to the driver'],['pend','Delivery signature','pending']],
+   events:[['07:38','seal.mismatch — CS-40120 refused','b3e1'],['07:41','custody.accepted','9f2c'],
+    ['09:12','eta.drift +7 min','07a7'],['09:47','eta.drift +12 min · sla.risk','944e']]},
+  {ref:'M-4475',ticket:'CE-8815-R',box:'— (to be sealed on site)',seal:'R-31907',drv:'MTL-03',prov:'Cellcom',
+   dest:'Pickup at Pensato → Cellcom Anjou',rcpt:'Gino Pensato — trade-in',rmask:'G••o P•••••o',pmask:'+1 450 ••• ••74',
+   service:'REPRISE · buyback',win:'with M-4472',pMin:635,eta:'09:55',drift:12,n:1,val:520,
+   status:'ASSIGNED',otpFails:0,parent:'M-4472',
+   note:'iPhone 14 Pro trade-in · pairs with M-4472 — same visit, same drift',
+   proofs:[['pend','Release OTP','client signs the trade-in away'],['pend','Grade + seal R-31907','graded at the door']],
+   events:[['07:12','movement.booked · parent M-4472','5d20'],['07:40','movement.assigned MTL-03','8c47']]},
+  {ref:'M-4473',ticket:'BM-1049',box:'BX-1049',seal:'CS-40121',drv:'MTL-03',prov:'BMobile',
+   dest:'380 rue Saint-Paul O, app. 12, Vieux-Port',rcpt:'Samuel Duchesneau',rmask:'S••••l D••••••••u',pmask:'+1 514 ••• ••83',
+   service:'DLIVERD NOON',win:'by 12:00',pMin:720,eta:'11:20',drift:0,n:2,val:1908,
+   status:'PICKED_UP',otpFails:5,
+   note:'<b>Recipient burned 5 code attempts</b> on the tracking page — handover locked, override available',
+   proofs:[['ok','Pickup OTP','provider release · 07:41'],['ok','Pickup signature','release signed · 07:41'],
+    ['ok','Seal photo CS-40121','intact at pickup'],
+    ['pend','Delivery OTP','ATTEMPTS EXHAUSTED 5/5 — dispatcher override only'],['pend','Delivery signature','pending']],
+   events:[['07:41','custody.accepted','9f2c'],['09:31','otp.failed ×3','c218'],['09:44','otp.failed ×2 · otp.exhausted','77aa']]},
+  {ref:'M-4474',ticket:'CE-3307',box:'BX-ANJ0',seal:'CS-40122',drv:'MTL-03',prov:'Cellcom',
+   dest:'Cellcom Anjou, 7999 boul. des Galeries d’Anjou',rcpt:'Cellcom Anjou — store restock',rmask:'store · no personal data',pmask:'+1 514 ••• ••00',
+   service:'DLIVERD DAY',win:'end of day',pMin:1020,eta:'13:40',drift:-5,n:1,val:1079,
+   status:'PICKED_UP',otpFails:0,note:'store restock — store rep releases with their own code',
+   proofs:[['ok','Pickup OTP','provider release · 07:41'],['ok','Seal photo CS-40122','intact at pickup'],
+    ['pend','Store release OTP','store rep’s code at the counter']],
+   events:[['07:41','custody.accepted','9f2c'],['08:02','route.sequenced stop 6','41f0']]},
+  {ref:'M-4471',ticket:'BM-1042',box:'BX-1042',seal:'CS-40118',drv:'MTL-03',prov:'BMobile',
+   dest:'6321 rue Beaubien E, Rosemont',rcpt:'Geneviève Bilodeau',rmask:'G•••••••e B•••••••u',pmask:'+1 514 ••• ••19',
+   service:'DLIVERD 24 · AM',win:'by 12:00',pMin:720,eta:'08:47 ✓',drift:0,n:1,val:1449,
+   status:'DELIVERED',otpFails:0,note:'delivered 08:47 — code + signature on record · within 9 m of the pin',
+   proofs:[['ok','Pickup OTP','provider release · 07:41'],['ok','Seal photo CS-40118','intact at pickup'],
+    ['ok','Delivery OTP','verified 08:46 · attempt 1 of 5'],['ok','Signature','G. Bilodeau · matches photo ID'],
+    ['ok','Geofence','within 9 m of the pin']],
+   events:[['07:41','custody.accepted','9f2c'],['08:46','otp.verified','07a7'],['08:47','movement.delivered','944e']]},
+  {ref:'M-4469',ticket:'PM-2210',box:'BX-7719',seal:'CS-39891',drv:'MTL-01',prov:'Planète Mobile',
+   dest:'10 442 rue Lajeunesse, Ahuntsic',rcpt:'Marc Tremblay-Roy',rmask:'M••c T•••••••-R•y',pmask:'+1 514 ••• ••31',
+   service:'DLIVERD AM',win:'by 09:45',pMin:585,eta:'09:58',drift:13,n:2,val:3184,
+   status:'PICKED_UP',otpFails:0,note:'already past the promise — Rami is 6 min out · client notified 09:46',
+   proofs:[['ok','Pickup OTP','provider release · 07:22'],['ok','Seal photo CS-39891','intact at pickup'],
+    ['pend','Delivery OTP','pending'],['pend','Delivery signature','pending']],
+   events:[['07:22','custody.accepted','2ee4'],['09:45','sla.breached · client.notified','a90d']]},
+  {ref:'M-4476',ticket:'CE-3310',box:'BX-7722',seal:'CS-39902',drv:'MTL-01',prov:'Cellcom',
+   dest:'Cellcom Centre-Ville, 705 rue Sainte-Catherine O',rcpt:'Cellcom Centre-Ville — restock',rmask:'store · no personal data',pmask:'+1 514 ••• ••10',
+   service:'DLIVERD DAY',win:'end of day',pMin:1020,eta:'15:10',drift:0,n:3,val:4890,
+   status:'PICKED_UP',otpFails:0,note:'3 devices · store rep releases at the counter',
+   proofs:[['ok','Pickup OTP','provider release · 07:22'],['ok','Seal photo CS-39902','intact at pickup'],
+    ['pend','Store release OTP','pending']],
+   events:[['07:22','custody.accepted','2ee4'],['08:05','route.sequenced stop 8','66b2']]},
+  {ref:'M-4480',ticket:'CE-4410',box:'BX-CFL2',seal:'assigned at accept',drv:null,prov:'Cellcom',
+   dest:'Cellcom Carrefour Laval, 3035 boul. le Carrefour',rcpt:'Cellcom Carrefour Laval — urgent restock',rmask:'store · no personal data',pmask:'+1 450 ••• ••00',
+   service:'ADD-ON · $12.50',win:'by 16:00',pMin:960,eta:'—',drift:0,n:2,val:2158,
+   status:'OFFERED',otpFails:0,note:'offered to MTL-01 & MTL-03 · <b>first accept wins</b> — atomic, no double-assign',
+   proofs:[['pend','Acceptance','whichever driver taps first']],
+   events:[['09:49','movement.booked','d1c8'],['09:51','movement.offered MTL-01+MTL-03','e402']]},
+  {ref:'M-4465',ticket:'PM-2203',box:'BX-7710',seal:'CS-39880',drv:'MTL-01',prov:'Planète Mobile',
+   dest:'Ahuntsic',rcpt:'Nadia Béland',rmask:'N•••a B•••••d',pmask:'+1 514 ••• ••02',
+   service:'DLIVERD AM',win:'by 09:00',pMin:540,eta:'07:58 ✓',drift:0,n:1,val:0,
+   status:'DELIVERED',otpFails:0,note:'delivered 07:58 — code + signature on record',
+   proofs:[['ok','Delivery OTP','verified 07:57'],['ok','Signature','N. Béland']],
+   events:[['07:22','custody.accepted','2ee4'],['07:58','movement.delivered','9b31']]},
+  {ref:'M-4467',ticket:'CE-3288',box:'BX-7714',seal:'CS-39884',drv:'MTL-01',prov:'Cellcom',
+   dest:'Cartierville',rcpt:'Louis Aird',rmask:'L•••s A••d',pmask:'+1 514 ••• ••56',
+   service:'DLIVERD AM',win:'by 09:30',pMin:570,eta:'08:31 ✓',drift:0,n:1,val:0,
+   status:'DELIVERED',otpFails:0,note:'delivered 08:31 — code + signature on record',
+   proofs:[['ok','Delivery OTP','verified 08:30'],['ok','Signature','L. Aird']],
+   events:[['07:22','custody.accepted','2ee4'],['08:31','movement.delivered','c7d9']]}],
+ alerts:[
+  {id:'sla',sev:'risk',tag:'SLA BREACH RISK · M-4472',res:false,
+   txt:'<b>M-4472 — 12 min drift, will miss the 10:30 promise</b> (DLIVERD 24 AM, Pensato, Laval). Miss it and the visit is automatically free. <b>Reassign or notify?</b>',
+   btns:[['reassign','Reassign M-4472',''],['notify','Notify client — new window','alt']]},
+  {id:'otp',sev:'risk',tag:'OTP EXHAUSTED · M-4473',res:false,
+   txt:'<b>M-4473 — recipient failed 5 codes</b> on the tracking page; the handover is locked server-side. <b>Issue a one-time dispatcher override?</b> Dual control, single use, chained.',
+   btns:[['override','Issue one-time override','']]},
+  {id:'offroute',sev:'risk',tag:'OFF ROUTE · MTL-03',res:false,
+   txt:'<b>MTL-03 is 2.4 km off the planned route</b> (Maya’s alert threshold: 2 km — auto-raised). <b>Call her, or clear it as an expected detour?</b>',
+   btns:[['call','Call Maya',''],['detour','Expected detour — clear & chain','alt']]},
+  {id:'seal',sev:'warn',tag:'SEAL MISMATCH · 07:38 · M-4472',res:false,
+   txt:'<b>MTL-03 scanned seal CS-40120 where CS-40119 was expected</b> on BX-8815 at the Saint-Laurent dock. The app refused custody; the correct box was verified 07:41. <b>Confirm the refusal stands and flag CS-40120 for audit?</b>',
+   btns:[['refuse','Refusal stands — flag CS-40120',''],['calldrv','Ask Maya what she saw','alt']]},
+  {id:'offer',sev:'warn',tag:'UNASSIGNED · OFFER_TIMEOUT · M-4480',res:false,
+   txt:'<b>M-4480 (Carrefour Laval, 2 devices, $12.50) has <span class="mono" data-count>0:30</span> left</b> on the offer and no acceptance from MTL-01 or MTL-03. <b>Assign it directly, or raise the fee and re-offer?</b>',
+   btns:[['assign','Assign to MTL-01',''],['raise','Raise to $15.50 & re-offer','alt']]}],
+};
+const drvById=id=>S.drivers.find(d=>d.id===id);
+const mvByRef=r=>S.movements.find(m=>m.ref===r);
+let refSeq=4481;
+
+/* ── grouping: sorted by time-to-breach, never by creation ── */
+const GRPS=[['RISK','AT RISK','À RISQUE','#93301F'],['LATE','LATE','EN RETARD','#93301F'],['CUSTODY','IN CUSTODY','EN GARDE','#0F6455'],
+ ['OFFER','OFFERED — UNASSIGNED','OFFERT — NON ASSIGNÉ','#7C5A0E'],['ONTIME','ON TIME','À L’HEURE','#9FC9BE'],['DONE','DONE','TERMINÉ','#C3CBC7']];
+function groupOf(m){
+ if(m.status==='DELIVERED')return'DONE';
+ if(m.status==='OFFERED')return'OFFER';
+ if(m.status==='EXCEPTION'||m.risk)return'RISK';
+ if(m.pMin&&nowMin()>m.pMin)return'LATE';
+ if(m.status==='PICKED_UP')return'CUSTODY';
+ return'ONTIME';
+}
+const ttb=m=>m.pMin?Math.round(m.pMin-nowMin()):9999;
+function statusPill(m,g){
+ if(m.held)return'<span class="pill warn">HELD</span>';
+ if(m.status==='EXCEPTION')return'<span class="pill risk">EXCEPTION</span>';
+ if(g==='RISK')return`<span class="pill risk">${tx('AT RISK','À RISQUE')}</span>`;
+ if(g==='LATE')return`<span class="pill risk">${tx('LATE','EN RETARD')}</span>`;
+ if(m.status==='DELIVERED')return'<span class="pill acc">DELIVERED</span>';
+ if(m.status==='OFFERED')return'<span class="pill warn">OFFERED</span>';
+ if(m.status==='PICKED_UP')return'<span class="pill acc">IN CUSTODY</span>';
+ return'<span class="pill">ASSIGNED</span>';
+}
+
+/* ── status strip ── */
+function vStrip(){
+ const inC=S.movements.filter(m=>m.status==='PICKED_UP');
+ const road=S.movements.filter(m=>m.status==='PICKED_UP'||m.status==='ASSIGNED')
+  .reduce((a,m)=>a+m.val,0);
+ const offers=S.movements.filter(m=>m.status==='OFFERED').length;
+ const dev=inC.reduce((a,m)=>a+m.n,0);
+ $('#strip').innerHTML=`
+  <span class="it"><b>${inC.length}</b> ${tx('IN CUSTODY','EN GARDE')} · <b>${dev}</b> ${tx('DEVICES','APPAREILS')}</span>
+  <span class="it">${tx('ON THE ROAD','SUR LA ROUTE')} <b class="acc">$${road.toLocaleString()}</b> ${tx('DECLARED · COVERED','DÉCLARÉ · COUVERT')}</span>
+  <span class="it">${tx('ON-TIME TODAY','À L’HEURE AUJ.')} <b>${S.onTime}</b></span>
+  <span class="it">${tx('OFFERS OPEN','OFFRES OUVERTES')} <b class="${offers?'bad':''}">${offers}</b></span>
+  <span class="it">${tx('DRIVERS ONLINE','CHAUFFEURS EN LIGNE')} <b>2/2</b></span>
+  <span class="it">${tx('CHAIN HEAD','TÊTE DE CHAÎNE')} <b class="acc">944e…</b> · ${tx('VERIFIED','VÉRIFIÉ')} 09:50</span>
+  <span class="sp"></span>
+  <span class="it"><span class="pdot"></span>POLL 5 S · <span id="agetick">refreshed ${S.age} s ago</span></span>`;
+}
+
+/* ── map ── */
+function stopEl(x,y,cls,mv,label){
+ return `<g class="stopdot ${cls}" ${mv?`data-mv="${mv}" tabindex="0" role="button"`:''} transform="translate(${x},${y})">
+  <circle r="7.5"/><text y="-13" text-anchor="middle">${label}</text></g>`;
+}
+function drvEl(d){
+ const sel=S.selDrv===d.id?' selr':'', mock=(d.id==='MTL-01'&&S.mock)?' mocked':'';
+ return `<g class="drv${sel}${mock}" data-drv="${d.id}" tabindex="0" role="button" transform="translate(${d.x},${d.y})" data-dg="${d.id}">
+  ${mock?'<circle class="mockring" r="14"/>':''}
+  <circle class="body" r="12"/>
+  <g transform="rotate(${d.hdg})"><path class="hd2" d="M0,-20 L6.5,-8 L-6.5,-8 Z"/></g>
+  <text y="30" text-anchor="middle" data-ping="${d.id}">${d.id} · ${d.ping} s</text>
+  ${mock?'<text y="44" text-anchor="middle" style="fill:#93301F">location.mocked=true</text>':''}
+ </g>`;
+}
+function drvChip(d){
+ const mocked=d.id==='MTL-01'&&S.mock;
+ return `<button class="dchip ${S.selDrv===d.id?'on':''} ${mocked?'bad':''}" data-drv="${d.id}">
+  <span class="dcd ${mocked?'bad':''}"></span><b>${d.id}</b> ${d.name.split(' ')[0]} · ${d.veh}
+  · ${d.prog} · <span data-ping="${d.id}">${d.id} · ${d.ping} s</span>${d.off?` · <b style="color:var(--risk)">${d.off} km off</b>`:''}${mocked?' · <b style="color:var(--risk)">GPS MOCKED</b>':''}</button>`;
+}
+function vMap(){
+ const gridV=[90,170,250,410,490,650,730,890,970].map(x=>`M${x} 0V420`).join('');
+ const gridH=[52,98,146,240,286,332,378].map(y=>`M0 ${y}H1000`).join('');
+ const m3=S.drivers[0];
+ $('#mapR').innerHTML=`
+  <div class="hd"><span style="white-space:nowrap">LIVE MAP — MONTRÉAL / LAVAL</span>
+   <span class="pill acc">on time</span><span class="pill warn">late risk</span><span class="pill risk">exception</span>
+   <div class="sp"></div>
+   <span class="hint">DEMO · click a driver or a stop to select it in the rail</span></div>
+  <div class="mapwrap">
+  <div class="mapchips">${S.drivers.map(drvChip).join('')}</div>
+  <svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet" aria-label="Schematic map">
+   <rect x="-600" width="2200" height="420" fill="#EDF1EF"/>
+   <path d="${gridV}${gridH}" stroke="#DCE1DE" stroke-width="2" fill="none"/>
+   <path d="M330 0V420M0 190H1000" stroke="#D3DAD6" stroke-width="4" fill="none"/>
+   <path d="M0 182 C220 162 480 200 700 172 S920 186 1000 178" fill="none" stroke="#C9DCE4" stroke-width="22" opacity=".9"/>
+   <path d="M300 420 C322 320 362 225 382 135 S402 45 392 0" fill="none" stroke="#B9CCD6" stroke-width="10" opacity=".55"/>
+   <path d="M0 268 C240 252 520 284 1000 256" fill="none" stroke="#B9CCD6" stroke-width="10" opacity=".55"/>
+   <text class="maplab" x="924" y="40" font-size="11">LAVAL</text>
+   <text class="maplab" x="896" y="404" font-size="11">MONTRÉAL</text>
+   <text class="maplab" x="716" y="162" font-size="8" style="fill:#93A9B5;stroke:none">RIVIÈRE DES PRAIRIES</text>
+   <text class="maplab" x="352" y="76" font-size="8" style="fill:#9BA9B4;stroke:none">A-15</text>
+   <text class="maplab" x="908" y="250" font-size="8" style="fill:#9BA9B4;stroke:none">A-40</text>
+   <!-- MTL-01 route (background) -->
+   <path d="M150 352 L196 334 L238 366 L282 326 L312 346 L336 232 L432 350" fill="none" stroke="#8FB5AA" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round"/>
+   ${[[150,352],[196,334],[238,366],[282,326],[312,346]].map(p=>`<g class="stopdot done" transform="translate(${p[0]},${p[1]})"><circle r="5"/></g>`).join('')}
+   ${stopEl(336,232,'warn','M-4469','TREMBLAY-ROY · LATE')}
+   ${stopEl(432,350,'on','M-4476','CELLCOM C-VILLE · EOD')}
+   <!-- MTL-03 route -->
+   <path d="M330 248 L560 272 L452 92 L600 364 L806 254" fill="none" stroke="#0F6455" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+   ${stopEl(330,248,'done',null,'DC ST-LAURENT ✓ 07:40')}
+   ${stopEl(560,272,'done','M-4471','BILODEAU ✓ 08:47')}
+   ${stopEl(452,92,'warn','M-4472','PENSATO + REPRISE · 10:30')}
+   ${stopEl(600,364,'on','M-4473','DUCHESNEAU · 12:00')}
+   ${stopEl(806,254,'on','M-4474','CELLCOM ANJOU · EOD')}
+   ${S.offer.state==='open'?stopEl(540,44,'offer','M-4480','M-4480 · OFFERED — FIRST ACCEPT WINS'):
+     stopEl(540,44,S.offer.state==='assigned'?'on':'exc','M-4480',S.offer.state==='assigned'?'M-4480 · ASSIGNED MTL-01':'M-4480 · OFFER EXPIRED')}
+   <!-- MTL-03 off-route tether -->
+   ${m3.off?`<line class="offline1" id="tether3" x1="502" y1="200" x2="${m3.x-8}" y2="${m3.y+6}"/>
+   <text class="maplab" x="560" y="214" font-size="9" style="fill:#93301F">${m3.off} km off route</text>`:''}
+   ${S.drivers.map(drvEl).join('')}
+  </svg></div>`;
+}
+
+/* ── movement rail ── */
+function driftTxt(m){
+ if(m.status==='DELIVERED')return'✓';
+ if(m.status==='OFFERED')return'—';
+ return m.drift>0?'+'+m.drift:m.drift<0?'−'+(-m.drift):'±0';
+}
+function mrow(m){
+ const g=groupOf(m), t=ttb(m);
+ const risky=g==='RISK'||g==='LATE';
+ const timeline=m.status==='DELIVERED'?'':(m.status==='OFFERED'
+  ?(S.offer.state==='open'?` · <span class="mono" data-count>0:${String(Math.max(0,S.offer.left)).padStart(2,'0')}</span> left on the offer`
+    :' · <span class="mono">OFFER_TIMEOUT passed</span>')
+  :(t<0?` · <span class="mono">${-t} min past</span> the promise`
+    :` · <span class="mono">T−${t} min</span> to the promise`));
+ return `<button class="mrow ${S.sel===m.ref?'sel':''} ${risky?'r':''}" data-mv="${m.ref}">
+  <span class="c1"><b>${m.ref}</b><i>${m.ticket}</i></span>
+  <span class="c2">${m.drv||'— ·'}</span>
+  <span class="c3"><b>${m.win}</b><i>ETA ${m.eta}</i></span>
+  <span class="c4 ${m.drift>0?'bad':m.drift<0?'good':''}">${driftTxt(m)}</span>
+  ${statusPill(m,g)}
+  <span class="c6">${m.rcpt}${m.note?' — '+m.note:''}${timeline}</span>
+ </button>`;
+}
+function nextBreach(){
+ const open=S.movements.filter(m=>m.status!=='DELIVERED'&&m.status!=='EXCEPTION'&&m.pMin);
+ if(!open.length)return'';
+ const m=open.reduce((a,b)=>ttb(a)<=ttb(b)?a:b), t=ttb(m);
+ return t<0
+  ?`<b>${m.ref}</b> is <b>${-t} min past</b> its promise (${m.win})`
+  :`<b>${m.ref}</b> breaches in <b>${t} min</b> (${m.win})`;
+}
+function vRail(){
+ const byG={};S.movements.forEach(m=>{const g=groupOf(m);(byG[g]=byG[g]||[]).push(m);});
+ Object.values(byG).forEach(a=>a.sort((x,y)=>ttb(x)-ttb(y)));
+ $('#railR').innerHTML=`
+  <div class="hd">${tx('MOVEMENTS','MOUVEMENTS')} <span class="pill">${S.movements.length}</span>
+   <div class="sp"></div><span class="hint">${tx('sorted by time-to-breach · not by creation','trié par délai de rupture · pas par création')}</span></div>
+  <div class="breach">${tx('WHAT BREAKS NEXT','PROCHAINE RUPTURE')} · ${nextBreach()}</div>
+  <div class="railbd">${GRPS.map(([k,en,fr,col])=>{
+   const lbl=LANG==='FR'?fr:en;
+   const rows=byG[k]||[];if(!rows.length)return'';
+   return `<div class="ghead"><span class="gdot" style="background:${col}"></span>${lbl} · ${rows.length}</div>
+    ${rows.map(mrow).join('')}`;}).join('')}
+  <div style="padding:10px 12px"><span class="hint">DEMO · click any row — full picture + the 6 dispatcher actions</span></div>
+  </div>`;
+}
+
+/* ── alert inbox — every row states the ACTION, not just the fact ── */
+function vAlerts(){
+ const open=S.alerts.filter(a=>!a.res), res=S.alerts.filter(a=>a.res);
+ $('#alertR').innerHTML=`
+  <div class="hd">${tx('ALERT INBOX','BOÎTE D’ALERTES')} <span class="pill ${open.length?'risk':'acc'}">${open.length} ${tx('open','ouvertes')}</span>
+   <div class="sp"></div><span class="hint">${tx('every alert states the action — never just the fact','chaque alerte dit l’action — jamais juste le fait')}</span></div>
+  <div class="bd" style="padding:0">
+   ${open.map(a=>`<div class="arow sev-${a.sev}"><span class="adot"></span>
+     <div class="atxt"><span class="atag">${a.tag}</span>${a.txt}
+      <div class="abtns">${a.btns.map(b=>`<button class="abtn ${b[2]}" data-aact="${b[0]}" data-aid="${a.id}">${b[1]}</button>`).join('')}</div>
+     </div></div>`).join('')||'<div style="padding:16px 14px;color:var(--muted);font-size:13px">Nothing is breaching. The board’s job is to answer “what breaks next” — right now, nothing does.</div>'}
+   ${res.map(a=>`<div class="arow res"><span class="adot" style="background:var(--line-mid);animation:none"></span>
+     <div class="atxt"><span class="atag">${a.tag}</span>${a.txt}
+      <div class="abtns"><span class="pill acc">RESOLVED · CHAINED ${a.rhash||''}…</span></div></div></div>`).join('')}
+  </div>`;
+}
+
+/* ── movement detail drawer ── */
+const ACTIONS=[
+ ['reassign','Reassign','works even in custody — becomes a driver-to-driver handover'],
+ ['hold','Hold','pause the movement in place · custody unchanged'],
+ ['ret','Return to origin','creates a REPRISE movement with this ref as parent'],
+ ['reissue','Reissue code','void the old code · new 6-digit to the recipient · 10 min TTL'],
+ ['override','Override code','dual control · only after 5 failed attempts'],
+ ['dest','Change destination','re-pins the geofence in the same transaction']];
+function vDrawer(){
+ const d=$('#drawer'), m=S.sel?mvByRef(S.sel):null;
+ if(!m){d.classList.remove('open');return;}
+ const g=groupOf(m), drv=m.drv?drvById(m.drv):null;
+ const chainStr=m.events.map(e=>`<b>${e[2]}…</b>`).join('<span class="h"> → </span>');
+ d.innerHTML=`
+  <div class="dhd"><span class="ref">${m.ref}</span>${statusPill(m,g)}
+   <span class="sub" style="font-size:11px">${m.service}</span>
+   <div class="sp"></div><button class="xbtn" id="drawerX" aria-label="Close">✕</button></div>
+  <div class="dbd">
+   ${g==='RISK'&&m.status!=='EXCEPTION'?`<div class="note risk"><div><b>Will miss ${m.win.replace('by ','')}.</b> ${m.drift} min of drift against a hard promise — act now or the visit is free.</div></div>`:''}
+   ${m.held?'<div class="note warn"><div><b>On hold.</b> The driver keeps custody; the clock is paused for the client, not for the ledger.</div></div>':''}
+   <div class="kv"><span class="k">Box · seal</span><span class="v mono">${m.box} · ${m.seal}</span></div>
+   <div class="kv"><span class="k">Provider · ticket</span><span class="v">${m.prov} · <span class="mono">${m.ticket}</span></span></div>
+   <div class="kv"><span class="k">Driver</span><span class="v">${drv?`${drv.id} · ${drv.name} · ${drv.veh}`:'unassigned — offered'}</span></div>
+   ${drv?`<div class="kv"><span class="k">Last ping</span><span class="v mono" data-ping="${drv.id}">${drv.id} · ${drv.ping} s</span></div>`:''}
+   <div class="kv"><span class="k">Recipient</span><span class="v">${m.rmask}</span></div>
+   <div class="kv"><span class="k">Recipient phone</span><span class="v mono">${m.pmask}</span></div>
+   <div class="kv"><span class="k">Destination</span><span class="v" style="font-weight:600">${m.dest}</span></div>
+   <div class="kv"><span class="k">Window · ETA</span><span class="v">${m.win} · ETA ${m.eta} (${driftTxt(m)} min)</span></div>
+   <div class="kv"><span class="k">Declared</span><span class="v">${m.n} device${m.n>1?'s':''} · $${m.val.toLocaleString()}</span></div>
+   ${m.parent?`<div class="kv"><span class="k">Parent movement</span><span class="v mono">${m.parent}</span></div>`:''}
+   <div class="kv"><span class="k">Recipient code</span><span class="v mono">•••••• — never visible to drivers, or here</span></div>
+   <div class="label">Proofs so far — two proofs, always, both directions</div>
+   ${m.proofs.map(p=>`<div class="prow ${p[0]==='ok'?'':'pend'}"><span class="pi">${p[0]==='ok'?'✓':'·'}</span>
+     <span class="pk">${p[1]}</span><span class="pv">${p[2]}</span></div>`).join('')}
+   <div class="label">Ledger trail — hash-chained, append-only</div>
+   <div class="ledger">${m.events.map(e=>`<span class="h">${e[0]}</span>  ${e[1]}  <b>${e[2]}…</b>`).join('<br>')}
+    <br><span class="h">chain</span>  ${chainStr}  <span class="h">·</span> <span class="head">head ${m.events[m.events.length-1][2]}…</span></div>
+   <div class="label">Dispatcher actions — each requires a reason · each is chained</div>
+   <div class="actgrid">
+    ${ACTIONS.map(a=>{
+     let[key,lbl,tip]=a;
+     if(key==='hold'&&m.held){key='release';lbl='Release hold';tip='resume the movement · the pause and the release both chain';}
+     const dis=(key==='override'&&m.otpFails<5)||(m.status==='DELIVERED');
+     const cls=key==='override'?'risk':key==='ret'||key==='dest'?'warn':'';
+     if(key==='override'&&m.otpFails<5)tip='enabled only after 5 failed attempts — currently '+m.otpFails+'/5';
+     return `<button class="actb ${cls}" data-dlg="${key}" data-ref="${m.ref}" ${dis?'disabled':''} title="${tip}">
+      <b>${lbl}</b><i>${tip}</i></button>`;}).join('')}
+   </div>
+   ${m.status==='DELIVERED'?'<div class="note acc" style="margin-top:12px"><div><b>Delivered.</b> A closed movement takes no more actions — the chain is the record.</div></div>':''}
+  </div>`;
+ d.classList.add('open');
+}
+
+/* ── confirm dialogs — reason required, consequence stated first, chained ── */
+const REASONS={
+ reassign:['Driver delayed — SLA protection','Vehicle breakdown','Driver request','Load balancing'],
+ hold:['Recipient unreachable','Provider request','Safety concern at destination','Payment dispute — provider hold'],
+ release:['Recipient reached — window agreed','Provider cleared the hold','Safety concern resolved','Dispute settled'],
+ ret:['Recipient refused delivery','Wrong address — cannot resolve today','Provider recall','Damage suspected in transit'],
+ reissue:['Code expired (10 min TTL)','Recipient never received the SMS','Recipient locked out of the tracker','Suspected mis-delivered SMS'],
+ override:['Attempts exhausted — identity confirmed by phone','Recipient device lost — identity confirmed','Accessibility — recipient cannot receive SMS'],
+ dest:['Recipient moved — same building','Deliver to recipient’s work address','Safe alternate agreed with recipient','Provider redirect']};
+const DLGCOPY={
+ reassign:['Reassign the movement','Reassigning <b>in custody</b> is allowed by design: the receiving driver meets the current one and custody moves with a <b>driver-to-driver handover — code + signature, like any handover</b>. Nothing is “just handed over”.'],
+ hold:['Hold the movement','The driver keeps custody and skips this stop until you release the hold. The recipient is texted a pause notice. The promise clock keeps running against the SLA — a hold is not an excuse.'],
+ release:['Release the hold','The stop goes back into the driver’s sequence and the recipient is texted a fresh window. The hold and the release both sit on the chain — a pause is part of the story, not a gap in it.'],
+ ret:['Return to origin — creates a REPRISE','This creates a <b>new REPRISE movement with this movement as its parent</b>. The original chain stays intact; the box travels back under the same custody rules, two proofs at the origin dock.'],
+ reissue:['Reissue the recipient code','The old code is voided the instant you confirm. A fresh 6-digit code goes to the recipient’s mobile — <b>10 minute TTL, 5 attempts</b> — and is never shown to the driver, or to this console.'],
+ override:['Issue a one-time override — dual control','Attempts are exhausted (5/5). You are the second control: a <b>single-use</b> override code is generated, chained as <span class="mono">otp.overridden</span> with your identity, and expires in 10 minutes.'],
+ dest:['Change the destination','<b>The geofence is re-pinned to the new address in the same transaction.</b> This is not polish: a moved address without a moved geofence strands the driver at the right door with a handover the app refuses to unlock.']};
+function openDlg(type,ref){S.dlg={type,ref,reason:'',to:'MTL-01',addr:'',chk:false,done:null};render();}
+function vDlg(){
+ const root=$('#dlgroot'), D=S.dlg;
+ if(!D){root.innerHTML='';return;}
+ const m=mvByRef(D.ref), head=m.events[m.events.length-1][2];
+ const others=S.drivers.filter(d=>d.id!==m.drv);
+ if(D.done){ /* override result state */
+  root.innerHTML=`<div class="dlgwrap"><div class="dlg">
+   <div class="dh">Override issued — ${m.ref}</div><div class="db">
+   <div class="codebox">${D.done}</div>
+   <div class="note warn"><div><b>Read this to the recipient by phone — never to the driver.</b> Single use · expires in 10 minutes · attempt counter does not reset.</div></div>
+   <div class="chainline">CHAINED · otp.overridden · by Rami Aziz (route manager) · dual control satisfied · evt ${head}… → ${D.hash}…</div>
+   <div class="row2"><button class="btn" id="dlgClose">Done</button></div>
+  </div></div></div>`;return;}
+ const [title,copy]=DLGCOPY[D.type];
+ root.innerHTML=`<div class="dlgwrap"><div class="dlg">
+  <div class="dh">${title} — ${m.ref}</div>
+  <div class="db">
+   <div class="note ${D.type==='override'||D.type==='ret'?'warn':'acc'}"><div>${copy}</div></div>
+   ${D.type==='reassign'?`<div class="label" style="margin-top:2px">Reassign to</div>
+    <select id="dlgTo">${others.map(d=>`<option value="${d.id}">${d.id} · ${d.name} · ${d.veh}</option>`).join('')}</select>`:''}
+   ${D.type==='dest'?`<div class="label" style="margin-top:2px">New destination address</div>
+    <input id="dlgAddr" placeholder="Street, unit, city" value="">
+    <div class="hint" style="margin-top:6px">GEOFENCE · 100 M RING RE-PINNED TO THIS ADDRESS IN THE SAME TRANSACTION — NOT A SECOND STEP</div>`:''}
+   <div class="label">Reason — required, goes on the chain verbatim</div>
+   <select id="dlgReason"><option value="">Choose a reason…</option>
+    ${REASONS[D.type].map(r=>`<option>${r}</option>`).join('')}</select>
+   ${D.type==='override'?`<label class="chkrow"><input type="checkbox" id="dlgChk">
+     <span><b>Dual control:</b> I spoke to the recipient by phone and verified their identity against the order. My name goes on this override.</span></label>`:''}
+   <div class="chainline">THIS ACTION IS CHAINED · appended to the movement ledger · evt ${head}… → new — it cannot be edited or deleted afterwards</div>
+   <div class="row2">
+    <button class="btn" id="dlgGo" disabled>Confirm — record to the chain</button>
+    <button class="btn ghost" id="dlgCancel" style="width:auto;padding:0 16px">Cancel</button>
+   </div>
+  </div></div></div>`;
+ dlgCheck();
+}
+function dlgCheck(){
+ const D=S.dlg;if(!D||D.done)return;
+ const go=$('#dlgGo');if(!go)return;
+ let ok=!!D.reason;
+ if(D.type==='override')ok=ok&&D.chk;
+ if(D.type==='dest')ok=ok&&D.addr.trim().length>5;
+ go.disabled=!ok;
+}
+function pushEvt(m,name){const h=rnd4();m.events.push([clockTxt().slice(0,5),name,h]);return h;}
+function resolveAlert(id,hash){const a=S.alerts.find(x=>x.id===id);if(a&&!a.res){a.res=true;a.rhash=hash;}}
+function doConfirm(){
+ const D=S.dlg, m=mvByRef(D.ref);
+ if(D.type==='reassign'){
+  const from=m.drv;m.drv=D.to;
+  const h=pushEvt(m,`movement.reassigned ${from||'—'} → ${D.to} · «${D.reason}»`);
+  if(m.status==='PICKED_UP')pushEvt(m,'handover.driver_to_driver scheduled — code + signature');
+  if(m.ref==='M-4472'){m.risk=false;m.drift=-8;m.eta='10:22';
+   m.note='recovered — Rami intercepts at Le Corbusier · new ETA 10:22, makes 10:30';
+   resolveAlert('sla',h);}
+  S.dlg=null;toast(`${m.ref} reassigned to ${D.to} · driver-to-driver handover · chained ${h}…`);render();return;}
+ if(D.type==='hold'){
+  m.held=true;const h=pushEvt(m,`movement.held · «${D.reason}»`);
+  S.dlg=null;toast(`${m.ref} on hold · recipient texted · chained ${h}…`);render();return;}
+ if(D.type==='release'){
+  m.held=false;const h=pushEvt(m,`movement.hold_released · «${D.reason}»`);
+  S.dlg=null;toast(`${m.ref} back in sequence · recipient texted a fresh window · chained ${h}…`);render();return;}
+ if(D.type==='ret'){
+  const nr='M-'+(refSeq++);
+  const h=pushEvt(m,`movement.exception → reprise ${nr} · «${D.reason}»`);
+  m.status='EXCEPTION';m.risk=false;m.held=false;
+  m.note=`returning to origin — REPRISE ${nr} carries it back`;
+  S.movements.push({ref:nr,ticket:m.ticket+'-R',box:m.box,seal:m.seal,drv:m.drv,prov:m.prov,
+   dest:`Return to ${m.prov} — origin dock`,rcpt:m.prov+' — return desk',rmask:'provider · no personal data',pmask:'—',
+   service:'REPRISE · return leg',win:'end of day',pMin:1020,eta:'—',drift:0,n:m.n,val:m.val,
+   status:'ASSIGNED',otpFails:0,parent:m.ref,note:`REPRISE · parent ${m.ref} · «${D.reason}»`,
+   proofs:[['pend','Origin release OTP','dock signs it back in']],
+   events:[[clockTxt().slice(0,5),'movement.booked · parent '+m.ref,rnd4()]]});
+  S.dlg=null;S.sel=nr;toast(`REPRISE ${nr} created · parent ${m.ref} · chained ${h}…`);render();return;}
+ if(D.type==='reissue'){
+  const h=pushEvt(m,`otp.reissued · «${D.reason}»`);
+  S.dlg=null;toast(`${m.ref} — old code void · new code sent to the recipient · TTL 10:00 · chained ${h}…`);render();return;}
+ if(D.type==='override'){
+  const h=pushEvt(m,`otp.overridden · dual control · by R. Aziz · «${D.reason}»`);
+  m.otpFails=0;m.note='one-time override issued 09:5x — single use, chained';
+  m.proofs=m.proofs.map(p=>p[1]==='Delivery OTP'?['pend','Delivery OTP','one-time override active · single use']:p);
+  resolveAlert('otp',h);
+  D.done='731 442';D.hash=h;render();return;}
+ if(D.type==='dest'){
+  const h=pushEvt(m,`destination.changed + geofence.repinned (same tx) · «${D.reason}»`);
+  m.dest=D.addr.trim();
+  S.dlg=null;toast(`${m.ref} — destination changed AND geofence re-pinned in the same transaction · chained ${h}…`);render();return;}
+}
+
+/* ── SOS takeover — not a row in a list ── */
+function vSos(){
+ const root=$('#sosroot');
+ if(!S.sos){root.innerHTML='';return;}
+ root.innerHTML=`<div class="soswrap" role="alertdialog" aria-label="Driver SOS"><div class="sosin">
+  <div class="eyeb">DRIVER SOS · ${S.sos.t}</div>
+  <h1>SOS</h1>
+  <div class="who">Maya Chahwan · MTL-03 · Kia Niro</div>
+  <div class="meta">
+   LAST POSITION · <b>boul. Le Corbusier / A-15, Laval</b> · accuracy 8 m<br>
+   LAST PING <b>2 s</b> · SPEED <b>0 km/h</b> · IN CUSTODY <b>3 boxes · $4,286 declared</b><br>
+   chained <b>sos.raised · evt 51b0…</b> · provider lines held automatically
+  </div>
+  <div class="sosbtns">
+   <button class="b1" id="sosCall">📞 Call Maya — one tap</button>
+   <button class="b2" id="sosAck">${S.sos.ack?'✓ Acknowledged':'Acknowledge — I’m handling it'}</button>
+  </div>
+  ${S.sos.ack?`<div class="sosack">ACKNOWLEDGED ${S.sos.ackT} BY RAMI AZIZ · line open · 911 conference one tap away · chained sos.acknowledged 8c1f…</div>
+  <button class="b2" id="sosDown" style="margin-top:14px;min-height:46px;width:100%;border-radius:9px;border:2px solid rgba(255,255,255,.5);font-weight:800">DEMO · stand down — close the takeover</button>`:''}
+ </div></div>`;
+}
+
+/* ── render ── */
+function paintTop(){
+ const brand=$('.top .brand');if(brand)brand.textContent=tx('DISPATCH','RÉPARTITION');
+ const sub=$('.top .sub');if(sub)sub.textContent=tx('Rami A. · Route manager · Mon 24 Aug','Rami A. · Chef de route · lun. 24 août');
+ const mock=$('#demoMock');if(mock)mock.textContent=tx('DEMO · MOCK MTL-01 GPS','DÉMO · GPS MTL-01 SIMULÉ');
+ const sos=$('#demoSos');if(sos)sos.textContent=tx('DEMO · DRIVER SOS','DÉMO · SOS CHAUFFEUR');
+ const slot=$('#langslot');if(slot){slot.innerHTML=langSw();wireLang();}
+}
+function render(){
+ paintTop();vStrip();vMap();vRail();vAlerts();vDrawer();vDlg();vSos();
+ const selRow=$('.mrow.sel');if(selRow)selRow.scrollIntoView({block:'nearest'});
+}
+
+/* ── event delegation ── */
+document.addEventListener('click',e=>{
+ const idb=e.target.closest('button[id],[data-mv],[data-drv],[data-dlg],[data-aact]');
+ if(!idb)return;
+ const id=idb.id||'';
+ /* top-bar demos */
+ if(id==='demoMock'){
+  S.mock=!S.mock;idb.classList.toggle('on',S.mock);
+  if(S.mock){S.alerts.unshift({id:'mock',sev:'risk',tag:'MOCKED LOCATION · MTL-01',res:false,
+    txt:'<b>MTL-01’s device reports <span class="mono">location.mocked=true</span></b> — its position cannot be trusted and it is flashing on the map. <b>Suspend handovers for MTL-01 and call Rami?</b>',
+    btns:[['suspend','Suspend MTL-01 handovers',''],['callr','Call Rami','alt']]});
+   toast('DEMO — MTL-01 GPS now reports location.mocked=true',true);}
+  else{S.alerts=S.alerts.filter(a=>a.id!=='mock');toast('DEMO — MTL-01 GPS trusted again');}
+  render();return;}
+ if(id==='demoSos'){S.sos={t:clockTxt(),ack:false};render();return;}
+ if(id==='sosCall'){toast('Calling Maya Chahwan · +1 514 ••• ••45 — line opening…');return;}
+ if(id==='sosAck'){if(!S.sos.ack){S.sos.ack=true;S.sos.ackT=clockTxt();render();}return;}
+ if(id==='sosDown'){S.sos=null;
+  S.alerts.unshift({id:'sosr',sev:'risk',tag:'SOS · MTL-03 · RESOLVED',res:true,rhash:'8c1f',
+   txt:'SOS raised and acknowledged by Rami Aziz — stood down (demo). Full trace on the chain.'});
+  toast('SOS stood down · sos.resolved chained');render();return;}
+ if(id==='drawerX'){S.sel=null;S.selDrv=null;render();return;}
+ if(id==='dlgCancel'){S.dlg=null;render();if(S.needRender){S.needRender=false;}return;}
+ if(id==='dlgClose'){S.dlg=null;render();return;}
+ if(id==='dlgGo'){if(!idb.disabled)doConfirm();return;}
+ /* dialogs from drawer */
+ const dt=idb.getAttribute('data-dlg');
+ if(dt){if(!idb.disabled)openDlg(dt,idb.getAttribute('data-ref'));return;}
+ /* alert actions */
+ const aact=idb.getAttribute('data-aact');
+ if(aact){
+  const aid=idb.getAttribute('data-aid');
+  if(aact==='reassign')return openDlg('reassign','M-4472');
+  if(aact==='override')return openDlg('override','M-4473');
+  if(aact==='notify'){const h=pushEvt(mvByRef('M-4472'),'client.notified — new window 10:35–10:50 · DLIVERD 24 credit pre-applied');
+   toast('SMS to G. Pensato — new window 10:35–10:50, visit credit applied · chained '+h+'…');return;}
+  if(aact==='call'){toast('Calling Maya Chahwan · MTL-03 — line opening…');return;}
+  if(aact==='callr'||aact==='calldrv'){toast('Calling '+(aact==='callr'?'Rami Aziz · MTL-01':'Maya Chahwan · MTL-03')+' — line opening…');return;}
+  if(aact==='detour'){const h=rnd4();resolveAlert('offroute',h);S.drivers[0].off=0;
+   toast('Off-route cleared as an expected detour · route.detour_expected chained '+h+'…');render();return;}
+  if(aact==='refuse'){const h=pushEvt(mvByRef('M-4472'),'seal.mismatch.confirmed — CS-40120 flagged for audit');
+   resolveAlert('seal',h);toast('Refusal stands · CS-40120 flagged in the seal register · chained '+h+'…');render();return;}
+  if(aact==='assign'){const m=mvByRef('M-4480'),h=pushEvt(m,'movement.assigned MTL-01 by dispatcher — offer closed');
+   m.status='ASSIGNED';m.drv='MTL-01';m.eta='15:40';m.note='assigned directly by dispatch — offer closed for MTL-03';
+   S.offer.state='assigned';resolveAlert('offer',h);
+   toast('M-4480 assigned to MTL-01 · offer withdrawn from MTL-03 · chained '+h+'…');render();return;}
+  if(aact==='raise'){S.offer.fee=15.50;S.offer.left=30;S.offer.state='open';
+   const m=mvByRef('M-4480');m.status='OFFERED';m.drv=null;m.service='ADD-ON · $15.50';
+   const h=pushEvt(m,'offer.reissued at $15.50 — first accept wins');
+   m.note='re-offered at $15.50 to MTL-01 & MTL-03 · <b>first accept wins</b>';
+   toast('M-4480 re-offered at $15.50 · fresh 0:30 · first accept wins · chained '+h+'…');render();return;}
+  if(aact==='suspend'){const h=rnd4();resolveAlert('mock',h);
+   toast('Handovers suspended for MTL-01 until its GPS is trusted · chained '+h+'…');render();return;}
+  return;}
+ /* selection */
+ const mv=idb.getAttribute('data-mv');
+ if(mv){S.sel=mv;const m=mvByRef(mv);S.selDrv=m?m.drv:null;render();return;}
+ const dg=idb.getAttribute('data-drv');
+ if(dg){
+  const order={RISK:0,LATE:1,CUSTODY:2,OFFER:3,ONTIME:4,DONE:5};
+  const mine=S.movements.filter(m=>m.drv===dg)
+   .sort((a,b)=>(order[groupOf(a)]-order[groupOf(b)])||(ttb(a)-ttb(b)));
+  if(mine.length){S.sel=mine[0].ref;S.selDrv=dg;render();}
+  return;}
+});
+/* svg <g> is not a button — also catch plain clicks on the map groups */
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){
+  if(S.dlg){S.dlg=null;render();}
+  else if(S.sel){S.sel=null;S.selDrv=null;render();}
+ }
+ if(e.key==='Enter'&&e.target.getAttribute&&(e.target.getAttribute('data-mv')||e.target.getAttribute('data-drv')))
+  e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+});
+document.addEventListener('input',e=>{
+ const D=S.dlg;if(!D)return;
+ if(e.target.id==='dlgReason')D.reason=e.target.value;
+ if(e.target.id==='dlgTo')D.to=e.target.value;
+ if(e.target.id==='dlgAddr')D.addr=e.target.value;
+ if(e.target.id==='dlgChk')D.chk=e.target.checked;
+ dlgCheck();
+});
+
+/* ── the tickers: clock, poll age, ping ages, offer countdown, marker drift ── */
+setInterval(()=>{
+ const c=$('#clock');if(c)c.textContent=clockTxt();
+ /* poll ticker actually ticks */
+ S.age=(S.age+1)%6;
+ const at=$('#agetick');if(at)at.textContent=S.age===0?'refreshing…':`refreshed ${S.age} s ago`;
+ /* ping ages */
+ for(const d of S.drivers){
+  d.ping++;if(d.ping>=d.every)d.ping=0;
+  $$(`[data-ping="${d.id}"]`).forEach(el=>{el.textContent=`${d.id} · ${d.ping} s`;});
+ }
+ /* offer countdown — first accept wins, then OFFER_TIMEOUT */
+ if(S.offer.state==='open'&&S.offer.left>0){
+  S.offer.left--;
+  $$('[data-count]').forEach(el=>{el.textContent='0:'+String(S.offer.left).padStart(2,'0');});
+  if(S.offer.left===0){
+   S.offer.state='expired';
+   const m=mvByRef('M-4480');
+   m.note='<b>OFFER_TIMEOUT passed — nobody accepted.</b> Assign directly or raise the fee';
+   pushEvt(m,'offer.timeout — unassigned');
+   const a=S.alerts.find(x=>x.id==='offer');
+   if(a&&!a.res)a.txt='<b>M-4480 passed OFFER_TIMEOUT with no acceptance</b> from MTL-01 or MTL-03. It is unassigned and the restock window is shrinking. <b>Assign it directly, or raise the fee and re-offer?</b>';
+   toast('M-4480 — offer expired unassigned · OFFER_TIMEOUT',true);
+   if(!S.dlg&&!S.sos)render();else S.needRender=true;
+  }
+ }
+ /* MTL-03 creeps toward Laval (visible drift on the map) */
+ const m3=S.drivers[0];
+ const dx=m3.tx-m3.x,dy=m3.ty-m3.y,len=Math.hypot(dx,dy);
+ if(len>3){m3.x+=dx/len*0.5;m3.y+=dy/len*0.5;
+  const g=$(`g.drv[data-drv="MTL-03"]`);if(g)g.setAttribute('transform',`translate(${m3.x},${m3.y})`);
+  const th=$('#tether3');if(th){th.setAttribute('x2',m3.x-8);th.setAttribute('y2',m3.y+6);}}
+ if(S.needRender&&!S.dlg&&!S.sos){S.needRender=false;render();}
+},1000);
+
+render();
+toast('DEMO — dispatch board · Mon 24 Aug 09:52 · polling every 5 s');
+</script>
+</body></html>
