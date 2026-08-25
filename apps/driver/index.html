@@ -292,10 +292,11 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .bars .b{width:100%;background:var(--acc-line);border-radius:4px 4px 0 0}
 .bars .b.hi{background:var(--acc)}
 .bars .d{font-family:var(--mono);font-size:9px;color:var(--faint)}
-.toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(120px);
+.toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(120%);
   background:var(--ink);color:#EBF1EE;font-size:13px;font-weight:700;padding:11px 17px;
-  border-radius:8px;transition:transform .25s;z-index:60;max-width:86%;text-align:center}
-.toast.show{transform:translateX(-50%) translateY(0)}
+  border-radius:8px;transition:transform .25s,opacity .25s;z-index:60;max-width:86%;text-align:center;
+  opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
 .phone-screen:has(.dock) .toast{bottom:176px}
 html.native .phone-screen:has(.dock) .toast{bottom:calc(176px + env(safe-area-inset-bottom))}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
@@ -366,8 +367,12 @@ const DEMO_IDS={
  '514-555-0244':'Rami C.','5145550244':'Rami C.','rami@custode.ca':'Rami C.'
 };
 let toastT;
-function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.background=bad?'#93301F':'';
- t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
+function toast(m,bad){
+ const t=$('#toast');if(!t)return;
+ t.textContent=m;t.style.background=bad?'#93301F':'';
+ t.classList.add('show');clearTimeout(toastT);
+ toastT=setTimeout(()=>{t.classList.remove('show');},2800);
+}
 function tickClock(){
  const d=new Date(),h=((d.getHours()+11)%12)+1,m=String(d.getMinutes()).padStart(2,'0');
  const el=$('#osclock');if(el)el.textContent=h+':'+m;
