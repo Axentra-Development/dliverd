@@ -47,6 +47,29 @@ body{margin:0;color:var(--body);font-family:var(--sans);-webkit-font-smoothing:a
   .phone{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none}
   .phone-screen{border-radius:0}
 }
+html.native,html.native body{background:var(--paper);height:100%;overflow:hidden}
+html.native .stage{padding:0;background:var(--paper);min-height:100%;min-height:100dvh}
+html.native .phone{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none;background:var(--paper)}
+html.native .phone-screen{border-radius:0;height:100%}
+html.native .island,html.native .osbar,html.native .homeind{display:none}
+html.native .bar{padding-top:max(10px,env(safe-area-inset-top))}
+html.native .nav{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+html.native .splash,html.native .lock{padding-top:max(72px,calc(env(safe-area-inset-top) + 36px))}
+html.native .toast{bottom:calc(108px + env(safe-area-inset-bottom))}
+html.native .loginwrap{padding-top:max(36px,calc(env(safe-area-inset-top) + 20px));
+  padding-bottom:max(28px,calc(env(safe-area-inset-bottom) + 16px))}
+html.native .dock{padding-bottom:8px}
+/* login */
+.loginwrap{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  display:flex;flex-direction:column;justify-content:center;padding:62px 22px 36px}
+.loginwrap .lg{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+.loginwrap h1{font-size:24px;color:var(--ink);letter-spacing:-.02em;line-height:1.2}
+.loginwrap .sub2{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.55}
+.loginwrap .field{margin-top:20px}
+.loginwrap .actions{margin-top:16px}
+.idpill{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);
+ border:1px solid var(--acc-line);border-radius:20px;padding:7px 14px;font-size:13px;
+ font-weight:700;color:var(--acc-ink);margin-top:4px}
 button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
 input{font-family:inherit;font-size:15px;color:var(--ink);border:1.5px solid var(--line-mid);
   border-radius:6px;padding:12px;background:var(--surface);width:100%}
@@ -67,9 +90,10 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .main{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 16px}
 .card{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;
   margin-bottom:12px;overflow:hidden}
-.card .hd{display:flex;align-items:center;gap:9px;padding:12px 15px;background:var(--raise);
-  border-bottom:1px solid var(--line);font-weight:800;color:var(--ink);font-size:14px}
-.card .bd{padding:13px 15px}
+.card .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;background:var(--raise);
+  border-bottom:1px solid var(--line);font-weight:800;color:var(--ink);font-size:14px;line-height:1.3}
+.card .bd{padding:13px 14px}
+.main>:last-child{margin-bottom:0}
 .pill{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;
   text-transform:uppercase;padding:3px 7px;border:1px solid var(--line-mid);border-radius:3px;
   color:var(--muted);background:var(--surface);white-space:nowrap}
@@ -77,36 +101,54 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .pill.risk{color:var(--risk);border-color:var(--risk-line);background:var(--risk-soft)}
 .pill.warn{color:var(--warn);border-color:#DDC386;background:var(--warn-soft)}
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
-  min-height:50px;border-radius:8px;background:var(--acc);color:#fff;font-size:15.5px;font-weight:800}
+  min-height:48px;border-radius:10px;background:var(--acc);color:#fff;font-size:15px;font-weight:800;
+  padding:10px 14px;line-height:1.2;text-align:center}
 .btn:active{transform:scale(.99)}
 .btn.alt{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-mid);font-weight:700}
 .btn.danger{background:var(--surface);color:var(--risk);border:1.5px solid var(--risk-line);font-weight:700}
-.btn.ghost{background:none;color:var(--muted);min-height:40px;font-weight:600;font-size:13px}
-.btn.sm{min-height:40px;font-size:13px;border-radius:7px}
+.btn.ghost{background:none;color:var(--muted);min-height:44px;font-weight:600;font-size:13.5px;padding:8px 12px}
+.btn.sm{min-height:44px;font-size:13.5px}
+.btn:disabled{opacity:.4;pointer-events:none}
+.actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.actions.row{flex-direction:row;align-items:stretch}
+.actions.row>.btn{flex:1 1 0;width:auto;min-width:0}
+.dock{flex:0 0 auto;padding:10px 12px 8px;background:rgba(255,255,255,.94);
+  backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+  border-top:1px solid var(--line-mid);display:flex;flex-direction:column;gap:8px}
+.dock .btn{margin:0}
+.card.tools .bd{padding:10px}
+.card.tools .navrow{margin-top:0}
+.card.tools .navrow+.navrow{margin-top:7px}
+.stop-actions{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.stop-actions .navrow{margin-top:0}
+.seg{display:inline-flex;border:1.5px solid var(--line-mid);border-radius:8px;overflow:hidden}
+.seg button{padding:7px 12px;font-size:12px;font-weight:800;color:var(--muted);min-width:44px}
+.seg button.on{background:var(--acc);color:#fff}
 .note{display:flex;gap:9px;padding:11px 13px;font-size:12.5px;line-height:1.5;border-radius:8px;margin-bottom:12px}
 .note.acc{background:var(--acc-soft);color:var(--acc-ink);border:1px solid var(--acc-line)}
 .note.risk{background:var(--risk-soft);color:var(--risk);border:1px solid var(--risk-line)}
 .note.warn{background:var(--warn-soft);color:var(--warn);border:1px solid #DDC386}
-.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
 .kv:last-child{border-bottom:0}
 .kv .k{color:var(--muted)} .kv .v{color:var(--ink);font-weight:700;text-align:right}
 .label{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
   color:var(--faint);margin:14px 2px 7px}
 /* dashboard tiles */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.tile{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;padding:13px 14px}
-.tile .v{font-family:var(--mono);font-size:23px;font-weight:800;color:var(--ink);line-height:1}
+.tile{background:var(--surface);border:1px solid var(--line-mid);border-radius:10px;padding:14px;
+  min-height:78px;display:flex;flex-direction:column;justify-content:space-between}
+.tile .v{font-family:var(--mono);font-size:22px;font-weight:800;color:var(--ink);line-height:1.1}
 .tile .v.acc{color:var(--acc)} .tile .v.risk{color:var(--risk)}
-.tile .k{font-size:10.5px;color:var(--muted);margin-top:5px}
+.tile .k{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.25}
 .hero{background:var(--dark);border-radius:12px;color:#C0CCC7;padding:16px;margin-bottom:12px}
 .hero .eyeb{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--dka)}
 .hero h2{color:#fff;font-size:18px;font-weight:800;margin-top:6px;line-height:1.25}
-.hero .m{font-size:12px;color:var(--dkm);margin-top:4px}
-.hero .row{display:flex;gap:8px;margin-top:13px}
-.hero .b1{flex:1 1 auto;min-height:44px;border-radius:7px;background:var(--dka);color:var(--dark);
-  font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:7px}
-.hero .b2{min-height:44px;border-radius:7px;border:1px solid var(--dkl);color:#C0CCC7;
-  font-weight:700;font-size:13px;padding:0 14px;display:flex;align-items:center}
+.hero .m{font-size:12px;color:var(--dkm);margin-top:4px;line-height:1.45}
+.hero .row{display:flex;gap:8px;margin-top:14px;align-items:stretch}
+.hero .b1{flex:1 1 auto;min-height:48px;border-radius:10px;background:var(--dka);color:var(--dark);
+  font-weight:800;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;line-height:1.2;text-align:center}
+.hero .b2{flex:0 0 auto;min-height:48px;border-radius:10px;border:1.5px solid var(--dkl);color:#C0CCC7;
+  font-weight:700;font-size:14px;padding:10px 16px;display:flex;align-items:center;justify-content:center}
 /* stops */
 .stop{display:flex;gap:0;width:100%;text-align:left;background:var(--surface);
   border-bottom:1px solid var(--line);padding:0 14px 0 0}
@@ -134,11 +176,12 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .stop.now .seta{color:var(--acc);font-weight:700}
 .earn{font-family:var(--mono);font-size:11px;color:var(--acc-ink);font-weight:700}
 .navrow{display:flex;gap:7px;margin-top:9px}
-.navbtn{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:38px;
-  border:1.5px solid var(--line-mid);border-radius:7px;font-size:12px;font-weight:700;color:var(--ink);
-  background:var(--surface);text-decoration:none}
+.navbtn{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:5px;min-height:40px;
+  border:1.5px solid var(--line-mid);border-radius:8px;font-size:11.5px;font-weight:700;color:var(--ink);
+  background:var(--surface);text-decoration:none;padding:0 6px;white-space:nowrap;min-width:0}
 .navbtn:active{background:var(--raise)}
-.navbtn svg{width:15px;height:15px;flex:0 0 auto}
+.navbtn svg{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;stroke-width:1.8;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
 .scontact{font-size:11.5px;color:var(--acc-ink);margin-top:3px;font-weight:600}
 .stop.done .scontact{color:var(--faint);font-weight:500}
 .map{height:120px;border-bottom:1px solid var(--line)}
@@ -153,17 +196,21 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .lockcard .big{font-size:34px}
 .lockcard h3{color:var(--risk);font-size:16px;margin-top:6px}
 .lockcard p{font-size:12.5px;color:var(--risk);margin-top:6px;line-height:1.5}
+.lockcard .btn{margin-top:12px}
 .offbanner{background:var(--risk);color:#fff;border-radius:9px;padding:12px 14px;margin-bottom:12px;
   font-size:12.5px;line-height:1.5;font-weight:600;animation:slidein .3s}
+.offbanner .btn{background:#fff;color:var(--risk);margin-top:10px}
 /* scanner */
 .scanview{background:var(--dark);border-radius:10px;overflow:hidden;margin-bottom:10px}
 .boxrow{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
 .boxrow:last-child{border-bottom:0}
+.boxrow>div:first-child{min-width:0;flex:1 1 auto}
 .boxrow .bid{font-family:var(--mono);font-size:13px;font-weight:800;color:var(--ink)}
 .boxrow .bfor{font-size:11px;color:var(--muted)}
-.boxrow .scanb{margin-left:auto;min-height:36px;padding:0 14px;border-radius:7px;font-size:12px;
-  font-weight:800;background:var(--acc);color:#fff;display:flex;align-items:center;gap:6px}
+.boxrow .scanb{margin-left:auto;min-height:40px;padding:0 14px;border-radius:8px;font-size:12px;
+  font-weight:800;background:var(--acc);color:#fff;display:flex;align-items:center;gap:6px;flex:0 0 auto}
 .boxrow.scanned .scanb{background:var(--acc-soft);color:var(--acc-ink);pointer-events:none}
+.boxrow .scanb.ghost{background:var(--surface);color:var(--muted);border:1.5px solid var(--line-mid)}
 .bigscan{display:flex;flex-direction:column;gap:8px}
 .bigscan button{display:flex;align-items:center;gap:10px;border:1.5px solid var(--dkl);
   border-radius:8px;background:var(--dark2);color:#EBF1EE;padding:12px 14px;text-align:left}
@@ -177,17 +224,21 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .offer .top{display:flex;align-items:center;gap:9px;background:var(--acc);color:#fff;padding:9px 14px;
   font-size:12px;font-weight:800;letter-spacing:.04em}
 .offer .timer{margin-left:auto;font-family:var(--mono);font-size:14px}
+.offer .bd{padding:13px 14px}
+.offer .actions{margin-top:12px}
 .offer.quiet{border-color:var(--line-mid);animation:none}
 .offer.quiet .top{background:var(--raise);color:var(--ink);border-bottom:1px solid var(--line)}
 /* handover */
-.hand{background:var(--dark);color:#C0CCC7;border-radius:12px;padding:18px 16px}
+.hand{background:var(--dark);color:#C0CCC7;border-radius:12px;padding:16px 14px;margin-bottom:12px}
 .hand h2{font-size:18px;font-weight:800;color:#fff;line-height:1.25}
 .hand .sb{font-size:12px;color:var(--dkm);margin-top:5px;line-height:1.5}
+.hand .btn.ghost{color:var(--dkm)}
+.hand .actions{margin-top:12px}
 .modeswitch{display:flex;border:1px solid var(--dkl);border-radius:8px;overflow:hidden;margin-top:14px}
 .modeswitch button{flex:1 1 0;padding:10px;font-size:12.5px;font-weight:700;color:var(--dkm);background:var(--dark2)}
 .modeswitch button.on{background:#12302A;color:var(--dka2)}
-.otp{display:flex;gap:7px;justify-content:center;margin-top:16px}
-.otp span{width:40px;height:50px;border:1px solid var(--dkl);border-radius:6px;background:var(--dark2);
+.otp{display:flex;gap:6px;justify-content:center;margin-top:16px}
+.otp span{flex:1 1 0;max-width:46px;height:48px;border:1px solid var(--dkl);border-radius:8px;background:var(--dark2);
   display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:22px;
   font-weight:700;color:#EBF1EE}
 .otp span.f{border-color:var(--dka);background:#12302A}
@@ -210,8 +261,8 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .scanrow input{width:20px;height:20px;flex:0 0 auto}
 .scanrow .n{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
 .scanrow .m{font-size:11px;color:var(--muted)}
-.chips{display:flex;gap:7px;margin-top:8px}
-.chipG{flex:1 1 0;border:1.5px solid var(--line-mid);border-radius:8px;padding:9px 8px;text-align:left;background:var(--surface)}
+.chips{display:flex;gap:7px;margin-top:8px;align-items:stretch}
+.chipG{flex:1 1 0;border:1.5px solid var(--line-mid);border-radius:8px;padding:10px 8px;text-align:left;background:var(--surface);min-height:58px}
 .chipG.on{border-color:var(--acc);background:var(--acc-soft)}
 .chipG .g{font-family:var(--mono);font-size:15px;font-weight:800;color:var(--ink)}
 .chipG .l{font-size:9.5px;color:var(--muted);margin-top:2px;line-height:1.25}
@@ -240,10 +291,12 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 .bars .b{width:100%;background:var(--acc-line);border-radius:4px 4px 0 0}
 .bars .b.hi{background:var(--acc)}
 .bars .d{font-family:var(--mono);font-size:9px;color:var(--faint)}
-.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(120px);
+.toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(120px);
   background:var(--ink);color:#EBF1EE;font-size:13px;font-weight:700;padding:11px 17px;
   border-radius:8px;transition:transform .25s;z-index:60;max-width:86%;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
+.phone-screen:has(.dock) .toast{bottom:176px}
+html.native .phone-screen:has(.dock) .toast{bottom:calc(176px + env(safe-area-inset-bottom))}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 /* lock / splash */
 .splash,.lock{height:100%;display:flex;flex-direction:column;align-items:center;padding:88px 28px 36px;text-align:center}
@@ -290,6 +343,9 @@ input:focus{outline:2px solid var(--acc);outline-offset:1px}
 </div>
 <script>
 'use strict';
+if(new URLSearchParams(location.search).has('native')||navigator.standalone===true){
+ document.documentElement.classList.add('native');
+}
 const $=s=>document.querySelector(s);
 const SEAL=`<svg width="24" height="12" viewBox="0 0 26 13"><rect width="13" height="13" fill="#0F6455"/><rect x="15" y="1.6" width="9.8" height="9.8" fill="none" stroke="#0F6455" stroke-width="1.7"/></svg>`;
 const I={home:'<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>',
@@ -303,7 +359,11 @@ const I={home:'<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>',
  mail:'<rect x="4" y="6.5" width="16" height="11.5" rx="1.5"/><path d="m4.5 7.5 7.5 6 7.5-6"/>'};
 const ic=n=>`<svg viewBox="0 0 24 24">${I[n]}</svg>`;
 const DEMO_CODE='417826';
-const APP_PIN='2468';
+const LOGIN_CODE='246810';
+const DEMO_IDS={
+ '514-555-0199':'Maya C.','5145550199':'Maya C.','maya@custode.ca':'Maya C.',
+ '514-555-0244':'Rami C.','5145550244':'Rami C.','rami@custode.ca':'Rami C.'
+};
 let toastT;
 function toast(m,bad){const t=$('#toast');t.textContent=m;t.style.background=bad?'#93301F':'';
  t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
@@ -319,7 +379,8 @@ function setChrome(dark){
 
 /* ── state ── */
 const S={
- gate:'splash', pin:'', pinErr:false,
+ gate:'splash',
+ auth:{logged:false,stage:'id',id:'',method:'',code:''},
  tab:'dash', view:null, online:true, otp:'', otpErr:false, codeOk:false, grade:'B', phase:'scan',
  routeAccepted:false, custody:0, earned:0, sigDrawn:false, car:[], loaded:[], boxOk:false,
  gps:{dist:450, offKm:0, thresholdKm:2, alerted:false},
@@ -377,7 +438,7 @@ function geoLocked(s2,onArrive){
    <p>You are <b>${S.gps.dist} m</b> from ${s2.name}. Scanning, codes and signatures only unlock
    inside <b>${GEOFENCE_M} m</b> of the client's address — a delivery physically cannot be
    completed anywhere else.</p>
-   <button class="btn sm" style="margin:10px auto 0;max-width:260px" id="simArrive">DEMO · simulate arriving at the door</button>
+   <button class="btn" id="simArrive">DEMO · simulate arriving at the door</button>
   </div>`;
 }
 const SCANSVG=`<svg viewBox="0 0 400 130" style="width:100%;height:130px;display:block">
@@ -406,9 +467,9 @@ function verifyBlock(title,sub,demo){
    <div class="sigwrap"><canvas id="sig" width="380" height="140"></canvas>
     <div class="sighint">SIGNS WITH A FINGER · NAME MATCHES PHOTO ID</div></div>
    <input id="signame" placeholder="Signer's full name (photo ID)" style="margin-top:10px;background:var(--dark2);border-color:var(--dkl);color:#EBF1EE">
-   <div style="display:flex;gap:8px;margin-top:10px">
-    <button class="btn sm" id="sigOk" style="background:var(--dka);color:var(--dark)">Confirm — transfer custody</button>
-    <button class="btn alt sm" id="sigClr" style="background:var(--dark2);color:#C0CCC7;border-color:var(--dkl)">Clear</button></div>`
+   <div class="actions">
+    <button class="btn" id="sigOk" style="background:var(--dka);color:var(--dark)">Confirm — transfer custody</button>
+    <button class="btn ghost" id="sigClr">Clear signature</button></div>`
   :`<div class="sighint" style="text-align:left;padding:6px 0 2px">LOCKED UNTIL THE CODE IS VERIFIED</div>`}
  </div>`;
 }
@@ -440,44 +501,79 @@ function wireVerify(demo,onDone){
    onDone(nm);};
  }
 }
+function lookupDriver(v){
+ const key=(v||'').trim().toLowerCase();
+ const digits=key.replace(/\D/g,'');
+ return DEMO_IDS[key]||DEMO_IDS[key.replace(/\s/g,'')]||DEMO_IDS[digits]||null;
+}
+function currentDriver(){
+ const n=lookupDriver(S.auth.id)||'Maya C.';
+ return n==='Rami C.'
+  ? {short:'Rami C.',full:'Rami Chahwan',code:'MTL-01',route:'MTL-01 · Montréal-Est',vehicle:'Toyota RAV4 · personal'}
+  : {short:'Maya C.',full:'Maya Chahwan',code:'MTL-03',route:'MTL-03 · Laval / Rive-Nord',vehicle:'Kia Niro · personal'};
+}
 function resetVerify(){S.otp='';S.otpErr=false;S.codeOk=false;S.sigDrawn=false;}
-function unlock(){S.gate='app';S.pin='';S.pinErr=false;toast('Unlocked · MTL-03');render();}
-function vGate(){
+function vSplash(){
  $('#app').style.display='none';
  $('#gate').style.display='flex';
  setChrome(true);
- if(S.gate==='splash'){
-  $('#gate').innerHTML=`<div class="splash">
-    <div class="mark">${SEAL}</div>
-    <h1>CUSTODE</h1>
-    <p>Chain of custody · Montréal</p>
-   </div>`;
-  setTimeout(()=>{if(S.gate==='splash'){S.gate='lock';render();}},1300);
-  return;
- }
- const dots=[0,1,2,3].map(i=>`<i class="${S.pin[i]?'on':''}"></i>`).join('');
- $('#gate').innerHTML=`<div class="lock">
+ $('#gate').innerHTML=`<div class="splash">
    <div class="mark">${SEAL}</div>
    <h1>CUSTODE</h1>
-   <div class="who">Maya Chahwan · MTL-03</div>
-   <button class="face" id="faceId" aria-label="Unlock with Face ID">${ic('user')}</button>
-   <div class="hint">Face ID or passcode</div>
-   <div class="pindots ${S.pinErr?'err':''}">${dots}</div>
-   <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join('')}
-    <button class="fn" data-k="clr">CLEAR</button><button data-k="0">0</button><button class="fn" data-k="del">⌫</button></div>
-   <div class="sighint" style="margin-top:14px">Passcode 2 4 6 8</div>
+   <p>Chain of custody · Montréal</p>
   </div>`;
- $('#faceId').onclick=()=>unlock();
- document.querySelectorAll('#gate [data-k]').forEach(b=>b.onclick=()=>{
-  const k=b.dataset.k;S.pinErr=false;
-  if(k==='clr')S.pin='';else if(k==='del')S.pin=S.pin.slice(0,-1);
-  else if(S.pin.length<4)S.pin+=k;
-  if(S.pin.length===4){
-   if(S.pin===APP_PIN)return unlock();
-   S.pinErr=true;S.pin='';toast('Wrong passcode',true);
-  }
-  render();
- });
+ setTimeout(()=>{if(S.gate==='splash'){S.gate='app';render();}},1100);
+}
+function vLogin(){
+ const A=S.auth;
+ setChrome(false);
+ $('#gate').style.display='none';
+ $('#app').style.display='flex';
+ $('#app').innerHTML=`
+  <div class="loginwrap">
+   <div class="lg">${SEAL}<span style="font-weight:800;letter-spacing:.16em;color:var(--ink)">CUSTODE DRIVER</span></div>
+   ${A.stage==='id'?`
+    <h1>Sign in to drive</h1>
+    <div class="sub2">Use your <b>phone number</b> or your <b>work email</b> — we'll text or email you a one-time code. No passwords, ever.</div>
+    <div class="field"><input id="lid" inputmode="email" autocomplete="username"
+      placeholder="514-555-0199  or  you@custode.ca" value="${A.id}"></div>
+    <div class="actions"><button class="btn" id="lgo">Send my code</button></div>
+    <div class="note acc" style="margin-top:18px;margin-bottom:0"><div><b>Demo accounts:</b> 514-555-0199 or maya@custode.ca (Maya) · 514-555-0244 or rami@custode.ca (Rami)</div></div>`
+   :`
+    <h1>Enter the 6-digit code</h1>
+    <div class="sub2">Sent by ${A.method==='phone'?'SMS to':'email to'}</div>
+    <div class="idpill">${A.id} <button id="chg" type="button" style="font-size:11px;color:var(--acc);text-decoration:underline">change</button></div>
+    <div class="field"><input id="lcode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+      placeholder="••••••" style="font-family:var(--mono);font-size:24px;letter-spacing:.4em;text-align:center" value="${A.code}"></div>
+    <div class="actions">
+     <button class="btn" id="lver">Verify & sign in</button>
+     <button class="btn ghost" id="lre">Resend the code</button></div>
+    <div class="note acc" style="margin-top:14px"><div><b>Demo code:</b> 2 4 6 8 1 0</div></div>`}
+  </div>`;
+ if(A.stage==='id'){
+  const go=()=>{
+   const v=$('#lid').value.trim().toLowerCase();
+   const isPhone=/^[\d\s().+-]{10,}$/.test(v)&&v.replace(/\D/g,'').length>=10;
+   const isEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+   if(!isPhone&&!isEmail)return toast('Enter a valid phone number or work email',true);
+   if(!lookupDriver(v))return toast('Not a registered driver — ask dispatch to add you',true);
+   A.id=v;A.method=isPhone?'phone':'email';A.stage='code';A.code='';
+   toast(isPhone?'Code sent by SMS':'Code sent by email');vLogin();};
+  $('#lgo').onclick=go;
+  $('#lid').addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+  setTimeout(()=>$('#lid')&&$('#lid').focus(),50);
+ } else {
+  const ver=()=>{
+   if($('#lcode').value.trim()!==LOGIN_CODE)return toast('Wrong code — try again or resend',true);
+   A.logged=true;
+   toast('Welcome back, '+(lookupDriver(A.id)||'driver'));render();};
+  $('#lver').onclick=ver;
+  $('#lcode').addEventListener('keydown',e=>{if(e.key==='Enter')ver();});
+  $('#lcode').addEventListener('input',e=>{A.code=e.target.value;});
+  $('#chg').onclick=()=>{A.stage='id';vLogin();};
+  $('#lre').onclick=()=>toast('New code sent — the old one is dead');
+  setTimeout(()=>$('#lcode')&&$('#lcode').focus(),50);
+ }
 }
 
 function openSheet(title,opts,onPick){
@@ -496,7 +592,7 @@ function navLinks(addr){
  const q=encodeURIComponent(addr);
  return `<div class="navrow">
   <a class="navbtn" target="_blank" rel="noopener" href="https://waze.com/ul?q=${q}&navigate=yes">${ic('nav')}Waze</a>
-  <a class="navbtn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${q}">${ic('pin')}Google&nbsp;Maps</a>
+  <a class="navbtn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${q}">${ic('pin')}Maps</a>
   <a class="navbtn" target="_blank" rel="noopener" href="https://maps.apple.com/?daddr=${q}">${ic('pin')}Plans</a>
  </div>`;
 }
@@ -518,26 +614,31 @@ function contactLinks(s){
   ${s.email?`<a class="navbtn" href="mailto:${s.email}">${ic('mail')}Email</a>`:''}
  </div>`;
 }
+function toolsCard(s){
+ if(!s)return '';
+ return `<div class="card tools"><div class="bd">${navLinks(s.addr)}${contactLinks(s)}</div></div>`;
+}
 
 /* offer countdown */
 setInterval(()=>{
  let changed=false;
  for(const a of S.addons){
-  if(a.state==='open'&&a.left!=null){a.left--;if(a.left<=0){a.state='expired';toast(a.name+' — offer went to the next driver');}changed=true;}
+  if(a.state==='open'&&a.left!=null){a.left--;if(a.left<=0){a.state='expired';if(S.auth.logged)toast(a.name+' — offer went to the next driver');}changed=true;}
  }
- if(changed&&(S.tab==='addons'||S.tab==='dash'))render();
+ if(changed&&S.auth.logged&&(S.tab==='addons'||S.tab==='dash'))render();
 },1000);
 
 /* ── shell ── */
-function shell(inner){
- const n=openAddons().length;
+function shell(inner,dock){
+ const n=openAddons().length, d=currentDriver();
  document.getElementById('app').innerHTML=`
   <div class="bar"><div class="r1">${SEAL}
-    <div><div class="brand">DRIVER</div><div class="sub">Maya C. · MTL-03 · Mon 24 Aug</div></div>
+    <div><div class="brand">DRIVER</div><div class="sub">${d.short} · ${d.code} · Mon 24 Aug</div></div>
     <div class="sp"></div>
     <button class="chip-on ${S.online?'':'off'}" id="onoff"><span class="dot"></span>${S.online?'ONLINE':'OFFLINE'}</button>
    </div></div>
   <div class="main">${inner}</div>
+  ${dock?`<div class="dock">${dock}</div>`:''}
   <div class="nav">
    ${[['dash','home','Dashboard'],['route','route','Route'],['addons','plus','Add-ons'],
       ['earn','cash','Earnings'],['profile','user','Profile']].map(([t,i2,l])=>
@@ -574,9 +675,8 @@ function vDash(){
     <h2>${cur.name}</h2><div class="m">${cur.addr} · ${cur.info}</div>
     ${cur.phone||cur.email?`<div class="m" style="color:var(--dka2)">${cur.contact||'Contact'} · ${[cur.phone,cur.email].filter(Boolean).join(' · ')}</div>`:''}
     <div class="row"><button class="b1" id="workStop">${cur.type==='PICKUP'?'Arrived — scan the boxes':cur.type==='REPRISE'?'Collect buyback':'Start drop-off'}</button>
-     <button class="b2" id="goRoute">Route</button></div>
-    ${navLinks(cur.addr).replace('class="navrow"','class="navrow" style="margin-top:10px"')}
-    ${contactLinks(cur)}</div>`
+     <button class="b2" id="goRoute">Route</button></div></div>
+    ${toolsCard(cur)}`
   :`<div class="hero"><div class="eyeb">Route complete</div><h2>Every device accounted for.</h2>
     <div class="m">100% on time · ledger closed your day</div></div>`}
   <div class="tiles">
@@ -590,7 +690,7 @@ function vDash(){
    <div class="saddr">${hot.info}</div>
    ${contactLine(hot)}
    ${contactLinks(hot)}
-   <div style="display:flex;gap:8px;margin-top:10px">
+   <div class="actions row">
     <button class="btn sm" data-aacc="${hot.id}">Accept</button>
     <button class="btn alt sm" data-adec="${hot.id}">Skip</button></div></div></div>`:''}
   ${cur&&cur.deadline?`<div class="note warn"><div><b>Guarantee clock:</b> ${cur.name.split(' —')[0]} must close by ${cur.deadline} or the client's visit is automatically free.</div></div>`:''}
@@ -598,7 +698,7 @@ function vDash(){
    <div class="kv"><span class="k">Route pay</span><span class="v">$${routePay().toFixed(2)}</span></div>
    <div class="kv"><span class="k">Add-ons available</span><span class="v">${openAddons().length} · up to +$${openAddons().reduce((a,x)=>a+x.pay,0).toFixed(2)}</span></div>
    <div class="kv"><span class="k">Declared value on board</span><span class="v">$${(S.custody*890).toLocaleString()} · covered</span></div>
-   <div class="kv"><span class="k">Partner on the road</span><span class="v">Rami · MTL-01 · 5/8 stops</span></div>
+   <div class="kv"><span class="k">Partner on the road</span><span class="v">${currentDriver().code==='MTL-01'?'Maya · MTL-03 · 6/8 stops':'Rami · MTL-01 · 5/8 stops'}</span></div>
   </div></div>`);
  if($('#goRoute'))$('#goRoute').onclick=()=>{S.tab='route';render();};
  if($('#workStop'))$('#workStop').onclick=()=>{S.tab='route';S.view='stop';render();};
@@ -623,8 +723,11 @@ function stopRow(s,i,preview){
    ${contactLine(s)}
    <div class="smeta"><span class="earn">${s.pay?'+$'+s.pay.toFixed(2):'—'}</span>
     <span style="font-size:11px;color:var(--muted)">· ${s.info}</span></div>
-   ${cur?navLinks(s.addr)+contactLinks(s)+`<button class="btn" style="margin-top:9px;min-height:46px" data-work="${s.id}">
-     ${s.type==='PICKUP'?'Arrived — scan the boxes':s.type==='REPRISE'?'Collect the buyback':'At the door — code + signature'}</button>`:''}
+   ${cur?`<div class="stop-actions">
+     ${navLinks(s.addr)}${contactLinks(s)}
+     <button class="btn" data-work="${s.id}">
+     ${s.type==='PICKUP'?'Arrived — scan the boxes':s.type==='REPRISE'?'Collect the buyback':'At the door — code + signature'}</button>
+    </div>`:''}
   </div>
   <div class="seta">${s.eta}</div></div>`;
 }
@@ -640,9 +743,9 @@ function vRouteTab(){
      <div class="kv"><span class="k">Window</span><span class="v">07:40 – 16:30 · ~92 km</span></div>
     </div></div>
    <div class="label">The stops, in order</div>
-   <div class="card">${S.stops.map((s,i)=>stopRow(s,i,true)).join('')}</div>
-   <button class="btn" id="acceptRoute">Accept today's route · $${routePay().toFixed(2)}</button>
-   <button class="btn ghost" id="declineRoute">Can't drive today — release it to Rami</button>`);
+   <div class="card">${S.stops.map((s,i)=>stopRow(s,i,true)).join('')}</div>`,
+   `<button class="btn" id="acceptRoute">Accept today's route · $${routePay().toFixed(2)}</button>
+    <button class="btn ghost" id="declineRoute">Can't drive today — release it to Rami</button>`);
   $('#acceptRoute').onclick=()=>{S.routeAccepted=true;toast('Route accepted — first stop: Côte-Vertu DC');render();};
   $('#declineRoute').onclick=()=>toast('Route released — dispatch will reassign it');
   return;
@@ -652,8 +755,7 @@ function vRouteTab(){
  shell(`
   ${S.gps.alerted?`<div class="offbanner">⚠ OFF ROUTE — you are ${S.gps.offKm} km from the planned route.
     Dispatch and your partner were alerted automatically (your threshold: ${S.gps.thresholdKm} km).
-    <button style="display:block;margin-top:8px;background:#fff;color:var(--risk);border-radius:6px;
-    padding:8px 12px;font-weight:800;font-size:12px" id="backOn">I'm back on route</button></div>`:''}
+    <button class="btn sm" id="backOn">I'm back on route</button></div>`:''}
   ${cur?'':'<div class="done-wrap"><div class="done-ring"><svg width="34" height="34" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><polyline points="4 12.5 9.5 18 20 6"/></svg></div><h2>Route complete</h2><p>Every device accounted for.</p><div class="money">$'+S.earned.toFixed(2)+'</div></div>'}
   <div class="card">${S.stops.map((s,i)=>stopRow(s,i)).join('')}</div>
   ${S.routeAccepted&&curStop()?`<button class="btn ghost" id="simOff">DEMO · simulate a wrong turn (${S.gps.thresholdKm} km threshold)</button>`:''}`);
@@ -681,15 +783,16 @@ function vPickup(s){
   {id:'BX-ANJ0',f:'Cellcom Anjou · restock',d:'1 device · $1,079'}];
  if(S.phase==='verify'){
   shell(`
-   <div class="card"><div class="hd">Provider release — ${s.name}</div>
-    <div class="bd" style="padding-bottom:10px">
+   <div class="card"><div class="hd">Provider release</div>
+    <div class="bd">
+     <div class="kv"><span class="k">Location</span><span class="v">${s.name}</span></div>
      <div class="kv"><span class="k">Boxes scanned into the car</span><span class="v">${S.loaded.length} of ${BOXES.length} ✓</span></div>
      <div class="kv"><span class="k">IMEIs inside</span><span class="v">Scanned & sealed by the provider</span></div>
      ${contactKvs(s)}
     </div></div>
-   ${contactLinks(s)}
-   ${verifyBlock('The provider signs the release','Their dispatcher\u2019s app shows a release code. Code, then signature — custody never moves on one proof alone.','902314')}
-   <button class="btn ghost" id="back">Back</button>`);
+   ${toolsCard(s)}
+   ${verifyBlock('The provider signs the release','Their dispatcher\u2019s app shows a release code. Code, then signature — custody never moves on one proof alone.','902314')}`,
+   `<button class="btn ghost" id="back">Back</button>`);
   $('#back').onclick=()=>{S.phase='scan';resetVerify();render();};
   wireVerify('902314',nm=>{S.custody=9;S.car=BOXES.map(b=>b.id);S.phase='scan';resetVerify();
    finishStop(s,`Custody accepted · ${BOXES.length} boxes on board · released by ${nm}`);});
@@ -699,8 +802,7 @@ function vPickup(s){
  shell(`
   <div class="card"><div class="hd">Pickup — ${s.name}</div><div class="bd">
    ${contactKvs(s)}
-   ${contactLinks(s)}
-   <div class="note acc" style="margin:10px 0 10px"><div><b>The provider scanned and sealed the IMEIs when packing.</b> Your job: scan each box's reference to confirm you're taking the right boxes — nothing more.</div></div>
+   <div class="note acc" style="margin:10px 0"><div><b>The provider scanned and sealed the IMEIs when packing.</b> Your job: scan each box's reference to confirm you're taking the right boxes — nothing more.</div></div>
    <div class="scanview">${SCANSVG}</div>
    <div class="label" style="margin-top:4px">Your manifest — ${BOXES.length} boxes · 9 devices · $12,880 declared</div>
    ${BOXES.map(b=>`<div class="boxrow ${S.loaded.includes(b.id)?'scanned':''}">
@@ -708,11 +810,12 @@ function vPickup(s){
      <button class="scanb" data-load="${b.id}">${S.loaded.includes(b.id)?'✓ Scanned':'SCAN'}</button></div>`).join('')}
    <div class="boxrow"><div><div class="bid" style="color:var(--faint)">BX-7734</div>
      <div class="bfor">On the dock — NOT on your manifest</div></div>
-     <button class="scanb" style="background:var(--surface);color:var(--muted);border:1.5px solid var(--line-mid)" data-badbox="BX-7734">SCAN</button></div>
-   <div style="margin-top:12px">
-    <button class="btn" id="go" ${left.length?'disabled style="opacity:.45"':''}>
-     ${left.length?left.length+' box(es) left to scan':'All boxes confirmed — provider verification'}</button>
-    <button class="btn ghost" id="back">Back</button></div></div></div>`);
+     <button class="scanb ghost" data-badbox="BX-7734">SCAN</button></div>
+  </div></div>
+  ${toolsCard(s)}`,
+  `<button class="btn" id="go" ${left.length?'disabled':''}>
+    ${left.length?left.length+' box(es) left to scan':'All boxes confirmed — provider verification'}</button>
+   <button class="btn ghost" id="back">Back</button>`);
  $('#back').onclick=()=>{S.view=null;render();};
  document.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>{
   S.loaded.push(b.dataset.load);toast(b.dataset.load+' ✓ on your manifest — into the car');render();});
@@ -726,14 +829,14 @@ function vDropoff(s){
   if(S.gps.dist>GEOFENCE_M){
    shell(`
     <div class="card"><div class="hd">${s.name} <div class="sp"></div><span class="pill">${s.provider}</span></div>
-     <div class="bd" style="padding-bottom:10px">
+     <div class="bd">
       <div class="kv"><span class="k">Address</span><span class="v" style="font-weight:600">${s.addr}</span></div>
       ${contactKvs(s)}
      </div></div>
-    ${contactLinks(s)}
-    <div class="note warn" style="margin-top:10px"><div><b>Not answering?</b> Call or text before you log an exception — never leave the device.</div></div>
-    ${geoLocked(s)}
-    <button class="btn ghost" id="back">Back to route</button>`);
+    ${toolsCard(s)}
+    <div class="note warn"><div><b>Not answering?</b> Call or text before you log an exception — never leave the device.</div></div>
+    ${geoLocked(s)}`,
+    `<button class="btn ghost" id="back">Back to route</button>`);
    $('#back').onclick=()=>{S.view=null;render();};
    $('#simArrive').onclick=()=>{S.gps.dist=12;toast('GPS · 12 m — inside the geofence, handover unlocked');render();};
    return;
@@ -742,20 +845,20 @@ function vDropoff(s){
    ${gpsPill()}
    <div class="card"><div class="hd">${s.name} <div class="sp"></div><span class="pill">${s.provider}</span>
      ${s.deadline?`<span class="pill warn">by ${s.deadline}</span>`:''}</div>
-    <div class="bd" style="padding-bottom:10px">
+    <div class="bd">
      <div class="kv"><span class="k">Deliver box</span><span class="v mono">${s.box}</span></div>
      ${contactKvs(s)}
      <div class="kv"><span class="k">Pay</span><span class="v" style="color:var(--acc)">+$${s.pay.toFixed(2)}</span></div>
     </div></div>
-   ${contactLinks(s)}
+   ${toolsCard(s)}
    <div class="card"><div class="hd">Scan the box at the door</div><div class="bd">
     <div class="scanview">${SCANSVG}</div>
     <div class="note warn" style="margin-bottom:8px"><div><b>Wrong box can never leave the car.</b> The app refuses any box that isn't ${s.box}. (Demo: tap a box to simulate the scan.)</div></div>
     <div class="bigscan">${S.car.map(b=>`<button data-boxscan="${b}">
       <div><div class="bid2">${b}</div><div class="bfor2">${BOXF[b]||'buyback'}</div></div>
       <span class="sp"></span><span style="font-family:var(--mono);font-size:10px;color:var(--dkm)">SCAN</span></button>`).join('')}</div>
-    <button class="btn ghost" id="back" style="margin-top:10px">Back to route</button>
-   </div></div>`);
+   </div></div>`,
+   `<button class="btn ghost" id="back">Back to route</button>`);
   $('#back').onclick=()=>{S.view=null;render();};
   document.querySelectorAll('[data-boxscan]').forEach(b=>b.onclick=()=>{
    if(b.dataset.boxscan===s.box){S.boxOk=true;resetVerify();
@@ -767,15 +870,15 @@ function vDropoff(s){
   ${gpsPill()}
   <div class="card"><div class="hd">${s.name} <div class="sp"></div>
     <span class="pill acc">${s.box} ✓</span>${s.deadline?`<span class="pill warn">by ${s.deadline}</span>`:''}</div>
-   <div class="bd" style="padding-bottom:10px">
+   <div class="bd">
     <div class="kv"><span class="k">Releasing</span><span class="v">${s.n} device${s.n>1?'s':''} · box scanned ✓</span></div>
     ${contactKvs(s)}
     <div class="kv"><span class="k">Pay</span><span class="v" style="color:var(--acc)">+$${s.pay.toFixed(2)}</span></div>
    </div></div>
-  ${contactLinks(s)}
-  ${verifyBlock('The client signs for the phone','Their tracking page shows a 6-digit code you never see. Code first, then their signature — both, every time, no exceptions.','417826')}
-  <button class="btn danger" style="margin-top:12px" id="exc">Problem at the door — exception</button>
-  <button class="btn ghost" id="back">Back to route</button>`);
+  ${toolsCard(s)}
+  ${verifyBlock('The client signs for the phone','Their tracking page shows a 6-digit code you never see. Code first, then their signature — both, every time, no exceptions.','417826')}`,
+  `<button class="btn danger" id="exc">Problem at the door — exception</button>
+   <button class="btn ghost" id="back">Back to route</button>`);
  $('#back').onclick=()=>{S.view=null;S.boxOk=false;resetVerify();render();};
  $('#exc').onclick=()=>{
   openSheet('Never leave the device. What happened?',
@@ -790,14 +893,14 @@ function vReprise(s){
  if(S.phase==='verify'){
   shell(`
    <div class="card"><div class="hd">${s.name}</div>
-    <div class="bd" style="padding-bottom:10px">
+    <div class="bd">
      <div class="kv"><span class="k">Collecting</span><span class="v">iPhone 14 Pro · grade ${S.grade} · seal R-31907</span></div>
      ${contactKvs(s)}
     </div></div>
-   ${contactLinks(s)}
+   ${toolsCard(s)}
    ${gpsPill()}
-   ${verifyBlock('The client signs the release','Collecting is a pickup — same rule. Their page shows the code; then they sign the trade-in away.','417826')}
-   <button class="btn ghost" id="back">Back</button>`);
+   ${verifyBlock('The client signs the release','Collecting is a pickup — same rule. Their page shows the code; then they sign the trade-in away.','417826')}`,
+   `<button class="btn ghost" id="back">Back</button>`);
   $('#back').onclick=()=>{S.phase='scan';resetVerify();render();};
   wireVerify('417826',nm=>{S.custody+=1;S.car.push('R-31907');S.phase='scan';resetVerify();
    finishStop(s,`Buyback in custody · grade ${S.grade} · released by ${nm} · +$${s.pay.toFixed(2)}`);});
@@ -809,14 +912,15 @@ function vReprise(s){
     <div class="kv"><span class="k">Device</span><span class="v mono">351984406220071</span></div>
     ${contactKvs(s)}
     <div class="kv"><span class="k">Blacklist check</span><span class="v" style="color:var(--acc)">Clean · locks off</span></div>
-    ${contactLinks(s)}
     <div class="label">Condition grade</div>
     <div class="chips">${['A','B','C','D'].map(g=>`<button class="chipG ${S.grade===g?'on':''}" data-g="${g}">
       <div class="g">${g}</div><div class="l">${{A:'Like new',B:'Light wear',C:'Visible wear',D:'Damaged'}[g]}</div></button>`).join('')}</div>
     <div class="kv" style="margin-top:10px"><span class="k">Return-leg cover</span>
      <span class="v mono">${{A:'$580',B:'$520',C:'$390',D:'$120'}[S.grade]}</span></div>
-    <div style="margin-top:12px"><button class="btn" id="go">Photograph & seal — client verification</button>
-    <button class="btn ghost" id="back">Back</button></div></div></div>`);
+   </div></div>
+  ${toolsCard(s)}`,
+  `<button class="btn" id="go">Photograph & seal — client verification</button>
+   <button class="btn ghost" id="back">Back</button>`);
  $('#back').onclick=()=>{S.view=null;render();};
  document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{S.grade=b.dataset.g;render();});
  $('#go').onclick=()=>{if(S.gps.dist>GEOFENCE_M)S.gps.dist=12;S.phase='verify';resetVerify();render();};
@@ -847,8 +951,8 @@ function vAddons(){
      <div class="saddr" style="margin-top:3px">${a.info}</div>
      ${navLinks(a.addr)}
      ${contactLinks(a)}
-     <div style="display:flex;gap:8px;margin-top:10px">
-      <button class="btn sm" data-aacc="${a.id}">Accept · add to route</button>
+     <div class="actions row">
+      <button class="btn sm" data-aacc="${a.id}">Accept</button>
       <button class="btn alt sm" data-adec="${a.id}">Skip</button></div></div></div>`).join('')
   :`<div class="card"><div class="bd" style="color:var(--muted);font-size:13.5px">No open offers right now. New ones appear here — and on your dashboard — the moment a client books nearby.</div></div>`}
   ${S.addons.filter(a=>a.state!=='open').length?`<div class="label">Earlier today</div>
@@ -880,11 +984,12 @@ function vEarn(){
 
 /* ── 7 · PROFILE ── */
 function vProfile(){
+ const d=currentDriver();
  shell(`
-  <div class="card"><div class="hd">Maya Chahwan <div class="sp"></div><span class="pill acc">Owner-operator</span></div>
+  <div class="card"><div class="hd">${d.full} <div class="sp"></div><span class="pill acc">Owner-operator</span></div>
    <div class="bd">
-    <div class="kv"><span class="k">Route</span><span class="v">MTL-03 · Laval / Rive-Nord</span></div>
-    <div class="kv"><span class="k">Vehicle</span><span class="v">Kia Niro · personal</span></div>
+    <div class="kv"><span class="k">Route</span><span class="v">${d.route}</span></div>
+    <div class="kv"><span class="k">Vehicle</span><span class="v">${d.vehicle}</span></div>
     <div class="kv"><span class="k">Deliveries · 7 days</span><span class="v">184 · 100% on time</span></div>
     <div class="kv"><span class="k">Incidents · 90 days</span><span class="v">0</span></div>
     <div class="kv"><span class="k">Language</span><span class="v">Français / English</span></div>
@@ -898,19 +1003,19 @@ function vProfile(){
    <div class="kv"><span class="k">Navigation app</span><span class="v">Waze (default)</span></div>
    <div class="kv"><span class="k">Add-on offers</span><span class="v">On · within 8 min detour</span></div>
    <div class="kv"><span class="k">Off-route alert to dispatch</span><span class="v">
-     <span style="display:inline-flex;border:1.5px solid var(--line-mid);border-radius:7px;overflow:hidden">
-      ${[1,2,5].map(k=>`<button data-thresh="${k}" style="padding:6px 12px;font-size:12px;font-weight:800;
-       ${S.gps.thresholdKm===k?'background:var(--acc);color:#fff':'color:var(--muted)'}">${k} km</button>`).join('')}
+     <span class="seg">
+      ${[1,2,5].map(k=>`<button data-thresh="${k}" class="${S.gps.thresholdKm===k?'on':''}">${k} km</button>`).join('')}
      </span></span></div>
    <div class="kv"><span class="k">Geofence on handovers</span><span class="v">${GEOFENCE_M} m · cannot be disabled</span></div>
    <div class="kv"><span class="k">Notifications</span><span class="v">Push + SMS</span></div>
   </div></div>
-  <button class="btn alt" id="callDisp">Call dispatch · 24/7</button>
-  <button class="btn ghost" id="lockApp">Lock app</button>
-  <div class="note acc" style="margin-top:12px"><div><b>Year 1: the two owners are the carrier.</b> No employees, no contractors — the first contractor triggers the legal opinion, budgeted for Year 2.</div></div>`);
+  <div class="note acc" style="margin-bottom:0"><div><b>Year 1: the two owners are the carrier.</b> No employees, no contractors — the first contractor triggers the legal opinion, budgeted for Year 2.</div></div>`,
+  `<button class="btn alt" id="callDisp">Call dispatch · 24/7</button>
+   <button class="btn ghost" id="signout">Sign out</button>`);
  wireProfile();
  $('#callDisp').onclick=()=>toast('Calling dispatch · 24/7');
- $('#lockApp').onclick=()=>{S.gate='lock';S.pin='';render();};
+ $('#signout').onclick=()=>{S.auth={logged:false,stage:'id',id:'',method:'',code:''};
+  toast('Signed out');render();};
 }
 
 function wireProfile(){
@@ -920,8 +1025,10 @@ function wireProfile(){
 }
 function render(){
  tickClock();
- if(S.gate!=='app')return vGate();
+ if(S.gate==='splash')return vSplash();
+ if(!S.auth.logged)return vLogin();
  $('#gate').style.display='none';
+ $('#gate').innerHTML='';
  $('#app').style.display='flex';
  setChrome(false);
  if(S.tab==='dash')return vDash();
